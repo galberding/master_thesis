@@ -1,0 +1,6 @@
+* 14.10.2020
+** TODO Create bitmap
+** TODO Create architecture for robot
+** TODO Create lib for optimization
+** TODO Create test framework
+** TODO Show first optimization results

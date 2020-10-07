@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>ros_optimizer</name>
-  <version>0.0.0</version>
+  <version>0.0.1</version>
   <description>Optimizer for multiple robots</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
