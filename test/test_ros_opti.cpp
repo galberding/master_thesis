@@ -1,25 +1,10 @@
 #include <gtest/gtest.h>
 // #include "ros/ros.h"
+#include "robot.hpp"
 
 TEST(MathExpressions, badInput){
-  //TODO - figure out what good error behavior is and test for it properly
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3 - 4.1"));
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3"));
-  ASSERT_EQ(1, 1);
-}
-
-TEST(MathExpressions, badInput2){
-  //TODO - figure out what good error behavior is and test for it properly
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3 - 4.1"));
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3"));
-  ASSERT_EQ(1, 1);
-}
-
-TEST(MathExpressions, badInput3){
-  //TODO - figure out what good error behavior is and test for it properly
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3 - 4.1"));
-  //EXPECT_EQ(0, meval::EvaluateMathExpression("4.1.3"));
-  ASSERT_EQ(1, 1);
+  Robot rob();
+  ASSERT_EQ(1, rob.hello());
 }
 
 

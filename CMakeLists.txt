@@ -120,9 +120,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/pack1.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/environment/robot.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -201,7 +201,7 @@ include_directories(
 catkin_add_executable_with_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
 # add_executable(testblub test/test_ros_opti.cpp)
 if(TARGET ${PROJECT_NAME}-test)
-  target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
+  target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES} ${PROJECT_NAME})
 endif()
 
 ## Add folders to be run by python nosetests
