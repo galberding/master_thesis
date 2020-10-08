@@ -196,10 +196,13 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_pack1.cpp)
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
-# endif()
+
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
+catkin_add_executable_with_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
+# add_executable(testblub test/test_ros_opti.cpp)
+if(TARGET ${PROJECT_NAME}-test)
+  target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
+endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
