@@ -1,5 +1,7 @@
 #include "ocm.hpp"
 
-void OccupancyMap::init_map(){
+
+
+void foo::OccupancyMap::init_map(){
 
 }
