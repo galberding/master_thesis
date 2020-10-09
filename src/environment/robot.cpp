@@ -1,5 +1,5 @@
 #include "robot.hpp"
 
-int Robot::hello(){
+uint8_t Robot::hello(){
   return 42;
 }

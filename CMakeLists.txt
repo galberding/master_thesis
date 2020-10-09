@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(ros_optimizer)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+# add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -10,6 +10,8 @@ project(ros_optimizer)
 find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
+  cv_bridge
+  image_geometry
   std_msgs
   message_generation
 )
@@ -120,9 +122,9 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
-  src/environment/robot.cpp
-)
+# add_library(${PROJECT_NAME}
+#   src/environment/robot.cpp
+# )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -191,6 +193,21 @@ add_library(${PROJECT_NAME}
 #   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 # )
 
+set(OPTI_ENV
+  src/environment/robot.cpp
+  src/environment/robot.hpp
+  src/environment/ocm.hpp
+  src/environment/ocm.cpp
+  src/optimizer/optimizer.hpp
+  src/optimizer/optimizer.cpp
+
+)
+
+
+
+
+
+
 #############
 ## Testing ##
 #############
@@ -198,10 +215,20 @@ add_library(${PROJECT_NAME}
 ## Add gtest based cpp test target and link libraries
 
 # catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
-catkin_add_executable_with_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
+catkin_add_executable_with_gtest(${PROJECT_NAME}-test
+  test/test_ros_opti.cpp
+  ${OPTI_ENV}
+  )
+
+find_package( OpenCV 3.3.1 REQUIRED )
+
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+set(OpenCV_DIR "~./ros_opencv/install")
+
+
 # add_executable(testblub test/test_ros_opti.cpp)
 if(TARGET ${PROJECT_NAME}-test)
-  target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES} ${PROJECT_NAME})
+  target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
 endif()
 
 ## Add folders to be run by python nosetests
@@ -216,3 +243,24 @@ add_dependencies(talker ros_optimizer_generate_messages_cpp)
 add_executable(listener src/listener.cpp)
 target_link_libraries(listener ${catkin_LIBRARIES})
 add_dependencies(listener ros_optimizer_generate_messages_cpp)
+
+
+# Main node
+
+
+
+## Declare a C++ library
+# add_library(${PROJECT_NAME}
+#   src/environment/robot.cpp
+# )
+
+# include_directories(include)
+
+add_executable(opti
+  src/main.cpp
+  # src/environment/robot.cpp
+  # src/environment/robot.hpp
+  ${OPTI_ENV}
+  )
+target_link_libraries(opti ${catkin_LIBRARIES})
+# target_link_libraries(opti ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBS})

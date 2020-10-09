@@ -1,9 +1,12 @@
 #ifndef __ENV_ROBOT__
 #define __ENV_ROBOT__
 
+#include <cstdint>
+
 class Robot{
 public:
-  int hello();
+  uint8_t hello();
+
 };
 
 
