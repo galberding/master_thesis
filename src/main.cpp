@@ -21,6 +21,10 @@ int main(int argc, char *argv[])
 
   cout << cy.type << endl;
 
+  // Optimization stage 1:
+  // TODO: Waypoint generation
+  // TODO: Geometric rotation and transformation on map
+
 
   // printf("Hello Rob: %d\n", rob.hello());
   return 0;
