@@ -1,10 +1,10 @@
 * 14.10.2020
 ** DONE Create bitmap
 ** DONE Setup ROS project
-** TODO
 ** TODO Project Architecture
 *** TODO Create lib for optimization
 **** TODO Adapter for different optimization strategies
+**** TODO Error calculation -> tool to calculate error and ocm
 **** TODO
 *** TODO Waypoint generation
 *** DONE Create test framework

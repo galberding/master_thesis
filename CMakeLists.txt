@@ -14,6 +14,7 @@ find_package(catkin REQUIRED COMPONENTS
   image_geometry
   std_msgs
   message_generation
+  geometric_shapes
 )
 
 ## System dependencies are found with CMake's conventions

@@ -5,6 +5,9 @@
 
 class Robot{
 public:
+  Robot(){
+
+  }
   uint8_t hello();
 
 };
