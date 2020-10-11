@@ -33,7 +33,7 @@ Point randomPointShift(Point p, int magnitude = 200){
 
 }
 
-vector<Point> genWaypoints(int width, int height, Point start, int n = 10){
+vector<Point> genWaypoints(int width, int height, Point start, int n = 50){
   // Generate list with valid waypoints
   // For now the only rule is that the points need to be placed on the map
   vector<Point> waypoints;
@@ -54,44 +54,50 @@ vector<Point> genWaypoints(int width, int height, Point start, int n = 10){
 }
 
 
-float calOcc(vector<Point> waypoints, int width, int height){
+// float calOcc(vector<Point> waypoints, int width, int height){
 
-  Mat map(height, width, CV_8U, Scalar(0));
-  // cout << "Initial cost: " << cv::sum(map) << endl;
+//   Mat map(height, width, CV_8U, Scalar(0));
+//   // cout << "Initial cost: " << cv::sum(map) << endl;
 
-  auto iter = waypoints.begin();
-  Point current = *iter;
-  iter++;
-  do{
-    MyLine(map, current, *iter);
-    current = *iter;
-    // cout << current << endl;
-    iter++;
-  } while(iter != waypoints.end());
-  return cv::sum(map)[0] / (width * height);
+//   auto iter = waypoints.begin();
+//   Point current = *iter;
+//   iter++;
+//   do{
+//     MyLine(map, current, *iter);
+//     current = *iter;
+//     // cout << current << endl;
+//     iter++;
+//   } while(iter != waypoints.end());
+//   return cv::sum(map)[0] / (width * height);
+// }
+
+
+// float calTime(vector<Point> waypoints, int speed){
+
+//   float dist = 0;
+//   auto iter = waypoints.begin();
+//   Point current = *iter;
+//   iter++;
+//   do{
+//     // MyLine(map, current, *iter);
+//     // Sum up all distances the roboter needs to travel
+//     dist += cv::norm(current - *iter);
+//     current = *iter;
+//     // cout << current << endl;
+//     iter++;
+//   } while(iter != waypoints.end());
+
+//   return dist / speed;
+
+// }
+
+
+void printFitness(vector<genome> gens){
+  for(auto j : gens){
+    cout << j.fitness << " ";
+  }
+  cout << endl;
 }
-
-
-float calTime(vector<Point> waypoints, int speed){
-
-  float dist = 0;
-  auto iter = waypoints.begin();
-  Point current = *iter;
-  iter++;
-  do{
-    // MyLine(map, current, *iter);
-    // Sum up all distances the roboter needs to travel
-    dist += cv::norm(current - *iter);
-    current = *iter;
-    // cout << current << endl;
-    iter++;
-  } while(iter != waypoints.end());
-
-  return dist / speed;
-
-}
-
-
 
 
 class GenPool{
@@ -121,6 +127,9 @@ public:
   float calOcc(struct genome gen);
   float calTime(struct genome gen, int speed = 5);
   struct genome getBest();
+  void conditionalPointShift(Point &p, int magnitude = 5);
+  void randomInsert(struct genome gen);
+  void randomRemove(struct genome gen);
 };
 
 bool compareFitness(const struct genome &genA, const struct genome &genB){
@@ -145,12 +154,13 @@ void GenPool::populatePool(int size)
     gen.fitness = this->calFittness(gen);
     this->gens.push_back(gen);
   }
+  printFitness(gens);
 }
 
 float GenPool::calFittness(struct genome gen)
 {
   // Maximize occ minimize time
-  return calOcc(gen) - calTime(gen)/100;
+  return calOcc(gen) - calTime(gen)*10;
 }
 
 float GenPool::calOcc(struct genome gen)
@@ -192,6 +202,18 @@ float GenPool::calTime(struct genome gen, int speed)
 
 }
 
+float GenPool::update(int iterations){
+  for (int i = 0; i < iterations; ++i) {
+    // cout << "Crossover" << endl;
+    crossover();
+    // cout << "Mutation" << endl;
+    mutation();
+    // cout << "CSelection" << endl;
+    selection();
+  }
+  return 42.0;
+}
+
 // Return elements of vec between start and stop index
 template<typename T> vector<T> slice(vector<T>& vec, int start_idx, int stop_idx){
 
@@ -212,10 +234,12 @@ template<typename T> void joinSlices(vector<T>& vecA, vector<T>& vecB){
 }
 
 void printWaypoints(vector<Point>& waypoints){
-  for(const auto &i : waypoints){
+  cout << "Waypoints: " << endl;
+  for(const auto i : waypoints){
     cout << i << endl;
   }
 }
+
 
 void GenPool::crossover()
 {
@@ -224,26 +248,83 @@ void GenPool::crossover()
   vector<Point> parent1 = gens[0].waypoints;
   vector<Point> parent2 = gens[1].waypoints;
 
-  cout << "Parent1:" << endl;
-  printWaypoints(parent1);
-  cout << "Parent2:" << endl;
-  printWaypoints(parent2);
+  // cout << "Parent1:" << endl;
+  // printWaypoints(parent1);
+  // cout << "Parent2:" << endl;
+  // printWaypoints(parent2);
   auto slice1 = sliceErase(parent1, (int) parent1.size()/2, parent1.size());
   auto slice2 = sliceErase(parent2, (int) parent2.size()/2, parent2.size());
 
   joinSlices(parent1, slice2);
   joinSlices(parent2, slice1);
-  cout << "--------------------" << endl;
-  cout << "Parent1:" << endl;
-  printWaypoints(parent1);
-  cout << "Parent2:" << endl;
-  printWaypoints(parent2);
+  // cout << "--------------------" << endl;
+  // cout << "Parent1:" << endl;
+  // printWaypoints(parent1);
+  // cout << "Parent2:" << endl;
+  // printWaypoints(parent2);
+  // cout << "--------------------" << endl;
 
-  // replace the worst 2 gens
-  gens[gens.size()].waypoints = parent1;
-  gens[gens.size()-1].waypoints = parent1;
+  // printWaypoints(gens[gens.size()- 1].waypoints);
+  // // replace the worst 2 gens
+  gens[gens.size()-2].waypoints.assign(parent1.begin(), parent1.end());
+  gens[gens.size()-1].waypoints.assign(parent2.begin(), parent2.end());
+
+  // cout << "--------------------" << endl;
+  // printWaypoints(gens[gens.size()-1 ].waypoints);
+  // printWaypoints(gens[1].waypoints);
+  // cout << "Crossover Done!" << endl;
+
 
 }
+
+void GenPool::conditionalPointShift(Point &p, int magnitude){
+
+  while(true){
+    int shift_x = std::experimental::randint(-magnitude, magnitude);
+    int shift_y = std::experimental::randint(-magnitude, magnitude);
+    if(((p.x + shift_x) > 0)
+       && ((p.x + shift_x) < width)
+       && ((p.y + shift_y) > 0)
+       && ((p.y + shift_y) < height)){
+      p.x +=  shift_x;
+      p.y +=  shift_y;
+      break;
+    }
+  }
+}
+
+void GenPool::randomInsert(struct genome gen){
+  int node = std::experimental::randint(1, (int) gen.waypoints.size()-1);
+  Point p(gen.waypoints.at(node));
+
+  conditionalPointShift(p);
+  // cout << "Try shift" << endl;
+  auto beg = gen.waypoints.begin();
+  gen.waypoints.insert(beg + node, p);
+  // cout << "Inserted!" << endl;
+}
+
+
+void GenPool::mutation(){
+  for(int i=2; i<gens.size();i++){
+
+    if(i == 3){
+      randomInsert(gens[i]);
+    }else{
+      int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-1);
+      conditionalPointShift(gens[i].waypoints[node]);
+      // cout << "Test" << endl;
+
+    }
+    gens[i].fitness = calFittness(gens[i]);
+  }
+}
+
+void GenPool::selection(){
+  sort(gens.begin(), gens.end(), compareFitness);
+  printFitness(gens);
+}
+
 
 int main(int argc, char *argv[])
 {
@@ -267,13 +348,26 @@ int main(int argc, char *argv[])
 
 
   GenPool pool(width, height, start, stop);
-  pool.populatePool(20);
+  pool.populatePool(5);
   // cout << "Fitness: " << pool.getBest().fitness << endl;
   // for(const auto i : pool.gens){
   //   cout << i.fitness << endl;
   // }
-  pool.crossover();
 
+  // pool.update(100);
+
+  // imshow("Res: ", *pool.getBest().map);
+  // waitKey(0);
+
+  // pool.update(100);
+
+  // imshow("Res: ", *pool.getBest().map);
+  // waitKey(0);
+
+  pool.update(50000);
+  imwrite("test.jpg", *pool.getBest().map);
+  // imshow("Res: ", *pool.getBest().map);
+  // waitKey(0);
 
 
   // Optimization stage 1:
@@ -291,12 +385,12 @@ int main(int argc, char *argv[])
 
 void MyLine( Mat img, Point start, Point end )
 {
-  int thickness = 2;
+  int thickness = 4;
   int lineType = LINE_4;
   line( img,
     start,
     end,
-    Scalar( 1 ),
+    Scalar( 255 ),
     thickness,
     lineType );
 }
