@@ -201,7 +201,8 @@ set(OPTI_ENV
   src/environment/ocm.cpp
   src/optimizer/optimizer.hpp
   src/optimizer/optimizer.cpp
-
+  src/pool.hpp
+  src/pool.cpp
 )
 
 
@@ -224,7 +225,7 @@ catkin_add_executable_with_gtest(${PROJECT_NAME}-test
 find_package( OpenCV 3.3.1 REQUIRED )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
-set(OpenCV_DIR "~./ros_opencv/install")
+# set(OpenCV_DIR "~./ros_opencv/install")
 
 
 # add_executable(testblub test/test_ros_opti.cpp)
@@ -237,13 +238,13 @@ endif()
 
 
 ## Tutorial
-add_executable(talker src/talker.cpp)
-target_link_libraries(talker ${catkin_LIBRARIES})
-add_dependencies(talker ros_optimizer_generate_messages_cpp)
+# add_executable(talker src/talker.cpp)
+# target_link_libraries(talker ${catkin_LIBRARIES})
+# add_dependencies(talker ros_optimizer_generate_messages_cpp)
 
-add_executable(listener src/listener.cpp)
-target_link_libraries(listener ${catkin_LIBRARIES})
-add_dependencies(listener ros_optimizer_generate_messages_cpp)
+# add_executable(listener src/listener.cpp)
+# target_link_libraries(listener ${catkin_LIBRARIES})
+# add_dependencies(listener ros_optimizer_generate_messages_cpp)
 
 
 # Main node
