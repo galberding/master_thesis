@@ -48,7 +48,7 @@ void opti_ga::printFitness(vector<genome> &gens){
 
 
 // Return elements of vec between start and stop index
-template<typename T> vector<T> opti_ga::slice(vector<T>& vec, int start_idx, int stop_idx){
+template<typename T> vector<T> opti_ga::slice(vector<T> vec, int start_idx, int stop_idx){
 
   return vector<T>(vec.begin() + start_idx, vec.begin() + stop_idx);
 }
@@ -65,7 +65,8 @@ vector<T> opti_ga::sliceErase(vector<T>& vec, int start_idx, int stop_idx){
 template<typename T>
 void opti_ga::joinSlices(vector<T>& vecA, vector<T>& vecB){
   vecA.reserve(vecA.size() + vecB.size());
-  vecA.insert(vecA.end(), vecB.begin(), vecB.end());
+  int offset = std::experimental::randint(1, (int) vecA.size()-1);
+  vecA.insert(vecA.begin() + offset, vecB.begin(), vecB.end());
 }
 
 void opti_ga::printWaypoints(vector<Point>& waypoints){
@@ -80,16 +81,33 @@ bool opti_ga::compareFitness(const struct genome &genA, const struct genome &gen
 }
 
 
-void opti_ga::markOcc( Mat &img, Point &start, Point &end )
+void opti_ga::markOcc( Mat &img, Point &start, Point &end, int val, int size)
 {
-  int thickness = 4;
+
   int lineType = LINE_4;
   line( img,
     start,
     end,
-    Scalar( 255 ),
-    thickness,
+    Scalar( val ),
+    size,
     lineType );
+}
+
+
+
+
+void opti_ga::markPath(struct genome &gen)
+{
+
+  auto iter = gen.waypoints.begin();
+  Point current = *iter;
+  iter++;
+  do{
+    opti_ga::markOcc(*gen.map, current, *iter, 0, 1);
+    current = *iter;
+    // cout << current << endl;
+    iter++;
+  } while(iter != gen.waypoints.end());
 }
 
 
@@ -100,7 +118,6 @@ void opti_ga::markOcc( Mat &img, Point &start, Point &end )
 void opti_ga::GenPool::populatePool(int size, int waypoints)
 {
   // Create initial population of given Size
-
   for (int i=0; i<size; ++i) {
     struct genome gen;
     gen.map = make_shared<Mat>(Mat(height, width, CV_8U, Scalar(0)));
@@ -117,7 +134,7 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
 float opti_ga::GenPool::calFittness(struct genome &gen)
 {
   // Maximize occ minimize time
-  return calOcc(gen)/100 - calTime(gen)*50;
+  return calOcc(gen) / calTime(gen);
 }
 
 
@@ -137,7 +154,7 @@ float opti_ga::GenPool::calOcc(struct genome &gen)
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
-  return cv::sum(*gen.map)[0] ; // / (width * height);
+  return cv::sum(*gen.map)[0] / (width * height) / 255;
 }
 
 
@@ -157,7 +174,7 @@ float opti_ga::GenPool::calTime(struct genome &gen, int speed)
     iter++;
   } while(iter != gen.waypoints.end());
 
-  return dist / speed;
+  return dist/ 100 / (speed / 3.6);
 
 }
 
@@ -175,8 +192,17 @@ void opti_ga::GenPool::crossover()
   vector<Point> parent1 = gens[0].waypoints;
   vector<Point> parent2 = gens[1].waypoints;
 
-  auto slice1 = sliceErase(parent1, (int) parent1.size()/2, parent1.size());
-  auto slice2 = sliceErase(parent2, (int) parent2.size()/2, parent2.size());
+  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 1);
+  int end_node1 = std::experimental::randint(start_node1, (int) parent1.size() - 1);
+
+  int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
+  int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
+
+  // cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
+
+  auto slice1 = sliceErase(parent1, start_node1, end_node1 );
+  auto slice2 = sliceErase(parent2, start_node2, end_node2 );
+  // auto slice2 = sliceErase(parent2, (int) parent2.size()/2, parent2.size());
 
   joinSlices(parent1, slice2);
   joinSlices(parent2, slice1);
@@ -266,6 +292,7 @@ float opti_ga::GenPool::update(int iterations){
     if(i % 1000 == 0){
       cout << "Round: " << i << endl;
       cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
+      opti_ga::markPath(gens.at(0));
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
     }
   }

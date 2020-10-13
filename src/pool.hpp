@@ -27,7 +27,7 @@ namespace opti_ga {
   void printWaypoints(vector<Point>& waypoints);
 
   template<typename T>
-  vector<T> slice(vector<T>& vec, int start_idx, int stop_idx);
+  vector<T> slice(vector<T> vec, int start_idx, int stop_idx);
 
   template<typename T>
   vector<T> sliceErase(vector<T>& vec, int start_idx, int stop_idx);
@@ -35,7 +35,8 @@ namespace opti_ga {
   template<typename T>
   void joinSlices(vector<T>& vecA, vector<T>& vecB);
   bool compareFitness(const struct genome &genA, const struct genome &genB);
-  void markOcc( Mat &img, Point &start, Point &end );
+  void markOcc( Mat &img, Point &start, Point &end, int val = 255, int size=10);
+  void markPath(genome &gen);
   // --------------------------------------------------
 
 
