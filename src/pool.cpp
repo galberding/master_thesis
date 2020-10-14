@@ -137,9 +137,12 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
 float opti_ga::GenPool::calFittness(struct genome &gen)
 {
   // Maximize occ minimize time
-  float time = calOcc(gen) - calTime(gen)/estimation;
-  // cout << (-estimation/calTime(gen) ? estimation/calTime(gen) < 1: estimation/calTime(gen)) << endl;
-  return time;
+  float fitness = calOcc(gen) - (calTime(gen)/estimation);
+
+
+
+  cout << (estimation/calTime(gen) > 1 ? -(1 - estimation/calTime(gen)) : estimation/calTime(gen)) << endl;
+  return fitness;
 }
 
 
@@ -159,7 +162,7 @@ float opti_ga::GenPool::calOcc(struct genome &gen)
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
-  return cv::sum(*gen.map)[0] / 255 / width / height;
+  return ((double) cv::sum(*gen.map)[0]) / 255 / width / height;
 }
 
 

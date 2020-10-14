@@ -39,7 +39,7 @@ namespace opti_ga {
   void markPath(genome &gen);
   // --------------------------------------------------
 
-#define CM_TO_M 100
+#define QCM_TO_QM 10000
 
   class GenPool{
     // Generate population
@@ -51,7 +51,7 @@ namespace opti_ga {
     GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed) {
 
 
-      estimation = (width * height) / robot_size / CM_TO_M / (robot_speed / 3.6);
+      estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
       cout << "Estimated time: " << estimation << endl;
     }
     void populatePool(int size, int waypoints);
