@@ -39,6 +39,7 @@ namespace opti_ga {
   void markPath(genome &gen);
   // --------------------------------------------------
 
+#define CM_TO_M 100
 
   class GenPool{
     // Generate population
@@ -47,7 +48,12 @@ namespace opti_ga {
     // perform selection
 
   public:
-    GenPool(int width, int height, Point start, Point end):width(width), height(height), start(start), end(end) {}
+    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed) {
+
+
+      estimation = (width * height) / robot_size / CM_TO_M / (robot_speed / 3.6);
+      cout << "Estimated time: " << estimation << endl;
+    }
     void populatePool(int size, int waypoints);
 
     // Returns currently best fitness
@@ -59,9 +65,12 @@ namespace opti_ga {
     const int height;
     const Point start;
     const Point end;
-
+    float estimation;
+    const int robot_size;
+    const float robot_speed;
     void crossover();
     void mutation();
+    // TODO: proper selection method
     void selection();
     float calFittness(struct genome &gen);
     float calOcc(struct genome &gen);

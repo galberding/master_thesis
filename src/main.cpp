@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
   const uint32_t height = 1000;
   const Point start(0,50);
   const Point stop(999, 500);
-
+  const int rob_size = 3;
+  const float rob_speed = 5;
   uint8_t im[height][width] =  { 0 };
   Mat map(height, width, CV_8U, im);
 
@@ -37,8 +38,9 @@ int main(int argc, char *argv[])
 
 
 
-  opti_ga::GenPool pool(width, height, start, stop);
-  pool.populatePool(5, 50);
+  opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
+  pool.populatePool(10, 50);
+  cout << pool.calTime(pool.gens.at(0)) << endl;
   // cout << "Fitness: " << pool.getBest().fitness << endl;
   // for(const auto i : pool.gens){
   //   cout << i.fitness << endl;

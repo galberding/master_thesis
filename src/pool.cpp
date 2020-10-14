@@ -64,8 +64,11 @@ vector<T> opti_ga::sliceErase(vector<T>& vec, int start_idx, int stop_idx){
 // Append content of vecB to vecA
 template<typename T>
 void opti_ga::joinSlices(vector<T>& vecA, vector<T>& vecB){
+  int offset = 1;
   vecA.reserve(vecA.size() + vecB.size());
-  int offset = std::experimental::randint(1, (int) vecA.size()-1);
+  if(vecA.size() > 2){
+    offset = std::experimental::randint(1, (int) vecA.size()-2);
+  }
   vecA.insert(vecA.begin() + offset, vecB.begin(), vecB.end());
 }
 
@@ -134,7 +137,9 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
 float opti_ga::GenPool::calFittness(struct genome &gen)
 {
   // Maximize occ minimize time
-  return calOcc(gen) / calTime(gen);
+  float time = calOcc(gen) - calTime(gen)/estimation;
+  // cout << (-estimation/calTime(gen) ? estimation/calTime(gen) < 1: estimation/calTime(gen)) << endl;
+  return time;
 }
 
 
@@ -154,7 +159,7 @@ float opti_ga::GenPool::calOcc(struct genome &gen)
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
-  return cv::sum(*gen.map)[0] / (width * height) / 255;
+  return cv::sum(*gen.map)[0] / 255 / width / height;
 }
 
 
@@ -174,7 +179,7 @@ float opti_ga::GenPool::calTime(struct genome &gen, int speed)
     iter++;
   } while(iter != gen.waypoints.end());
 
-  return dist/ 100 / (speed / 3.6);
+  return dist/ 100 / (robot_speed / 3.6);
 
 }
 
@@ -195,17 +200,29 @@ void opti_ga::GenPool::crossover()
   int start_node1 = std::experimental::randint(1, (int) parent1.size() - 1);
   int end_node1 = std::experimental::randint(start_node1, (int) parent1.size() - 1);
 
-  int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
-  int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
+  // int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
+  // int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
 
-  // cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
+  cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
 
+  // cout << "Parent1 before" << endl;
+  // printWaypoints(parent1);
+  // cout << "--------------------" << endl;
   auto slice1 = sliceErase(parent1, start_node1, end_node1 );
-  auto slice2 = sliceErase(parent2, start_node2, end_node2 );
+  auto slice2 = sliceErase(parent2, start_node1, end_node1 );
   // auto slice2 = sliceErase(parent2, (int) parent2.size()/2, parent2.size());
+  // cout << "Parent1" << endl;
+  // printWaypoints(parent1);
+  // cout << "--------------------" << endl;
+  // cout << "Slice2" << endl;
+  // printWaypoints(slice2);
+
 
   joinSlices(parent1, slice2);
   joinSlices(parent2, slice1);
+  // cout << "--------------------" << endl;
+  // cout << "Combined" << endl;
+  // printWaypoints(parent1);
 
   gens[gens.size()-2].waypoints.assign(parent1.begin(), parent1.end());
   gens[gens.size()-1].waypoints.assign(parent2.begin(), parent2.end());
@@ -274,7 +291,7 @@ void opti_ga::GenPool::selection(){
   for (int i=0; i<gens.size(); ++i) {
     gens.at(i).fitness = calFittness(gens.at(i));
   }
-  printFitness(gens);
+  // printFitness(gens);
   sort(gens.begin(), gens.end(), compareFitness);
   printFitness(gens);
 }
