@@ -2,6 +2,7 @@
 
 using namespace opti_ga;
 
+
 //-----------------------------------------
 Point opti_ga::randomPointShift(Point p, int magnitude){
 
@@ -121,6 +122,8 @@ void opti_ga::markPath(struct genome &gen)
 void opti_ga::GenPool::populatePool(int size, int waypoints)
 {
   // Create initial population of given Size
+  auto tbegin = chrono::steady_clock::now();
+
   for (int i=0; i<size; ++i) {
     struct genome gen;
     gen.map = make_shared<Mat>(Mat(height, width, CV_8U, Scalar(0)));
@@ -130,18 +133,23 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
     gen.fitness = this->calFittness(gen);
     this->gens.push_back(gen);
   }
+  auto tend = chrono::steady_clock::now();
+  // timer.stop();
+
+  cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << "µs" << endl;
+  // cout << timer.elapsed().wall << endl;
   printFitness(gens);
 }
 
 
-float opti_ga::GenPool::calFittness(struct genome &gen)
+double opti_ga::GenPool::calFittness(struct genome &gen)
 {
   // Maximize occ minimize time
-  float fitness = calOcc(gen) - (calTime(gen)/estimation);
+  double fitness = (calOcc(gen) -  calTime(gen) /calOcc(gen));
 
 
 
-  cout << (estimation/calTime(gen) > 1 ? -(1 - estimation/calTime(gen)) : estimation/calTime(gen)) << endl;
+  // cout << "Relation" << calOcc(gen) / calTime(gen)  << endl;
   return fitness;
 }
 
@@ -162,7 +170,7 @@ float opti_ga::GenPool::calOcc(struct genome &gen)
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
-  return ((double) cv::sum(*gen.map)[0]) / 255 / width / height;
+  return ((double) cv::sum(*gen.map)[0]) / 255;//  / width / height;
 }
 
 
@@ -200,13 +208,22 @@ void opti_ga::GenPool::crossover()
   vector<Point> parent1 = gens[0].waypoints;
   vector<Point> parent2 = gens[1].waypoints;
 
+
   int start_node1 = std::experimental::randint(1, (int) parent1.size() - 1);
   int end_node1 = std::experimental::randint(start_node1, (int) parent1.size() - 1);
+
+  // check if lenght is valid
+  if(!((start_node1 < (parent2.size()-1))
+       && (end_node1 < (parent2.size() -1)))){
+    cout << "--------------------Cancle!" << endl;
+    return;
+  }
 
   // int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
   // int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
 
   cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
+
 
   // cout << "Parent1 before" << endl;
   // printWaypoints(parent1);
@@ -304,6 +321,7 @@ void opti_ga::GenPool::selection(){
 float opti_ga::GenPool::update(int iterations){
   for (int i = 0; i <= iterations; ++i) {
     // cout << "Crossover" << endl;
+    // auto start = timer.start();
     crossover();
     // cout << "Mutation" << endl;
     mutation();

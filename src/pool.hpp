@@ -6,9 +6,12 @@
 #include <experimental/random>
 #include <cstdio>
 #include <iostream>
+#include <boost/timer/timer.hpp>
+#include <chrono>
 
 using namespace cv;
 using namespace std;
+
 
 namespace opti_ga {
   struct genome
@@ -68,17 +71,27 @@ namespace opti_ga {
     float estimation;
     const int robot_size;
     const float robot_speed;
+    boost::timer::cpu_timer timer;
+    std::unordered_map<string, int> summary = {
+      {"sel", 0},
+      {"cross", 0},
+      {"mut", 0},
+      {"eval_time", 0},
+      {"eval_occ", 0},
+    };
+
     void crossover();
     void mutation();
     // TODO: proper selection method
     void selection();
-    float calFittness(struct genome &gen);
+    double calFittness(struct genome &gen);
     float calOcc(struct genome &gen);
     float calTime(struct genome &gen, int speed = 3);
     struct genome getBest();
     void conditionalPointShift(Point &p, int magnitude = 30);
     void randomInsert(struct genome &gen);
     void randomRemove(struct genome &gen);
+
   };
 }
 

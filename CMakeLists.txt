@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0.2)
 project(ros_optimizer)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++17)
+add_compile_options(-std=c++17)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -222,6 +222,11 @@ catkin_add_executable_with_gtest(${PROJECT_NAME}-test
   ${OPTI_ENV}
   )
 
+FIND_PACKAGE( Boost 1.58  REQUIRED COMPONENTS timer)
+include_directories( ${Boost_INCLUDE_DIR} )
+link_directories(${Boost_LIBRARY_DIR})
+
+
 find_package( OpenCV 3.3.1 REQUIRED )
 
 include_directories( ${OpenCV_INCLUDE_DIRS} )
@@ -258,11 +263,14 @@ endif()
 
 # include_directories(include)
 
+# cout << timer.format() << endl;
+
 add_executable(opti
   src/main.cpp
   # src/environment/robot.cpp
   # src/environment/robot.hpp
   ${OPTI_ENV}
   )
-target_link_libraries(opti ${catkin_LIBRARIES})
-# target_link_libraries(opti ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBS})
+
+target_link_libraries(opti ${catkin_LIBRARIES} Boost::timer)
+# target_link_libraries(opti ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_LIBRARIES})

@@ -10,6 +10,7 @@
 #include <string>
 
 #include "pool.hpp"
+// #include <boost/timer/timer.hpp>
 
 using namespace std;
 
@@ -37,15 +38,15 @@ int main(int argc, char *argv[])
   // auto time_fit = cal_time(waypoints, 3);
 
 
-
+  // boost::timer::cpu_timer t;
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
-  pool.populatePool(10, 50);
-  cout << pool.calTime(pool.gens.at(0)) << endl;
+  pool.populatePool(10, 1);
+  // cout << pool.calTime(pool.gens.at(0)) << endl;
   // cout << "Fitness: " << pool.getBest().fitness << endl;
   // for(const auto i : pool.gens){
   //   cout << i.fitness << endl;
   // }
-  pool.update(100000);
+  // pool.update(100000);
   // imwrite("res/it_" + std::to_string(), *pool.getBest().map);
   // imshow("Res: ", *pool.getBest().map);
   // waitKey(0);
