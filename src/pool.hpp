@@ -14,6 +14,7 @@ using namespace std;
 
 
 namespace opti_ga {
+  class Timer;
   struct genome
   {
     shared_ptr<cv::Mat> map;
@@ -44,7 +45,41 @@ namespace opti_ga {
 
 #define QCM_TO_QM 10000
 
-  class GenPool{
+
+    class Timer{
+    chrono::steady_clock::time_point t_begin;
+  public:
+     std::unordered_map<string, int> summary = {
+      {"sel", 0},
+      {"cross", 0},
+      {"mut", 0},
+      {"eval_time", 0},
+      {"eval_occ", 0},
+      {"mat", 0}
+    };
+
+      void t_start(){
+	t_begin = chrono::steady_clock::now();
+      };
+      void t_end(const string name){
+	summary[name] = (summary[name] +
+			std::chrono::duration_cast<std::chrono::microseconds>
+			  (chrono::steady_clock::now() - t_begin).count()) / 2;
+	t_begin = chrono::steady_clock::now();
+    };
+
+      void printTiming(){
+	for(auto const& [key, val] : summary){
+	  cout << key << " --\t " << val << " µs" << endl;
+	}
+      }
+
+  };
+
+
+
+
+  class GenPool : public Timer{
     // Generate population
     // Perform crossover
     // perform mutation
@@ -57,6 +92,7 @@ namespace opti_ga {
       estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
       cout << "Estimated time: " << estimation << endl;
     }
+    friend Timer;
     void populatePool(int size, int waypoints);
 
     // Returns currently best fitness
@@ -72,13 +108,6 @@ namespace opti_ga {
     const int robot_size;
     const float robot_speed;
     boost::timer::cpu_timer timer;
-    std::unordered_map<string, int> summary = {
-      {"sel", 0},
-      {"cross", 0},
-      {"mut", 0},
-      {"eval_time", 0},
-      {"eval_occ", 0},
-    };
 
     void crossover();
     void mutation();
@@ -93,6 +122,9 @@ namespace opti_ga {
     void randomRemove(struct genome &gen);
 
   };
+
+
+
 }
 
 #endif //__OPTI_POOL__

@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
   // for(const auto i : pool.gens){
   //   cout << i.fitness << endl;
   // }
-  // pool.update(100000);
+  pool.update(200);
   // imwrite("res/it_" + std::to_string(), *pool.getBest().map);
   // imshow("Res: ", *pool.getBest().map);
   // waitKey(0);

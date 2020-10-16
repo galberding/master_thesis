@@ -136,7 +136,7 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
   auto tend = chrono::steady_clock::now();
   // timer.stop();
 
-  cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << "µs" << endl;
+  cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << " µs" << endl;
   // cout << timer.elapsed().wall << endl;
   printFitness(gens);
 }
@@ -322,17 +322,29 @@ float opti_ga::GenPool::update(int iterations){
   for (int i = 0; i <= iterations; ++i) {
     // cout << "Crossover" << endl;
     // auto start = timer.start();
+    t_start();
     crossover();
+    t_end("cross");
     // cout << "Mutation" << endl;
     mutation();
-    // cout << "Selection" << endl;
+    t_end("mut");
     selection();
-    if(i % 1000 == 0){
+    t_end("sel");
+
+
+
+    if(i % 100 == 0){
       cout << "Round: " << i << endl;
       cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       opti_ga::markPath(gens.at(0));
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
     }
+
+
   }
+
+  printTiming();
+
+
   return 42.0;
 }
