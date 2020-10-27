@@ -39,7 +39,7 @@ namespace opti_ga {
   template<typename T>
   void joinSlices(vector<T>& vecA, vector<T>& vecB);
   bool compareFitness(const struct genome &genA, const struct genome &genB);
-  void markOcc( Mat &img, Point &start, Point &end, int val = 255, int size=10);
+  void markOcc( Mat &img, Point &start, Point &end, int size, int val);
   void markPath(genome &gen);
   // --------------------------------------------------
 
@@ -86,7 +86,7 @@ namespace opti_ga {
     // perform selection
 
   public:
-    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed) {
+    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 8) {
 
 
       estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
@@ -104,6 +104,7 @@ namespace opti_ga {
     const int height;
     const Point start;
     const Point end;
+    const int shift_mag;
     float estimation;
     const int robot_size;
     const float robot_speed;
@@ -120,6 +121,7 @@ namespace opti_ga {
     void conditionalPointShift(Point &p, int magnitude = 30);
     void randomInsert(struct genome &gen);
     void randomRemove(struct genome &gen);
+    void randomSwitch(struct genome &gen);
 
   };
 

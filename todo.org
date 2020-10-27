@@ -1,11 +1,29 @@
-* 14.10.2020
+* MA
 ** DONE Create bitmap
 ** DONE Setup ROS project
-** TODO Project Architecture
-*** TODO Create lib for optimization
-**** TODO Adapter for different optimization strategies
-**** TODO Error calculation -> tool to calculate error and ocm
+** DONE Project Architecture
+*** DONE Create lib for optimization
+**** DONE Adapter for different optimization strategies
+**** DONE Error calculation -> tool to calculate error and ocm
 **** TODO
-*** TODO Waypoint generation
+*** DONE Waypoint generation
 *** DONE Create test framework
-*** TODO Show marked image
+*** DONE Show marked image
+
+
+* 25.10.2020:
+** TODO Fitness fkt
+*** TODO Plott fittnessfnkt
+*** TODO Norm time and occ
+**** TODO Introduce lower bound by calculated the optimal minimal time and coverage
+** TODO OCC alternative implementation -> look up opencv for mare alternatives (maybe polygone)
+*** TODO Search for new draw line method
+*** TODO Implement more precise line thickness
+**** TODO Implement orthogonal calculation
+**** TODO Use points from orthogonal vector as startpoints for complete coverage
+**** TODO Benchmark hashmap against array according to access and summation time
+**** TODO
+** TODO Object avoidance
+*** TODO introduce check for invalid paths (that will move over obstacles)
+*** TODO Differentiate between different speed levels
+*** TODO Introduvce difference between point shift and rotation

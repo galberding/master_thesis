@@ -85,7 +85,7 @@ bool opti_ga::compareFitness(const struct genome &genA, const struct genome &gen
 }
 
 
-void opti_ga::markOcc( Mat &img, Point &start, Point &end, int val, int size)
+void opti_ga::markOcc( Mat &img, Point &start, Point &end, int size, int val=255)
 {
 
   int lineType = LINE_4;
@@ -93,7 +93,7 @@ void opti_ga::markOcc( Mat &img, Point &start, Point &end, int val, int size)
     start,
     end,
     Scalar( val ),
-    size,
+    size -2,
     lineType );
 }
 
@@ -107,7 +107,7 @@ void opti_ga::markPath(struct genome &gen)
   Point current = *iter;
   iter++;
   do{
-    opti_ga::markOcc(*gen.map, current, *iter, 0, 1);
+    opti_ga::markOcc(*gen.map, current, *iter, 1, 0);
     current = *iter;
     // cout << current << endl;
     iter++;
@@ -133,10 +133,10 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
     gen.fitness = this->calFittness(gen);
     this->gens.push_back(gen);
   }
-  auto tend = chrono::steady_clock::now();
+  // auto tend = chrono::steady_clock::now();
   // timer.stop();
 
-  cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << " µs" << endl;
+  // cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << " µs" << endl;
   // cout << timer.elapsed().wall << endl;
   printFitness(gens);
 }
@@ -145,7 +145,17 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
 double opti_ga::GenPool::calFittness(struct genome &gen)
 {
   // Maximize occ minimize time
-  double fitness = (calOcc(gen) -  calTime(gen) /calOcc(gen));
+
+  // t_start();
+  double occ = calOcc(gen);
+  // t_end("eval_occ");
+  double time = calTime(gen); //- estimation;
+
+  double occ_err = width * height - occ;
+
+  // t_end("eval_time");
+  // double fitness = occ / (abs(time) + 1) - occ_err;
+  double fitness = (occ / sqrt(8*CV_PI)) * exp(-(pow(1-1/time, 2)/8));
 
 
 
@@ -165,12 +175,12 @@ float opti_ga::GenPool::calOcc(struct genome &gen)
   Point current = *iter;
   iter++;
   do{
-    opti_ga::markOcc(*gen.map, current, *iter);
+    opti_ga::markOcc(*gen.map, current, *iter, robot_size);
     current = *iter;
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
-  return ((double) cv::sum(*gen.map)[0]) / 255;//  / width / height;
+  return ((double) cv::sum(*gen.map)[0]) / 255 / width / height;
 }
 
 
@@ -209,20 +219,20 @@ void opti_ga::GenPool::crossover()
   vector<Point> parent2 = gens[1].waypoints;
 
 
-  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 1);
-  int end_node1 = std::experimental::randint(start_node1, (int) parent1.size() - 1);
+  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 2);
+  int end_node1 = start_node1 + 1;
 
   // check if lenght is valid
   if(!((start_node1 < (parent2.size()-1))
        && (end_node1 < (parent2.size() -1)))){
-    cout << "--------------------Cancle!" << endl;
+    // cout << "--------------------Cancle!" << endl;
     return;
   }
 
   // int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
   // int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
 
-  cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
+  // cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
 
 
   // cout << "Parent1 before" << endl;
@@ -269,7 +279,7 @@ void opti_ga::GenPool::randomInsert(struct genome &gen){
   int node = std::experimental::randint(1, (int) gen.waypoints.size()-1);
   Point p(gen.waypoints.at(node));
 
-  conditionalPointShift(p, 200);
+  conditionalPointShift(p, 10);
   // cout << "Try shift" << endl;
   auto beg = gen.waypoints.begin();
   // cout << "Size before: " << gen.waypoints.size() << endl;
@@ -286,21 +296,31 @@ void opti_ga::GenPool::randomRemove(struct genome &gen){
   // cout << "Inserted!" << endl;
 }
 
+void opti_ga::GenPool::randomSwitch(struct genome &gen){
+  int node1 = std::experimental::randint(1, (int) gen.waypoints.size()-2);
+
+  auto tmp =  gen.waypoints[node1];
+  int node2 = std::experimental::randint(1, (int) gen.waypoints.size()-2);
+  gen.waypoints[node1] = gen.waypoints[node2];
+  gen.waypoints[node2] = tmp;
+}
 
 void opti_ga::GenPool::mutation(){
   for(int i=1; i<gens.size();i++){
     // randomInsert(gens[i]);
-    if (i < 3) {
+    if (i < 2) {
       randomInsert(gens[i]);
 
-    }else if(i == 4){
+    }else if(i < 5){
       if(gens[i].waypoints.size() > 100)
 	randomRemove(gens[i]);
+      randomSwitch(gens[i]);
     } else {
       int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
       // if(gens[i].waypoints.size() > 10)
       // 	randomRemove(gens[i]);
-      conditionalPointShift(gens[i].waypoints[node], 50);
+      conditionalPointShift(gens[i].waypoints[node], shift_mag);
+
       // cout << "Test" << endl;
     }
     // gens[i].fitness = calFittness(gens[i]);
@@ -313,7 +333,7 @@ void opti_ga::GenPool::selection(){
   }
   // printFitness(gens);
   sort(gens.begin(), gens.end(), compareFitness);
-  printFitness(gens);
+  // printFitness(gens);
 }
 
 
@@ -338,6 +358,7 @@ float opti_ga::GenPool::update(int iterations){
       cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       opti_ga::markPath(gens.at(0));
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
+      printFitness(gens);
     }
 
 
