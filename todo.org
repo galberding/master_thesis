@@ -17,13 +17,18 @@
 *** TODO Norm time and occ
 **** TODO Introduce lower bound by calculated the optimal minimal time and coverage
 ** TODO OCC alternative implementation -> look up opencv for mare alternatives (maybe polygone)
-*** TODO Search for new draw line method
+*** DONE Search for new draw line method
 *** TODO Implement more precise line thickness
-**** TODO Implement orthogonal calculation
-**** TODO Use points from orthogonal vector as startpoints for complete coverage
+**** DONE Implement orthogonal calculation
+**** DONE Use points from orthogonal vector as startpoints for complete coverage -> Current approach not feasable
 **** TODO Benchmark hashmap against array according to access and summation time
-**** TODO
 ** TODO Object avoidance
 *** TODO introduce check for invalid paths (that will move over obstacles)
 *** TODO Differentiate between different speed levels
 *** TODO Introduvce difference between point shift and rotation
+
+
+* 28.10.2020
+** TODO Implement new fitness funktion and evaluate
+** TODO Fix timer by introducing a stack
+** TODO

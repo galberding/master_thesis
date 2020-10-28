@@ -8,6 +8,7 @@
 #include <iostream>
 #include <boost/timer/timer.hpp>
 #include <chrono>
+#include <stack>
 
 using namespace cv;
 using namespace std;
@@ -47,25 +48,40 @@ namespace opti_ga {
 
 
     class Timer{
-    chrono::steady_clock::time_point t_begin;
+    // chrono::steady_clock::time_point t_begin;
   public:
-     std::unordered_map<string, int> summary = {
-      {"sel", 0},
-      {"cross", 0},
-      {"mut", 0},
-      {"eval_time", 0},
-      {"eval_occ", 0},
-      {"mat", 0}
-    };
-
-      void t_start(){
-	t_begin = chrono::steady_clock::now();
+      std::unordered_map<string, int> summary;
+    //  = {
+    //   {"sel", 0},
+    //   {"cross", 0},
+    //   {"mut", 0},
+    //   {"eval_time", 0},
+    //   {"eval_occ", 0},
+    //   {"mat", 0}
+    // };
+      std::stack<tuple<string, chrono::steady_clock::time_point>> times;
+      void t_start(const string name){
+	if(summary.count(name) <= 0){
+	  summary.insert(std::make_pair(name,0));
+	}
+	times.push(make_tuple(name, chrono::steady_clock::now()));
       };
-      void t_end(const string name){
-	summary[name] = (summary[name] +
+
+      void t_end(){
+	auto name = get<0>(times.top());
+	auto t_begin = get<1>(times.top());
+	if(summary[name] == 0){
+	  summary[name] = std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count();
+	}else{
+	  summary[name] = (summary[name] +
 			std::chrono::duration_cast<std::chrono::microseconds>
 			  (chrono::steady_clock::now() - t_begin).count()) / 2;
-	t_begin = chrono::steady_clock::now();
+	}
+	// summary[name] = (summary[name] +
+	// 		std::chrono::duration_cast<std::chrono::microseconds>
+	// 		  (chrono::steady_clock::now() - t_begin).count()) / 2;
+	times.pop();
+	// t_begin = chrono::steady_clock::now();
     };
 
       void printTiming(){
@@ -115,8 +131,8 @@ namespace opti_ga {
     // TODO: proper selection method
     void selection();
     double calFittness(struct genome &gen);
-    float calOcc(struct genome &gen);
-    float calTime(struct genome &gen, int speed = 3);
+    double calOcc(struct genome &gen);
+    double calTime(struct genome &gen, int speed = 3);
     struct genome getBest();
     void conditionalPointShift(Point &p, int magnitude = 30);
     void randomInsert(struct genome &gen);

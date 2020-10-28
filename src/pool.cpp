@@ -148,14 +148,20 @@ double opti_ga::GenPool::calFittness(struct genome &gen)
 
   // t_start();
   double occ = calOcc(gen);
+
   // t_end("eval_occ");
   double time = calTime(gen); //- estimation;
+  auto robot_cov = robot_size * robot_speed/3.6;
+  auto optimal_time = occ/robot_cov;
 
-  double occ_err = width * height - occ;
+  double time_err = optimal_time / time;
+
+  double occ_err = occ/(width * height);
 
   // t_end("eval_time");
   // double fitness = occ / (abs(time) + 1) - occ_err;
-  double fitness = (occ / sqrt(8*CV_PI)) * exp(-(pow(1-1/time, 2)/8));
+  // double fitness = (occ / sqrt(8*CV_PI)) * exp(-(pow(1-1/time, 2)/8));
+  double fitness = occ_err + time_err;
 
 
 
@@ -164,27 +170,16 @@ double opti_ga::GenPool::calFittness(struct genome &gen)
 }
 
 
-
-float opti_ga::GenPool::calOcc(struct genome &gen)
+double opti_ga::GenPool::calOcc(struct genome &gen)
 {
 
   *gen.map = Scalar(0);
-  // cout << "Initial cost: " << cv::sum(map) << endl;
-
-  auto iter = gen.waypoints.begin();
-  Point current = *iter;
-  iter++;
-  do{
-    opti_ga::markOcc(*gen.map, current, *iter, robot_size);
-    current = *iter;
-    // cout << current << endl;
-    iter++;
-  } while(iter != gen.waypoints.end());
-  return ((double) cv::sum(*gen.map)[0]) / 255 / width / height;
+  polylines(*gen.map, gen.waypoints, false, 1, robot_size);
+  return ((double) cv::sum(*gen.map)[0]);
 }
 
 
-float opti_ga::GenPool::calTime(struct genome &gen, int speed)
+double opti_ga::GenPool::calTime(struct genome &gen, int speed)
 {
 
   float dist = 0;
@@ -342,23 +337,29 @@ float opti_ga::GenPool::update(int iterations){
   for (int i = 0; i <= iterations; ++i) {
     // cout << "Crossover" << endl;
     // auto start = timer.start();
-    t_start();
+    t_start("Crossover");
     crossover();
-    t_end("cross");
+    t_end();
     // cout << "Mutation" << endl;
+    t_start("Mutation");
     mutation();
-    t_end("mut");
+    t_end();
+    t_start("Selection");
+    // t_end("mut");
     selection();
-    t_end("sel");
+    t_end();
 
 
 
     if(i % 100 == 0){
       cout << "Round: " << i << endl;
-      cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
-      opti_ga::markPath(gens.at(0));
+      // opti_ga::markPath(gens.at(0));
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, 1);
+      // polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);
+      // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
       printFitness(gens);
+      printTiming();
     }
 
 
