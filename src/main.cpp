@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
   const Point start(0,50);
   const Point stop(height, 50);
   const int rob_size = 10;
-  const float rob_speed = 5;
+  const float rob_speed = 10;
   uint8_t im[height][width] =  { 0 };
   uint8_t im2[height][width] =  { 0 };
   uint8_t im3[height][width] =  { 0 };
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
   // auto time_fit = cal_time(waypoints, 3);
 
   Point A(10,30), B(300,30);
-  int size = 10;
+  int size = 40;
 
   // auto t_begin = chrono::steady_clock::now();
   // for(auto i=0; i<waypoints.size()-2; i++)

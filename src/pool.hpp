@@ -125,6 +125,7 @@ namespace opti_ga {
     const int robot_size;
     const float robot_speed;
     boost::timer::cpu_timer timer;
+    double fitnessWeight = 0.5;
 
     void crossover();
     void mutation();

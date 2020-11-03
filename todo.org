@@ -29,6 +29,6 @@
 
 
 * 28.10.2020
-** TODO Implement new fitness funktion and evaluate
-** TODO Fix timer by introducing a stack
+** DONE Implement new fitness funktion and evaluate
+** DONE Fix timer by introducing a stack
 ** TODO

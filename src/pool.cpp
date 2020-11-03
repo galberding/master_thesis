@@ -157,11 +157,12 @@ double opti_ga::GenPool::calFittness(struct genome &gen)
   double time_err = optimal_time / time;
 
   double occ_err = occ/(width * height);
+  // cout << "Time: " << time_err << " Occ: " << occ_err << endl;
 
   // t_end("eval_time");
   // double fitness = occ / (abs(time) + 1) - occ_err;
   // double fitness = (occ / sqrt(8*CV_PI)) * exp(-(pow(1-1/time, 2)/8));
-  double fitness = occ_err + time_err;
+  double fitness = fitnessWeight * occ_err + (1-fitnessWeight) * time_err;
 
 
 
@@ -195,7 +196,7 @@ double opti_ga::GenPool::calTime(struct genome &gen, int speed)
     iter++;
   } while(iter != gen.waypoints.end());
 
-  return dist/ 100 / (robot_speed / 3.6);
+  return dist/ (robot_speed / 3.6);
 
 }
 
@@ -214,8 +215,8 @@ void opti_ga::GenPool::crossover()
   vector<Point> parent2 = gens[1].waypoints;
 
 
-  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 2);
-  int end_node1 = start_node1 + 1;
+  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 12);
+  int end_node1 = start_node1 + 10;
 
   // check if lenght is valid
   if(!((start_node1 < (parent2.size()-1))
@@ -354,12 +355,12 @@ float opti_ga::GenPool::update(int iterations){
     if(i % 100 == 0){
       cout << "Round: " << i << endl;
       // opti_ga::markPath(gens.at(0));
-      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, 1);
-      // polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);
       // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
       printFitness(gens);
-      printTiming();
+      // printTiming();
     }
 
 
