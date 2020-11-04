@@ -39,10 +39,11 @@ vector<Point> opti_ga::genWaypoints(int width, int height, Point start, int n){
 }
 
 
-void opti_ga::printFitness(vector<genome> &gens){
+void opti_ga::printFitness(vector<genome> &gens, bool first){
   for(auto j : gens){
     cout << j.fitness << " ";
-    // break;
+    if(first)
+      break;
   }
   cout << endl;
 }
@@ -304,18 +305,19 @@ void opti_ga::GenPool::randomSwitch(struct genome &gen){
 void opti_ga::GenPool::mutation(){
   for(int i=1; i<gens.size();i++){
     // randomInsert(gens[i]);
-    if (i < 2) {
+    if (i < 4) {
       randomInsert(gens[i]);
 
-    }else if(i < 5){
+    }else if(i < 6){
       if(gens[i].waypoints.size() > 100)
 	randomRemove(gens[i]);
-      randomSwitch(gens[i]);
+
     } else {
       int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
       // if(gens[i].waypoints.size() > 10)
       // 	randomRemove(gens[i]);
       conditionalPointShift(gens[i].waypoints[node], shift_mag);
+      randomSwitch(gens[i]);
 
       // cout << "Test" << endl;
     }
@@ -323,10 +325,27 @@ void opti_ga::GenPool::mutation(){
   }
 }
 
+
+
 void opti_ga::GenPool::selection(){
+
+
+  std::future<double> t_pool[gens.size()];
+
+
   for (int i=0; i<gens.size(); ++i) {
-    gens.at(i).fitness = calFittness(gens.at(i));
+    t_pool[i] = std::async([this, i]{return calFittness(gens.at(i));});
   }
+
+
+  for (int i=0; i<gens.size(); ++i) {
+    gens.at(i).fitness = t_pool[i].get();
+  }
+
+
+  // for (int i=0; i<gens.size(); ++i) {
+  //   gens.at(i).fitness = calFittness(gens.at(i));
+  // }
   // printFitness(gens);
   sort(gens.begin(), gens.end(), compareFitness);
   // printFitness(gens);
@@ -352,15 +371,15 @@ float opti_ga::GenPool::update(int iterations){
 
 
 
-    if(i % 100 == 0){
+    if(i % 1 == 0){
       cout << "Round: " << i << endl;
       // opti_ga::markPath(gens.at(0));
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);
       // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
-      printFitness(gens);
-      // printTiming();
+      printFitness(gens, true);
+      printTiming();
     }
 
 

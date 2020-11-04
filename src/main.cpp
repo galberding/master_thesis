@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
 
   // tac.push(1, "hello");
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
-  pool.populatePool(8, 10);
+  pool.populatePool(2000, 10);
   // // cout << pool.calTime(pool.gens.at(0)) << endl;
   // // cout << "Fitness: " << pool.getBest().fitness << endl;
   // // for(const auto i : pool.gens){

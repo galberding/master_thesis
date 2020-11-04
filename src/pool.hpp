@@ -9,6 +9,8 @@
 #include <boost/timer/timer.hpp>
 #include <chrono>
 #include <stack>
+#include <thread>
+#include <future>
 
 using namespace cv;
 using namespace std;
@@ -28,7 +30,7 @@ namespace opti_ga {
   //--------------------------------------------------
   Point randomPointShift(Point p, int magnitude = 200);
   vector<Point> genWaypoints(int width, int height, Point start, int n = 10);
-  void printFitness(vector<genome> &gens);
+  void printFitness(vector<genome> &gens, bool first=false);
   void printWaypoints(vector<Point>& waypoints);
 
   template<typename T>
@@ -102,7 +104,7 @@ namespace opti_ga {
     // perform selection
 
   public:
-    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 8) {
+    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 4) {
 
 
       estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
