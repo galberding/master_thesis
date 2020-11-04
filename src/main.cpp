@@ -39,80 +39,13 @@ int main(int argc, char *argv[])
 
   vector<Point> waypoints = opti_ga::genWaypoints(width, height, start, 10);
 
-  // auto occ_fit = cal_occ(waypoints, width, height);
-  // auto time_fit = cal_time(waypoints, 3);
-
-  Point A(10,30), B(300,30);
-  int size = 40;
-
-  // auto t_begin = chrono::steady_clock::now();
-  // for(auto i=0; i<waypoints.size()-2; i++)
-  //   cv::line(map, waypoints[i], waypoints[i+1], Scalar(255), size, LINE_8);
-  // cout << "Line 1 " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-
-  // t_begin = chrono::steady_clock::now();
-  // mainline(map2, A, B, size);
-  // cout << "Line 2 " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-
-  // t_begin = chrono::steady_clock::now();
-  // calOccRec(map3, A, B, size);
-  // cout << "Rec: " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-
-  // t_begin = chrono::steady_clock::now();
-  // getIndex(A, B);
-  // cout << "Index 1 " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-  // t_begin = chrono::steady_clock::now();
-  // // getIndex(Size(height, width),A, B, size);
-  // for(auto &p: getIndex(Size(height, width),A, B, size)){
-  //   map2.at<uchar>(p) = 255;
-  // }
-  // cout << "Index 2 " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-
-
-
-  // t_begin = chrono::steady_clock::now();
-  // // calOccRec(map3, A, B, size);
-  // calOccupiedArea(waypoints, size);
-  // cout << "Initial intersection: " << std::chrono::duration_cast<std::chrono::microseconds>(chrono::steady_clock::now() - t_begin).count() << endl;
-  // boost::timer::cpu_timer t;
-
-
   // tac.push(1, "hello");
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
-  pool.populatePool(2000, 10);
-  // // cout << pool.calTime(pool.gens.at(0)) << endl;
-  // // cout << "Fitness: " << pool.getBest().fitness << endl;
-  // // for(const auto i : pool.gens){
-  // //   cout << i.fitness << endl;
-  // // }
-  pool.update(100000);
-  // // imwrite("res/it_" + std::to_string(), *pool.getBest().map);
-  // imshow("Res: ", map);
-  // imshow("Self: ", map2);
-  // moveWindow("Self: ", 100, 0);
-  // imshow("Filling: ", map3);
-  // waitKey(0);
-
-  // opti_ga::Timer tt;
-  // tt.t_start("Beginnig");
-  // tt.t_start("inside");
-  // tt.t_start("inside2");
-  // cout << "test" << endl;
-  // tt.t_end();
-  // tt.t_end();
-  // tt.t_end();
-
-  // tt.printTiming();
-
-  // Optimization stage 1:
-  // TODO: Waypoint generation
-  // TODO: Geometric rotation and transformation on map
-
-  // First assumption to ease the constraints is to get the robot a round shape
+  pool.populatePool(50, 10);
+  cout << pool.gens.size() << endl;
+  pool.crossover();
+  cout << pool.gens.size() << endl;
 
 
-
-
-  // printf("Hello Rob: %d\n", rob.hello());
   return 0;
 }

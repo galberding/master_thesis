@@ -116,6 +116,15 @@ void opti_ga::markPath(struct genome &gen)
 }
 
 
+bool opti_ga::eventOccurred(double probability){
+  std::default_random_engine generator;
+  std::uniform_real_distribution<double> distribution(0.0,1.0);
+  cout << distribution(generator)<< endl;
+  cout << distribution(generator)<< endl;
+  return probability >= distribution(generator);
+
+}
+
 
 
 // Methods:
@@ -212,48 +221,31 @@ void opti_ga::GenPool::crossover()
 {
   // get best two individuals
   // Assume that gens are already sorted according to their finess
-  vector<Point> parent1 = gens[0].waypoints;
-  vector<Point> parent2 = gens[1].waypoints;
+  auto order = (gens[0].waypoints.size() > gens[1].waypoints.size()) ? 1 : 0;
+  vector<Point> parent1 = gens[0 + order].waypoints;
+  vector<Point> parent2 = gens[1 - order].waypoints;
 
 
-  int start_node1 = std::experimental::randint(1, (int) parent1.size() - 12);
-  int end_node1 = start_node1 + 10;
+  int sliceNode = std::experimental::randint(1, (int) parent1.size() - 1);
+  vector<Point> child1(parent1.begin(), parent1.begin()+sliceNode), child2(parent2.begin(), parent2.begin()+sliceNode);
 
-  // check if lenght is valid
-  if(!((start_node1 < (parent2.size()-1))
-       && (end_node1 < (parent2.size() -1)))){
-    // cout << "--------------------Cancle!" << endl;
-    return;
+  // child1.resize(parent2.size());
+  // child2.resize(parent1.size());
+  child1.insert(child1.begin() + sliceNode, parent2.begin()+sliceNode, parent2.end());
+  child2.insert(child2.begin() + sliceNode, parent1.begin()+sliceNode, parent1.end());
+
+
+  addGen(child1);
+  addGen(child2);
+}
+
+void opti_ga::GenPool::addGen(vector<Point> waypoints) {
+  if(unusedMaps.size() > 0){
+    // We can recycle an old map
+  } else {
+    genome gen(make_shared<Mat>(Mat(height, width, CV_8U, Scalar(0))), waypoints);
+    gens.push_back(gen);
   }
-
-  // int start_node2 = std::experimental::randint(1, (int) parent2.size() - 1);
-  // int end_node2 = std::experimental::randint(start_node2, (int) parent2.size() - 1);
-
-  // cout << parent1.size() << " " << start_node1 << " " << end_node1 << endl;
-
-
-  // cout << "Parent1 before" << endl;
-  // printWaypoints(parent1);
-  // cout << "--------------------" << endl;
-  auto slice1 = sliceErase(parent1, start_node1, end_node1 );
-  auto slice2 = sliceErase(parent2, start_node1, end_node1 );
-  // auto slice2 = sliceErase(parent2, (int) parent2.size()/2, parent2.size());
-  // cout << "Parent1" << endl;
-  // printWaypoints(parent1);
-  // cout << "--------------------" << endl;
-  // cout << "Slice2" << endl;
-  // printWaypoints(slice2);
-
-
-  joinSlices(parent1, slice2);
-  joinSlices(parent2, slice1);
-  // cout << "--------------------" << endl;
-  // cout << "Combined" << endl;
-  // printWaypoints(parent1);
-
-  gens[gens.size()-2].waypoints.assign(parent1.begin(), parent1.end());
-  gens[gens.size()-1].waypoints.assign(parent2.begin(), parent2.end());
-
 }
 
 void opti_ga::GenPool::conditionalPointShift(Point &p, int magnitude){
@@ -371,7 +363,7 @@ float opti_ga::GenPool::update(int iterations){
 
 
 
-    if(i % 1 == 0){
+    if(i % 1000 == 0){
       cout << "Round: " << i << endl;
       // opti_ga::markPath(gens.at(0));
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);

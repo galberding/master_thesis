@@ -20,9 +20,14 @@ namespace opti_ga {
   class Timer;
   struct genome
   {
+    genome(){};
+    genome(shared_ptr<cv::Mat> map, vector<Point> waypoints)
+      :map(map),
+       waypoints(waypoints){};
+
     shared_ptr<cv::Mat> map;
     vector<Point> waypoints;
-    float fitness = 0;
+    double fitness = 0;
   };
 
 
@@ -44,6 +49,7 @@ namespace opti_ga {
   bool compareFitness(const struct genome &genA, const struct genome &genB);
   void markOcc( Mat &img, Point &start, Point &end, int size, int val);
   void markPath(genome &gen);
+  bool eventOccurred(double probability);
   // --------------------------------------------------
 
 #define QCM_TO_QM 10000
@@ -118,6 +124,7 @@ namespace opti_ga {
 
     // private:
     vector<genome> gens;
+    vector<shared_ptr<cv::Mat>> unusedMaps;
     const int width;
     const int height;
     const Point start;
@@ -127,9 +134,10 @@ namespace opti_ga {
     const int robot_size;
     const float robot_speed;
     boost::timer::cpu_timer timer;
-    double fitnessWeight = 0.5;
+    double fitnessWeight = 0.4;
 
     void crossover();
+    void addGen(vector<Point> waypoints);
     void mutation();
     // TODO: proper selection method
     void selection();
