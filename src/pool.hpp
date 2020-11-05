@@ -11,6 +11,7 @@
 #include <stack>
 #include <thread>
 #include <future>
+#include <exception>
 
 using namespace cv;
 using namespace std;
@@ -49,7 +50,7 @@ namespace opti_ga {
   bool compareFitness(const struct genome &genA, const struct genome &genB);
   void markOcc( Mat &img, Point &start, Point &end, int size, int val);
   void markPath(genome &gen);
-  bool eventOccurred(double probability);
+
   // --------------------------------------------------
 
 #define QCM_TO_QM 10000
@@ -110,7 +111,7 @@ namespace opti_ga {
     // perform selection
 
   public:
-    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 4) {
+    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 4), distribution(0.0, 1.0), randgen(-shift_mag, shift_mag){
 
 
       estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
@@ -124,6 +125,7 @@ namespace opti_ga {
 
     // private:
     vector<genome> gens;
+    vector<genome> matingPool;
     vector<shared_ptr<cv::Mat>> unusedMaps;
     const int width;
     const int height;
@@ -135,12 +137,15 @@ namespace opti_ga {
     const float robot_speed;
     boost::timer::cpu_timer timer;
     double fitnessWeight = 0.4;
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution, randgen;
 
-    void crossover();
-    void addGen(vector<Point> waypoints);
+    void crossover(genome &gen1, genome &gen2);
+    void addGen(vector<Point> &waypoints);
     void mutation();
     // TODO: proper selection method
     void selection();
+    void updateFitness();
     double calFittness(struct genome &gen);
     double calOcc(struct genome &gen);
     double calTime(struct genome &gen, int speed = 3);
@@ -149,6 +154,8 @@ namespace opti_ga {
     void randomInsert(struct genome &gen);
     void randomRemove(struct genome &gen);
     void randomSwitch(struct genome &gen);
+    genome roulettWheelSelection();
+    bool eventOccurred(double probability);
 
   };
 

@@ -42,9 +42,14 @@ int main(int argc, char *argv[])
   // tac.push(1, "hello");
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
   pool.populatePool(50, 10);
-  cout << pool.gens.size() << endl;
-  pool.crossover();
-  cout << pool.gens.size() << endl;
+  // cout << pool.gens.size() << endl;
+  // // pool.crossover();
+  // cout << pool.gens.size() << endl;
+  pool.update(10);
+  // vector<Point> pp = {Point(1,2), Point(3,4), Point(3,3)};
+  // cout << pp.size() << "\n";
+  // pp.erase(pp.begin()+1);
+  // cout << pp.size() << "\n";
 
 
   return 0;
