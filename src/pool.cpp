@@ -192,11 +192,15 @@ void opti_ga::GenPool::crossover(genome &gen1, genome &gen2)
 {
   // get best two individuals
   // Assume that gens are already sorted according to their finess
-  auto order = (gen1.waypoints.size() > gen2.waypoints.size()) ? 1 : 0;
-  vector<Point> parent1 = gens[0 + order].waypoints;
-  vector<Point> parent2 = gens[1 - order].waypoints;
+
+  // auto order = (gen1.waypoints.size() > gen2.waypoints.size()) ? 1 : 0;
+
+  vector<Point> parent1(gen1.waypoints.size() > gen2.waypoints.size() ? gen2.waypoints : gen1.waypoints);
+  vector<Point> parent2(gen1.waypoints.size() > gen2.waypoints.size() ?  gen1.waypoints : gen2.waypoints);
 
 
+  // cout << "First parent points: " << gen1.waypoints[0] << gen2.waypoints[0] << endl;
+  // cout << "First parent points: " << parent1[0] << parent2[0] << endl;
   int sliceNode = std::experimental::randint(1, (int) parent1.size() - 1);
   vector<Point> child1(parent1.begin(), parent1.begin()+sliceNode), child2(parent2.begin(), parent2.begin()+sliceNode);
 
@@ -276,22 +280,31 @@ void opti_ga::GenPool::randomSwitch(struct genome &gen){
   gen.waypoints[node2] = tmp;
 }
 
+void printGen(genome gen){
+  for(auto w:gen.waypoints){
+    cout << w << " | ";
+  }
+  cout << endl;
+  std::cout << "Fitness " << gen.fitness << "\n";
+
+}
+
 void opti_ga::GenPool::mutation(){
   for(int i=1; i<gens.size();i++){
 
     // if (eventOccurred(0.1))
     //   randomInsert(gens[i]);
 
-    // if (eventOccurred(0.1))
-    //   randomInsert(gens[i]);
+    if (eventOccurred(0.1))
+      randomInsert(gens[i]);
 
-    // if(eventOccurred(0.1) && gens[i].waypoints.size() > 10)
-    // 	randomRemove(gens[i]);
+    if(eventOccurred(0.1) && gens[i].waypoints.size() > 10)
+	randomRemove(gens[i]);
 
-    // if(eventOccurred(0.1))
-    //   randomSwitch(gens[i]);
+    if(eventOccurred(0.1))
+      randomSwitch(gens[i]);
 
-    if (eventOccurred(1.0)) {
+    if (eventOccurred(0.1)) {
       int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
       conditionalPointShift(gens[i].waypoints.at(node), shift_mag);
     }
@@ -302,27 +315,47 @@ void opti_ga::GenPool::mutation(){
 void opti_ga::GenPool::selection(){
 
 
-  for(auto i=0; i<5; i++){
-    std::cout << "gens: " <<gens.size() << "\n";
-    std::cout << "mating: " << matingPool.size() << "\n";
+  genome best = gens.at(0);
+
+  for(auto i=0; i<offspringCount; i++){
+    // std::cout << "gens: " <<gens.size() << "\n";
+    // std::cout << "mating: " << matingPool.size() << "\n";
     matingPool.push_back(roulettWheelSelection());
-    std::cout << "gens: " <<gens.size() << "\n";
+    // std::cout << "gens: " <<gens.size() << "\n";
   }
 
+
+  // throw 32;
   // clear the GenPool
   gens.clear();
+  gens.push_back(best);
+  // std::cout << "Size after clea: " << gens.size() << "\n";
 
 
   // build the new population
-  for(auto j=0; j<matingPool.size(); j++){
+  // std::cout << "Mating Pool" << "\n";
+
+  // for(auto gen : matingPool){
+  //   printGen(gen);
+  // }
+  // throw 32;
+
+  for(auto j=0; j<matingPool.size()-1; j++){
     auto par = matingPool.at(j);
-    std::cout << par.fitness << "\n";
+    // std::cout << par.fitness << "\n";
 
     // matingPool.pop_back();
-    for(auto k=j+1; k<matingPool.size(); k++){
+    for(auto k=j+1; k<matingPool.size()-1; k++){
+      // std::cout << "Before crossover"  << "\n";
+      // cout << pool_to_string();
       crossover(par, matingPool.at(k));
+      // cout << pool_to_string();
+      // std::cout << "After crossover"  << "\n";
+      // throw 43;
     }
   }
+  matingPool.clear();
+
 }
 
 /*
@@ -340,8 +373,9 @@ genome opti_ga::GenPool::roulettWheelSelection(){
   }
 
   double rand = distribution(generator);
+  // cout << "Wheel: " << rand << endl;
   double offset = 0.0;
-  auto gen = gens.at(0);
+  genome gen;
   for(int i=0; i < gens.size(); i++){
     offset += gens.at(i).fitness / totalFitness;
     // std::cout << "Fitness: " << gens.at(i).fitness << "\n";
@@ -353,14 +387,25 @@ genome opti_ga::GenPool::roulettWheelSelection(){
     // std::cout << "random val: " << rand << "\n";
 
     if(rand < offset){
-      std::cout << "Gen found!!" << "\n";
+      // std::cout << "Gen found!!" << "\n";
+      // std::cout << "Size before erase: " << gens.size() << "\n";
 
-      auto gen = gens.at(i);
+
+      gen = gens.at(i);
       gens.erase(gens.begin() + i);
+      // std::cout << "Selected Gen: " << "\n";
+      // for(auto w : gen.waypoints){
+      // 	cout << w << " | ";
+      // }
+      // cout << endl;
+      // cout<< gen.fitness << endl;
+
+      // std::cout << "Size after erase: " << gens.size() << "\n";
       break;
       // return gen;
     }
   }
+  // throw 32;
   return gen;
 }
 
@@ -368,50 +413,56 @@ genome opti_ga::GenPool::roulettWheelSelection(){
 void opti_ga::GenPool::updateFitness(){
 
 
-  // std::future<double> t_pool[gens.size()];
+  std::future<double> t_pool[gens.size()];
   // cout << "Population size: " << gens.size() << endl;
 
-  // for (int i=0; i<gens.size(); ++i) {
-  //   t_pool[i] = std::async([this, i]{return calFittness(gens.at(i));});
-  // }
-
-
-  // for (int i=0; i<gens.size(); ++i) {
-  //   gens.at(i).fitness = t_pool[i].get();
-  // }
+  for (int i=0; i<gens.size(); ++i) {
+    t_pool[i] = std::async([this, i]{return calFittness(gens.at(i));});
+  }
 
 
   for (int i=0; i<gens.size(); ++i) {
-    gens.at(i).fitness = calFittness(gens.at(i));
+    gens.at(i).fitness = t_pool[i].get();
   }
+
+
+  // for (int i=0; i<gens.size(); ++i) {
+  //   gens.at(i).fitness = calFittness(gens.at(i));
+  // }
   // printFitness(gens);
-  // sort(gens.begin(), gens.end(), compareFitness);
+  sort(gens.begin(), gens.end(), compareFitness);
    // printFitness(gens);
 }
 
 
 
 float opti_ga::GenPool::update(int iterations){
+  cout << "start:" << endl;
+  // cout << pool_to_string();
+  updateFitness();
   for (int i = 0; i <= iterations; ++i) {
     // cout << "Crossover" << endl;
     // auto start = timer.start();
-    t_start("updateFitness");
-    std::cout << "Fitness" << "\n";
 
-    updateFitness();
-    t_end();
     t_start("Selection");
-    std::cout << "Selection" << "\n";
+    // std::cout << "Selection" << "\n";
     selection();
     t_end();
     // std::cout << "Fitness" << "\n";
-    cout << "Mutation" << endl;
+    // cout << "Mutation" << endl;
+    // cout << this->pool_to_string();
+    // throw 42;
     t_start("Mutation");
     mutation();
     t_end();
+    t_start("updateFitness");
+    // std::cout << "Fitness" << "\n";
 
+    updateFitness();
+    // cout << pool_to_string();
+    t_end();
 
-    if(i % 1000 == 0){
+    if(i % 10 == 0){
       cout << "Round: " << i << endl;
       // opti_ga::markPath(gens.at(0));
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
@@ -419,7 +470,7 @@ float opti_ga::GenPool::update(int iterations){
       // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
       printFitness(gens, true);
-      printTiming();
+      // printTiming();
     }
 
 

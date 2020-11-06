@@ -30,6 +30,7 @@ int main(int argc, char *argv[])
   const Point stop(height, 50);
   const int rob_size = 10;
   const float rob_speed = 10;
+  int offspringCount = 20;
   uint8_t im[height][width] =  { 0 };
   uint8_t im2[height][width] =  { 0 };
   uint8_t im3[height][width] =  { 0 };
@@ -40,16 +41,17 @@ int main(int argc, char *argv[])
   vector<Point> waypoints = opti_ga::genWaypoints(width, height, start, 10);
 
   // tac.push(1, "hello");
-  opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed);
-  pool.populatePool(50, 10);
+  opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed, offspringCount);
+  pool.populatePool(1000, 100);
   // cout << pool.gens.size() << endl;
   // // pool.crossover();
   // cout << pool.gens.size() << endl;
-  pool.update(10);
+  pool.update(5000);
   // vector<Point> pp = {Point(1,2), Point(3,4), Point(3,3)};
   // cout << pp.size() << "\n";
   // pp.erase(pp.begin()+1);
   // cout << pp.size() << "\n";
+  // cout << pool.pool_to_string();
 
 
   return 0;
