@@ -13,7 +13,6 @@ Point opti_ga::randomPointShift(Point p, int magnitude){
   p2.x +=  shift_x;
   p2.y +=  shift_y;
   return p2;
-
 }
 
 
@@ -230,7 +229,6 @@ void opti_ga::GenPool::conditionalPointShift(Point &p, int magnitude){
     int shift_x = randgen(generator);
     int shift_y = randgen(generator);
     // std::cout << "shift x: " << shift_x << "shift_y" << shift_y  << "\n";
-
     // std::cout << p << "\n";
 
     if(timeout > 100){
@@ -315,7 +313,7 @@ void opti_ga::GenPool::mutation(){
 void opti_ga::GenPool::selection(){
 
 
-  genome best = gens.at(0);
+  vector<genome> best(gens.begin(), gens.begin() + offspringCount);
 
   for(auto i=0; i<offspringCount; i++){
     // std::cout << "gens: " <<gens.size() << "\n";
@@ -328,7 +326,7 @@ void opti_ga::GenPool::selection(){
   // throw 32;
   // clear the GenPool
   gens.clear();
-  gens.push_back(best);
+  gens.insert(gens.begin(), best.begin(), best.end());
   // std::cout << "Size after clea: " << gens.size() << "\n";
 
 

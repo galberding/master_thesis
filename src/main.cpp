@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   const Point stop(height, 50);
   const int rob_size = 10;
   const float rob_speed = 10;
-  int offspringCount = 20;
+  int offspringCount = 100;
   uint8_t im[height][width] =  { 0 };
   uint8_t im2[height][width] =  { 0 };
   uint8_t im3[height][width] =  { 0 };
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
   // tac.push(1, "hello");
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed, offspringCount);
-  pool.populatePool(1000, 100);
+  pool.populatePool(10000, 100);
   // cout << pool.gens.size() << endl;
   // // pool.crossover();
   // cout << pool.gens.size() << endl;
