@@ -95,6 +95,16 @@ bool opti_ga::GenPool::eventOccurred(double probability){
   return probability >= distribution(generator);
 }
 
+void printGen(genome gen){
+  for(auto w:gen.waypoints){
+    cout << w << " | ";
+  }
+  cout << endl;
+  std::cout << "Fitness " << gen.fitness << "\n";
+
+}
+
+
 
 
 // Methods:
@@ -163,22 +173,63 @@ double opti_ga::GenPool::calOcc(struct genome &gen)
 double opti_ga::GenPool::calTime(struct genome &gen, int speed)
 {
 
-  float dist = 0;
-  auto iter = gen.waypoints.begin();
-  Point current = *iter;
-  iter++;
+  double dist = 0;
+  double rotPanelty = 0;
+  Point prev = gen.waypoints.at(0);
+  Point current = gen.waypoints.at(1);
+  auto iter = gen.waypoints.begin() + 2;
+
+  // iter++;
   do{
     // MyLine(map, current, *iter);
     // Sum up all distances the roboter needs to travel
-    dist += cv::norm(current - *iter);
+    Point A(current - prev);
+    Point B(*iter - current);
+
+    double normA = norm(A);
+    double normB = norm(B);
+
+    double denum = normA * normB;
+    if (denum != 0){
+      double innerProd = A.dot(B)/denum;
+      // cout << "Check " << (trunc(innerProd) == -1.0) << endl;
+      if(trunc(innerProd) == -1.0){
+	// cout << "Going back" << endl;
+	rotPanelty += 180;
+      }
+      else if (trunc(innerProd) == 1.0){
+	// cout << "Going straight" << endl;
+      }
+      else {
+	rotPanelty += acos(innerProd)*(180/M_PI);
+      }
+      // printGen(gen);
+      if(isnan(rotPanelty)){
+
+	cout << "Rot " << rotPanelty << endl;
+	cout << "Inner Product: " << innerProd << endl;
+	cout << "A: " << A << " B: " << B  << " prev "<< prev << "Current" << current  << "next" << *iter << endl;
+	// cout << "Rot: " << rotPanelty << endl;
+	cout << __LINE__ << endl;
+	throw_line("Rot Panelty is NaN.");
+        // throw std::runtime_error(to_string(__FILE__)+ ":" + to_string( __LINE__));
+      }
+     }
+    // Calculate angle between A and B and add it to the rotation
+
+    // cout << "Panelty: " <<  rotPanelty << endl;
+    dist += normB;
+    prev = current;
     current = *iter;
     // cout << current << endl;
     iter++;
   } while(iter != gen.waypoints.end());
 
-  return dist/ (robot_speed / 3.6);
+
+  return dist+ rotPanelty/ (robot_speed / 3.6);
 
 }
+
 
 
 struct genome opti_ga::GenPool::getBest(){
@@ -197,6 +248,9 @@ void opti_ga::GenPool::crossover(genome &gen1, genome &gen2)
   vector<Point> parent1(gen1.waypoints.size() > gen2.waypoints.size() ? gen2.waypoints : gen1.waypoints);
   vector<Point> parent2(gen1.waypoints.size() > gen2.waypoints.size() ?  gen1.waypoints : gen2.waypoints);
 
+  // std::cout << "Size p1:" << parent1.size() << " Parent2: " << parent2.size() << "\n";
+  // std::cout << "Size p1:" << gen1.waypoints.size() << " Parent2: " << gen2.waypoints.size() << "\n";
+
 
   // cout << "First parent points: " << gen1.waypoints[0] << gen2.waypoints[0] << endl;
   // cout << "First parent points: " << parent1[0] << parent2[0] << endl;
@@ -211,6 +265,7 @@ void opti_ga::GenPool::crossover(genome &gen1, genome &gen2)
 
   addGen(child1);
   addGen(child2);
+
 }
 
 void opti_ga::GenPool::addGen(vector<Point> &waypoints) {
@@ -278,14 +333,6 @@ void opti_ga::GenPool::randomSwitch(struct genome &gen){
   gen.waypoints[node2] = tmp;
 }
 
-void printGen(genome gen){
-  for(auto w:gen.waypoints){
-    cout << w << " | ";
-  }
-  cout << endl;
-  std::cout << "Fitness " << gen.fitness << "\n";
-
-}
 
 void opti_ga::GenPool::mutation(){
   for(int i=1; i<gens.size();i++){
@@ -293,16 +340,16 @@ void opti_ga::GenPool::mutation(){
     // if (eventOccurred(0.1))
     //   randomInsert(gens[i]);
 
-    if (eventOccurred(0.1))
+    if (eventOccurred(0.4))
       randomInsert(gens[i]);
 
-    if(eventOccurred(0.1) && gens[i].waypoints.size() > 10)
+    if(eventOccurred(0.4) && gens[i].waypoints.size() > 10)
 	randomRemove(gens[i]);
 
-    if(eventOccurred(0.1))
+    if(eventOccurred(0.6))
       randomSwitch(gens[i]);
 
-    if (eventOccurred(0.1)) {
+    if (eventOccurred(0.8)) {
       int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
       conditionalPointShift(gens[i].waypoints.at(node), shift_mag);
     }
@@ -325,6 +372,7 @@ void opti_ga::GenPool::selection(){
 
   // throw 32;
   // clear the GenPool
+  // cout << "Fill population with parents" << endl;
   gens.clear();
   gens.insert(gens.begin(), best.begin(), best.end());
   // std::cout << "Size after clea: " << gens.size() << "\n";
@@ -338,6 +386,7 @@ void opti_ga::GenPool::selection(){
   // }
   // throw 32;
 
+  // cout << "Fill population with children" << endl;
   for(auto j=0; j<matingPool.size()-1; j++){
     auto par = matingPool.at(j);
     // std::cout << par.fitness << "\n";
@@ -352,6 +401,9 @@ void opti_ga::GenPool::selection(){
       // throw 43;
     }
   }
+
+  // std::cout << "Clear mating pool" << "\n";
+
   matingPool.clear();
 
 }
@@ -408,6 +460,25 @@ genome opti_ga::GenPool::roulettWheelSelection(){
 }
 
 
+void fixWaypoints(genome &gen){
+
+  // auto current = gen.waypoints.begin() + 1;
+  // cout << "--" << endl;
+  for(auto i=gen.waypoints.begin(); i != gen.waypoints.end();){
+    if(*i == *(i+1)){
+      gen.waypoints.erase(i);
+      // if(i != gen.waypoints.begin()){
+      // 	i--;}
+      // cout << "Erase: " << *i << endl;
+    }else{
+      i++;
+    }
+  }
+  // std::cout << "Before: " << gen.waypoints.size() << "\n";
+
+  // gen.waypoints.erase(std::unique(gen.waypoints.begin(), gen.waypoints.end()), gen.waypoints.end());
+}
+
 void opti_ga::GenPool::updateFitness(){
 
 
@@ -415,7 +486,12 @@ void opti_ga::GenPool::updateFitness(){
   // cout << "Population size: " << gens.size() << endl;
 
   for (int i=0; i<gens.size(); ++i) {
-    t_pool[i] = std::async([this, i]{return calFittness(gens.at(i));});
+    auto gen = gens.at(i);
+    t_pool[i] = std::async([this, i]{
+      auto gen = gens.at(i);
+      fixWaypoints(gen);
+      return calFittness(gen);
+    });
   }
 
 
@@ -425,6 +501,7 @@ void opti_ga::GenPool::updateFitness(){
 
 
   // for (int i=0; i<gens.size(); ++i) {
+  //   // fixWaypoints(gens.at(i));
   //   gens.at(i).fitness = calFittness(gens.at(i));
   // }
   // printFitness(gens);
@@ -454,14 +531,16 @@ float opti_ga::GenPool::update(int iterations){
     mutation();
     t_end();
     t_start("updateFitness");
-    // std::cout << "Fitness" << "\n";
+    // std::cout << " Update Fitness" << "\n";
 
     updateFitness();
+
+    // cout << pool_to_string();
     // cout << pool_to_string();
     t_end();
 
     if(i % 10 == 0){
-      cout << "Round: " << i << endl;
+      cout << "Round: " << i << "\t";
       // opti_ga::markPath(gens.at(0));
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
       polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);

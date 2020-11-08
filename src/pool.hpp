@@ -12,9 +12,12 @@
 #include <thread>
 #include <future>
 #include <exception>
+#include <cassert>
 
 using namespace cv;
 using namespace std;
+
+#define throw_line(msg) { throw std::runtime_error(msg + string("\n") + string(__FILE__) + ":" + string(to_string(__LINE__)));}
 
 
 namespace opti_ga {
@@ -111,7 +114,7 @@ namespace opti_ga {
     // perform selection
 
   public:
-    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed, int offspringCount=15):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag((width + height) / 4), distribution(0.0, 1.0), randgen(-shift_mag, shift_mag), offspringCount(offspringCount){
+    GenPool(int width, int height, Point start, Point end, int robot_size, float robot_speed, int offspringCount=15):width(width), height(height), start(start), end(end), robot_size(robot_size), robot_speed(robot_speed), shift_mag(20), distribution(0.0, 1.0), randgen(-shift_mag, shift_mag), offspringCount(offspringCount){
 
 
       estimation = (width * height) / robot_size / QCM_TO_QM / (robot_speed / 3.6);
