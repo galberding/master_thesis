@@ -120,7 +120,7 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
     gen.waypoints = genWaypoints(width, height, start, waypoints);
     gen.waypoints.push_back(end);
 
-    gen.fitness = this->calFittness(gen);
+    // gen.fitness = this->calFittness(gen);
     this->gens.push_back(gen);
   }
   // auto tend = chrono::steady_clock::now();
@@ -165,8 +165,16 @@ double opti_ga::GenPool::calOcc(struct genome &gen)
 {
 
   *gen.map = Scalar(0);
-  polylines(*gen.map, gen.waypoints, false, 1, robot_size);
-  return ((double) cv::sum(*gen.map)[0]);
+  polylines(*gen.map, gen.waypoints, false, 255, robot_size);
+  double pix_sum = ((double) cv::sum(*gen.map)[0]) / 255;
+  // imshow("Negation", *gen.map);
+  // waitKey();
+  bitwise_not(*gen.map, *gen.map);
+  vector<vector<Point> > contours;
+  findContours(*gen.map, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+  double regionCount = contours.size();
+
+  return pix_sum / regionCount;
 }
 
 
@@ -340,10 +348,10 @@ void opti_ga::GenPool::mutation(){
     // if (eventOccurred(0.1))
     //   randomInsert(gens[i]);
 
-    if (eventOccurred(0.4))
+    if (eventOccurred(0.1))
       randomInsert(gens[i]);
 
-    if(eventOccurred(0.4) && gens[i].waypoints.size() > 10)
+    if(eventOccurred(0.1) && gens[i].waypoints.size() > 10)
 	randomRemove(gens[i]);
 
     if(eventOccurred(0.6))
@@ -542,8 +550,8 @@ float opti_ga::GenPool::update(int iterations){
     if(i % 10 == 0){
       cout << "Round: " << i << "\t";
       // opti_ga::markPath(gens.at(0));
-      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
-      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 1, 1);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 0, robot_size);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, 1);
       // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
       printFitness(gens, true);

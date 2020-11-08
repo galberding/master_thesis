@@ -28,9 +28,9 @@ int main(int argc, char *argv[])
   const uint32_t height = 500;
   const Point start(0,50);
   const Point stop(height, 50);
-  const int rob_size = 10;
+  const int rob_size = 30;
   const float rob_speed = 10;
-  int offspringCount = 50;
+  int offspringCount = 100;
   uint8_t im[height][width] =  { 0 };
   uint8_t im2[height][width] =  { 0 };
   uint8_t im3[height][width] =  { 0 };
@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
   vector<Point> waypoints = opti_ga::genWaypoints(width, height, start, 10);
 
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed, offspringCount);
-  pool.populatePool(100, 100);
+  pool.populatePool(1000, 10);
   pool.update(5000);
 
   // Point A(2,2), B(1,2);
