@@ -105,11 +105,14 @@ generate_messages(
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
+
+
 catkin_package(
  # INCLUDE_DIRS include
  # LIBRARIES pack1
  CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
  # DEPENDS system_lib
+ # DEPENDS Eigen
 )
 
 ###########
@@ -120,7 +123,8 @@ catkin_package(
 ## Your package locations should be listed before other locations
 include_directories(
 # include
-  ${catkin_INCLUDE_DIRS}
+${catkin_INCLUDE_DIRS}
+# ${Eigen_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
@@ -223,14 +227,16 @@ catkin_add_executable_with_gtest(${PROJECT_NAME}-test
   ${OPTI_ENV}
   )
 
-FIND_PACKAGE( Boost 1.58  REQUIRED COMPONENTS timer)
-include_directories( ${Boost_INCLUDE_DIR} )
-link_directories(${Boost_LIBRARY_DIR})
+# FIND_PACKAGE( Boost 1.58  REQUIRED COMPONENTS timer)
+# include_directories( ${Boost_INCLUDE_DIR} )
+# link_directories(${Boost_LIBRARY_DIR})
 
 
 find_package( OpenCV 3.3.1 REQUIRED )
-
 include_directories( ${OpenCV_INCLUDE_DIRS} )
+# find_package(catkin REQUIRED cmake_module s)
+
+# find_package(Eigen3 REQUIRED)
 # set(OpenCV_DIR "~./ros_opencv/install")
 
 
@@ -273,5 +279,5 @@ add_executable(opti
   ${OPTI_ENV}
   )
 
-target_link_libraries(opti ${catkin_LIBRARIES} Boost::timer)
+target_link_libraries(opti ${catkin_LIBRARIES})
 # target_link_libraries(opti ${catkin_LIBRARIES} ${PROJECT_NAME} ${OpenCV_LIBS} ${Boost_LIBRARIES})

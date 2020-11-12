@@ -123,11 +123,7 @@ void opti_ga::GenPool::populatePool(int size, int waypoints)
     // gen.fitness = this->calFittness(gen);
     this->gens.push_back(gen);
   }
-  // auto tend = chrono::steady_clock::now();
-  // timer.stop();
 
-  // cout << std::chrono::duration_cast<std::chrono::microseconds>(tend - tbegin).count() << " µs" << endl;
-  // cout << timer.elapsed().wall << endl;
   printFitness(gens);
 }
 
@@ -141,8 +137,12 @@ double opti_ga::GenPool::calFittness(struct genome &gen)
 
   // t_end("eval_occ");
   double time = calTime(gen); //- estimation;
-  auto robot_cov = robot_size * robot_speed/3.6;
+  auto robot_cov = robot_size * robot_speed;
   auto optimal_time = occ/robot_cov;
+
+  if(time < optimal_time)
+    // cout << "Time: " <<  time << endl;
+    throw_line("Time limit failed! Time: " + to_string(time) + " optimal time: " + to_string(optimal_time));
 
   double time_err = optimal_time / time;
 
@@ -169,12 +169,17 @@ double opti_ga::GenPool::calOcc(struct genome &gen)
   double pix_sum = ((double) cv::sum(*gen.map)[0]) / 255;
   // imshow("Negation", *gen.map);
   // waitKey();
-  bitwise_not(*gen.map, *gen.map);
-  vector<vector<Point> > contours;
-  findContours(*gen.map, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
-  double regionCount = contours.size();
+  // bitwise_not(*gen.map, *gen.map);
+  // vector<vector<Point> > contours;
+  // findContours(*gen.map, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+  // double regionCount = contours.size();
 
-  return pix_sum / regionCount;
+  return pix_sum;
+}
+
+
+int opti_ga::GenPool::detUncoverdRegions(Mat &map){
+
 }
 
 
@@ -234,7 +239,7 @@ double opti_ga::GenPool::calTime(struct genome &gen, int speed)
   } while(iter != gen.waypoints.end());
 
 
-  return dist+ rotPanelty/ (robot_speed / 3.6);
+  return (dist + rotPanelty)/ (robot_speed / 3.6);
 
 }
 
@@ -248,20 +253,10 @@ struct genome opti_ga::GenPool::getBest(){
 
 void opti_ga::GenPool::crossover(genome &gen1, genome &gen2)
 {
-  // get best two individuals
-  // Assume that gens are already sorted according to their finess
-
-  // auto order = (gen1.waypoints.size() > gen2.waypoints.size()) ? 1 : 0;
 
   vector<Point> parent1(gen1.waypoints.size() > gen2.waypoints.size() ? gen2.waypoints : gen1.waypoints);
   vector<Point> parent2(gen1.waypoints.size() > gen2.waypoints.size() ?  gen1.waypoints : gen2.waypoints);
 
-  // std::cout << "Size p1:" << parent1.size() << " Parent2: " << parent2.size() << "\n";
-  // std::cout << "Size p1:" << gen1.waypoints.size() << " Parent2: " << gen2.waypoints.size() << "\n";
-
-
-  // cout << "First parent points: " << gen1.waypoints[0] << gen2.waypoints[0] << endl;
-  // cout << "First parent points: " << parent1[0] << parent2[0] << endl;
   int sliceNode = std::experimental::randint(1, (int) parent1.size() - 1);
   vector<Point> child1(parent1.begin(), parent1.begin()+sliceNode), child2(parent2.begin(), parent2.begin()+sliceNode);
 
@@ -348,18 +343,22 @@ void opti_ga::GenPool::mutation(){
     // if (eventOccurred(0.1))
     //   randomInsert(gens[i]);
 
-    if (eventOccurred(0.1))
+    if (eventOccurred(0.01))
       randomInsert(gens[i]);
 
-    if(eventOccurred(0.1) && gens[i].waypoints.size() > 10)
+    if(eventOccurred(0.01) && gens[i].waypoints.size() > 10)
 	randomRemove(gens[i]);
 
-    if(eventOccurred(0.6))
+    if(eventOccurred(0.7))
       randomSwitch(gens[i]);
 
-    if (eventOccurred(0.8)) {
-      int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
-      conditionalPointShift(gens[i].waypoints.at(node), shift_mag);
+    // TODO: for each genome
+    for (auto &node : gens[i].waypoints){
+
+      if (eventOccurred(0.45) && node != gens[i].waypoints.front() && node != gens[i].waypoints.back()) {
+	// int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
+	conditionalPointShift(node, 2);
+      }
     }
   }
 }
@@ -497,7 +496,7 @@ void opti_ga::GenPool::updateFitness(){
     auto gen = gens.at(i);
     t_pool[i] = std::async([this, i]{
       auto gen = gens.at(i);
-      fixWaypoints(gen);
+      // fixWaypoints(gen);
       return calFittness(gen);
     });
   }
@@ -511,6 +510,7 @@ void opti_ga::GenPool::updateFitness(){
   // for (int i=0; i<gens.size(); ++i) {
   //   // fixWaypoints(gens.at(i));
   //   gens.at(i).fitness = calFittness(gens.at(i));
+
   // }
   // printFitness(gens);
   sort(gens.begin(), gens.end(), compareFitness);
@@ -550,15 +550,13 @@ float opti_ga::GenPool::update(int iterations){
     if(i % 10 == 0){
       cout << "Round: " << i << "\t";
       // opti_ga::markPath(gens.at(0));
-      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 0, robot_size);
-      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, 1);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 255, robot_size);
+      polylines(*gens.at(0).map, gens.at(0).waypoints, false, 0, 1);
       // cv::putText(*gens.at(0).map,"it=" + std::to_string(i) + "Nodes="+std::to_string(gens.at(0).waypoints.size()), Point(10,900), CV_FONT_HERSHEY_SIMPLEX, 1, 255);
       cv::imwrite("res/it_" + std::to_string(i) + "WP_" + to_string(gens.at(0).waypoints.size()) + ".jpg", *gens.at(0).map);
       printFitness(gens, true);
       // printTiming();
     }
-
-
   }
 
   printTiming();

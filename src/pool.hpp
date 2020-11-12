@@ -53,13 +53,14 @@ namespace opti_ga {
   bool compareFitness(const struct genome &genA, const struct genome &genB);
   void markOcc( Mat &img, Point &start, Point &end, int size, int val);
   void markPath(genome &gen);
+  void makeTest();
 
   // --------------------------------------------------
 
 #define QCM_TO_QM 10000
 
 
-    class Timer{
+  class Timer{
     // chrono::steady_clock::time_point t_begin;
   public:
       std::unordered_map<string, int> summary;
@@ -126,6 +127,7 @@ namespace opti_ga {
     // Returns currently best fitness
     float update(int iterations = 100);
 
+
     // private:
     vector<genome> gens;
     vector<genome> matingPool;
@@ -139,7 +141,7 @@ namespace opti_ga {
     int offspringCount;
     const int robot_size;
     const float robot_speed;
-    boost::timer::cpu_timer timer;
+    // boost::timer::cpu_timer timer;
     double fitnessWeight = 0.5;
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution, randgen;
@@ -153,6 +155,7 @@ namespace opti_ga {
     double calFittness(struct genome &gen);
     double calOcc(struct genome &gen);
     double calTime(struct genome &gen, int speed = 3);
+    int detUncoverdRegions(Mat &map);
     struct genome getBest();
     void conditionalPointShift(Point &p, int magnitude = 30);
     void randomInsert(struct genome &gen);
