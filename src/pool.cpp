@@ -238,8 +238,8 @@ double opti_ga::GenPool::calTime(struct genome &gen, int speed)
     iter++;
   } while(iter != gen.waypoints.end());
 
-
-  return (dist + rotPanelty)/ (robot_speed / 3.6);
+  // cout << "Panelty: " <<  rotPanelty << endl;
+  return (dist )/ (robot_speed / 3.6) + rotPanelty;
 
 }
 
@@ -338,10 +338,7 @@ void opti_ga::GenPool::randomSwitch(struct genome &gen){
 
 
 void opti_ga::GenPool::mutation(){
-  for(int i=1; i<gens.size();i++){
-
-    // if (eventOccurred(0.1))
-    //   randomInsert(gens[i]);
+  for(int i=0; i<gens.size();i++){
 
     if (eventOccurred(0.01))
       randomInsert(gens[i]);
@@ -349,7 +346,7 @@ void opti_ga::GenPool::mutation(){
     if(eventOccurred(0.01) && gens[i].waypoints.size() > 10)
 	randomRemove(gens[i]);
 
-    if(eventOccurred(0.7))
+    if(eventOccurred(0.5))
       randomSwitch(gens[i]);
 
     // TODO: for each genome
@@ -357,7 +354,7 @@ void opti_ga::GenPool::mutation(){
 
       if (eventOccurred(0.45) && node != gens[i].waypoints.front() && node != gens[i].waypoints.back()) {
 	// int node = std::experimental::randint(1, (int) gens[i].waypoints.size()-2);
-	conditionalPointShift(node, 2);
+	conditionalPointShift(node, 20);
       }
     }
   }
@@ -367,7 +364,7 @@ void opti_ga::GenPool::mutation(){
 void opti_ga::GenPool::selection(){
 
 
-  vector<genome> best(gens.begin(), gens.begin() + offspringCount);
+  vector<genome> best(gens.begin(), gens.begin() + offspringCount*2);
 
   for(auto i=0; i<offspringCount; i++){
     // std::cout << "gens: " <<gens.size() << "\n";

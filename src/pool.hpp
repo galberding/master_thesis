@@ -142,7 +142,7 @@ namespace opti_ga {
     const int robot_size;
     const float robot_speed;
     // boost::timer::cpu_timer timer;
-    double fitnessWeight = 0.5;
+    double fitnessWeight = 0.6;
     std::default_random_engine generator;
     std::uniform_real_distribution<double> distribution, randgen;
 

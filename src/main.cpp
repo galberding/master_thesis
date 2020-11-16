@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
   const Point stop(height, 50);
   const int rob_size = 30;
   const float rob_speed = 10;
-  int offspringCount = 50;
+  int offspringCount = 25;
   uint8_t im[height][width] =  { 0 };
   uint8_t im2[height][width] =  { 0 };
   uint8_t im3[height][width] =  { 0 };
