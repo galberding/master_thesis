@@ -12,12 +12,12 @@
 #include <thread>
 #include <future>
 #include <exception>
-#include <cassert>
 
 using namespace cv;
 using namespace std;
 
-#define throw_line(msg) { throw std::runtime_error(msg + string("\n") + string(__FILE__) + ":" + string(to_string(__LINE__)));}
+// #define throw_line(msg)  throw std::runtime_error(msg  + string(__FILE__) + ":" + string(to_string(__LINE__)))
+
 
 
 namespace opti_ga {
@@ -34,6 +34,9 @@ namespace opti_ga {
     double fitness = 0;
   };
 
+  // void throw_line(string msg){
+  //   throw std::runtime_error(msg  + string(__FILE__) + ":" + string(to_string(__LINE__)));
+  // }
 
   //Helper functions:
   //--------------------------------------------------

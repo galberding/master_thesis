@@ -4,6 +4,8 @@
 #include <vector>
 #include <memory>
 
+#define __DEBUGGING__ true
+
 
 namespace tools {
   using namespace std;
@@ -27,10 +29,16 @@ namespace tools {
     #define __DEBUGING__ true
     #endif
 
-    void printFitness(vector<genome> &gens, bool first=false);
+
     void printWaypoints(vector<cv::Point>& waypoints);
   }
   namespace path {
+    enum class Path_action {
+      Straight = 0,
+      CStraight = 1,
+      Rotate = 2,
+      Curve = 3,
+      CCurve = 4};
 
   }
   namespace rand_events {

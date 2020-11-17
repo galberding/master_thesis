@@ -13,10 +13,15 @@
 // #include <boost/timer/timer.hpp>
 #include <cmath>
 #include <stack>
+#include <ros/ros.h>
+#include <grid_map_core/grid_map_core.hpp>
+// #include <grid_map/grid_map.hpp>
 
 using namespace std;
 
 using namespace cv;
+using namespace grid_map;
+
 
 int main(int argc, char *argv[])
 {
@@ -42,7 +47,11 @@ int main(int argc, char *argv[])
 
   opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed, offspringCount);
   pool.populatePool(1000, 5);
-  pool.update(10000);
+  // pool.update(10000);
+  grid_map::GridMap gmap({"color"});
+  gmap.setFrameId("map");
+  gmap.setGeometry(Length(10,10), 0.5);
+  cout << gmap.getLength().x() << endl;
 
   // Point A(2,2), B(1,2);
 

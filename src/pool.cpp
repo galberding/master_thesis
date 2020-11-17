@@ -141,8 +141,9 @@ double opti_ga::GenPool::calFittness(struct genome &gen)
   auto optimal_time = occ/robot_cov;
 
   if(time < optimal_time)
+    throw __LINE__;
     // cout << "Time: " <<  time << endl;
-    throw_line("Time limit failed! Time: " + to_string(time) + " optimal time: " + to_string(optimal_time));
+    // throw_line("Time limit failed! Time: " + to_string(time) + " optimal time: " + to_string(optimal_time));
 
   double time_err = optimal_time / time;
 
@@ -224,8 +225,9 @@ double opti_ga::GenPool::calTime(struct genome &gen, int speed)
 	cout << "A: " << A << " B: " << B  << " prev "<< prev << "Current" << current  << "next" << *iter << endl;
 	// cout << "Rot: " << rotPanelty << endl;
 	cout << __LINE__ << endl;
-	throw_line("Rot Panelty is NaN.");
-        // throw std::runtime_error(to_string(__FILE__)+ ":" + to_string( __LINE__));
+	// throw_line("Rot Panelty is NaN.");
+	throw __LINE__;
+	// throw std::runtime_error(to_string(__FILE__)+ ":" + to_string( __LINE__));
       }
      }
     // Calculate angle between A and B and add it to the rotation
