@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometric_shapes
+  rviz
   grid_map_core
   grid_map_ros
   grid_map_cv

@@ -15,6 +15,8 @@
 #include <stack>
 #include <ros/ros.h>
 #include <grid_map_core/grid_map_core.hpp>
+#include <grid_map_ros/GridMapRosConverter.hpp>
+#include <grid_map_cv/GridMapCvConverter.hpp>
 // #include <grid_map/grid_map.hpp>
 
 using namespace std;
@@ -53,6 +55,8 @@ int main(int argc, char *argv[])
   gmap.setGeometry(Length(10,10), 0.5);
   cout << gmap.getLength().x() << endl;
 
+  // grid_map::GridMapRosConverter::initializeFromImage(const sensor_msgs::Image &image, const double resolution, grid_map::GridMap &gridMap)
+  grid_map::GridMapCvConverter::initializeFromImage(map3, 0.01, gmap, grid_map::Position(0,0));
   // Point A(2,2), B(1,2);
 
   // cout << A.dot(B) / (norm(A)*norm(B)) << endl;
