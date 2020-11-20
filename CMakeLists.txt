@@ -16,7 +16,10 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometric_shapes
-  rviz
+  pcl_ros
+  pcl_conversions
+  geometry_msgs
+  nav_msgs
   grid_map_core
   grid_map_ros
   grid_map_cv
@@ -24,10 +27,14 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_loader
   grid_map_msgs
   grid_map_octomap
-  # grid_map_rviz_plugin
+  grid_map_rviz_plugin
   grid_map_visualization
-  geometry_msgs
-)
+  octomap_msgs
+  filters
+
+  # grid_map_rviz_plugin
+  # grid_map_visualization
+  )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -121,7 +128,29 @@ generate_messages(
 catkin_package(
  # INCLUDE_DIRS include
  # LIBRARIES pack1
- CATKIN_DEPENDS roscpp rospy std_msgs message_runtime
+ CATKIN_DEPENDS
+      roscpp
+      rospy
+      std_msgs
+      message_runtime
+      # sensor_msgs
+      message_generation
+      # pcl_ros
+      # pcl_conversions
+      # geometry_msgs
+      # nav_msgs
+      # grid_map_core
+      # grid_map_ros
+      # grid_map_cv
+      # grid_map_filters
+      # grid_map_loader
+      # grid_map_msgs
+      # grid_map_octomap
+      # grid_map_rviz_plugin
+      # grid_map_visualization
+      # cv_bridge
+      # octomap_msgs
+      # filters
  # DEPENDS system_lib
  # DEPENDS Eigen
 )
@@ -130,12 +159,17 @@ catkin_package(
 ## Build ##
 ###########
 
+find_package(Eigen3 REQUIRED)
+find_package( OpenCV 3.3.1 REQUIRED )
+
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
 # include
 ${catkin_INCLUDE_DIRS}
 ${EIGEN3_INCLUDE_DIR}
+${OpenCV_INCLUDE_DIRS}
 # ${Eigen_INCLUDE_DIRS}
 )
 
@@ -151,8 +185,7 @@ set(OPTI_ENV
   src/pool.cpp
 )
 
-find_package( OpenCV 3.3.1 REQUIRED )
-include_directories( ${OpenCV_INCLUDE_DIRS} )
+# include_directories(  )
 
 
 add_executable(opti
