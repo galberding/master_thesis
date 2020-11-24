@@ -1,4 +1,5 @@
 #include "environment/robot.hpp"
+#include "tools/path_tools.h"
 #include <cstdio>
 #include <opencv2/opencv.hpp>
 #include <experimental/random>
@@ -66,38 +67,41 @@ int main(int argc, char *argv[])
   // opti_ga::GenPool pool(width, height, start, stop, rob_size, rob_speed, offspringCount);
   // pool.populatePool(1000, 5);
   // pool.update(10000);
-  grid_map::GridMap gmap;
-  gmap.setFrameId("map");
-  gmap.setGeometry(Length(width,height), 1);
-  cout << gmap.getSize()(0) << endl;
+  // grid_map::GridMap gmap;
+  // gmap.setFrameId("map");
+  // gmap.setGeometry(Length(width,height), 1);
+  // cout << gmap.getSize()(0) << endl;
 
-  // grid_map::GridMapRosConverter::initializeFromImage(const sensor_msgs::Image &image, const double resolution, grid_map::GridMap &gridMap)
-  // cout << "Img to map: " << grid_map::GridMapCvConverter::initializeFromImage(map3, 0.01, gmap, grid_map::Position(0,0)) << endl;
-  cout << "Img to map: " <<  GridMapCvConverter::addLayerFromImage<unsigned short, 1>(map3, "path", gmap) << endl;
+  // // grid_map::GridMapRosConverter::initializeFromImage(const sensor_msgs::Image &image, const double resolution, grid_map::GridMap &gridMap)
+  // // cout << "Img to map: " << grid_map::GridMapCvConverter::initializeFromImage(map3, 0.01, gmap, grid_map::Position(0,0)) << endl;
+  // cout << "Img to map: " <<  GridMapCvConverter::addLayerFromImage<unsigned short, 1>(map3, "path", gmap) << endl;
 
 
-  grid_map::Index idx_start(18, 2);
-  grid_map::Index idx_end(2, 13);
-  for(grid_map::LineIterator it(gmap,idx_start, idx_end); !it.isPastEnd(); ++it){
-    cout << *it << endl;
-    gmap.at("path", *it) = 255;
-  }
-
-  // for(grid_map::EllipseIterator it())
-
-  // for(auto &lay : gmap.getLayers()){
-  //   cout << "Layer: " <<  lay << endl;
+  // grid_map::Index idx_start(18, 2);
+  // grid_map::Index idx_end(2, 13);
+  // for(grid_map::LineIterator it(gmap,idx_start, idx_end); !it.isPastEnd(); ++it){
+  //   cout << *it << endl;
+  //   gmap.at("path", *it) = 255;
   // }
-  cout << "Before" << "\n";
-  GridMapCvConverter::toImage<unsigned char, 1>(gmap, "path", CV_8U, 0, 255, map3);
-  cout << "After" << "\n";
+
+  // // for(grid_map::EllipseIterator it())
+
+  // // for(auto &lay : gmap.getLayers()){
+  // //   cout << "Layer: " <<  lay << endl;
+  // // }
+  // cout << "Before" << "\n";
+  // GridMapCvConverter::toImage<unsigned char, 1>(gmap, "path", CV_8U, 0, 255, map3);
+  // cout << "After" << "\n";
 
 
-  MyEllipse(map3, 0);
+  // MyEllipse(map3, 0);
 
 
-  imshow("Final Image", map3);
-  waitKey();
+  // imshow("Final Image", map3);
+  // waitKey();
+
+  cout << path::angleToDir(190) << "\n";
+
 
 
   // Point A(2,2), B(1,2);

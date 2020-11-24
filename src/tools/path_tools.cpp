@@ -2,35 +2,66 @@
 
 using namespace path;
 
-// Initialize the counter
-map<ActionType, int> Action::typeCount = {{ActionType::Ahead, 0}, {ActionType::CAhead, 0}, {ActionType::Rotate, 0}};
+///////////////////////////////////////////////////////////////////////////////
+//                                Path Helper                                //
+///////////////////////////////////////////////////////////////////////////////
 
-// Prepare the standard config
-robot_standard_config ActionFactory::defaultConfig = {
-    {RobotProperty::Width_cm, 1},
-    {RobotProperty::Height_cm, 1},
-    {RobotProperty::Drive_speed_cm_s, 50},
-    {RobotProperty::Clean_speed_cm_s, 20}};
-
-
-
-Action ActionFactory::createAction(ActionType type, robot_standard_config robotProperties){
-  // Update the default config
-
-
-  switch(type){
-  case ActionType::Ahead:
-    return AheadAction(ActionType::Ahead, defaultConfig);
-    break;
-  case ActionType::CAhead:
-    return AheadAction(ActionType::CAhead, defaultConfig);
-    break;
-  case ActionType::Rotate:
-    return RotateAction(defaultConfig);
-    break;
-  default:
-    cout << "Unknown Action insert exception here!!" << endl;
-    throw __LINE__;
-
+template<typename K, typename V>
+void path::updateConfig(map<K,V> config, map<K,V> &update){
+  for(auto it = config.begin(); it != config.end(); it++){
+    if(update.find(it->first) != update.end()){
+      it->second = update[it->first];
+    }
   }
+}
+
+cv::Point2f path::radAngleToDir(double angle){
+  return cv::Point2f(cos(angle), sin(angle));
+}
+
+cv::Point2f path::angleToDir(double angle){
+  return radAngleToDir(angle / (180/M_PI));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                                   Action                                  //
+///////////////////////////////////////////////////////////////////////////////
+
+waypoints& path::Action::getWaypoints(cv::Point start) {
+
+  if (modified){
+    switch(type){
+    case ActionType::Start:
+      break;
+    case ActionType::End:
+      break;
+    case ActionType::Ahead: case ActionType::CAhead:
+      break;
+    }
+  }
+  waypoints b;
+
+  return b;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                                   Robot                                   //
+///////////////////////////////////////////////////////////////////////////////
+
+
+bool path::Robot::execute(Action &action, grid_map::GridMap &map) {
+  if(action.get_type() == ActionType::Start){
+    resetCounter();
+  }
+  return true;
+}
+
+bool path::Robot::fixOrDismiss(Action &action) {
+  return true;
+}
+
+void path::Robot::resetCounter() {
+  typeCount = {{ActionType::Ahead, 0},
+		  {ActionType::CAhead, 0}};
 }

@@ -183,6 +183,8 @@ set(OPTI_ENV
   src/optimizer/optimizer.cpp
   src/pool.hpp
   src/pool.cpp
+  src/tools/path_tools.h
+  src/tools/path_tools.cpp
 )
 
 # include_directories(  )
