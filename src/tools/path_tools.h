@@ -69,6 +69,7 @@ namespace path {
     // An action shold be initialized by an action type
     // or better we need an action factory that will generate an action based on the
   public:
+    static grid_map::GridMap obstacle_map;
     const ActionType get_type() const { return type; }
 
     Action(ActionType type);
@@ -85,7 +86,8 @@ namespace path {
     // virtual void calWaypoints(cv::Point start);
     // const robot_standard_config& getConfig(){return config;}
     // time_sec getEstimatedDuration(){return estimatedDuration;};
-    waypoints& getWaypoints(cv::Point start);
+    waypoints getWaypoints(cv::Point start, cv::Point2f direction);
+    waypoints calEndpoint(cv::Point &start, cv::Point2f &direction);
 
   private:
     bool modified = true;

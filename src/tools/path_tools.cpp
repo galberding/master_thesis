@@ -27,7 +27,7 @@ cv::Point2f path::angleToDir(double angle){
 //                                   Action                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
-waypoints& path::Action::getWaypoints(cv::Point start) {
+waypoints path::Action::getWaypoints(cv::Point start, cv::Point2f direction) {
 
   if (modified){
     switch(type){
@@ -36,6 +36,7 @@ waypoints& path::Action::getWaypoints(cv::Point start) {
     case ActionType::End:
       break;
     case ActionType::Ahead: case ActionType::CAhead:
+
       break;
     }
   }
@@ -43,6 +44,23 @@ waypoints& path::Action::getWaypoints(cv::Point start) {
 
   return b;
 }
+
+waypoints path::Action::calEndpoint(cv::Point &start, cv::Point2f &direction){
+
+  int timeout = 3;
+  for (auto it = 0; it != timeout; ++it) {
+    int x = round(start.x + direction.x * mod_config[ModificationParameter::Distance]);
+    int y = round(start.y + direction.y * mod_config[ModificationParameter::Distance]);
+    grid_map::Index idx(x,y);
+    // Check if point is inside
+    obstacle_map.at("env", idx);
+  }
+
+  return wp;
+}
+
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////

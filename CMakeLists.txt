@@ -27,7 +27,7 @@ find_package(catkin REQUIRED COMPONENTS
   grid_map_loader
   grid_map_msgs
   grid_map_octomap
-  grid_map_rviz_plugin
+  # grid_map_rviz_plugin
   grid_map_visualization
   octomap_msgs
   filters
