@@ -32,20 +32,22 @@ namespace path {
     // Rotation_speed = 4,
   };
 
-  enum class ModificationParameter {
+  enum class PathActionParameter {
     AngleOffset = 0,
     Angle = 1,
     Distance = 2,
     DistanceOffset = 3,
   };
+  using PAP = PathActionParameter;
 
 
   using namespace std;
   using time_sec = uint32_t;
   using distance_cm = uint32_t;
-  using robot_standard_config = map<RobotProperty, double>;
-  using modufication_config = map<ModificationParameter, double>;
-  using waypoints = vector<shared_ptr<cv::Point>>;
+  using rob_config = map<RobotProperty, double>;
+  using PA_config = map<PAP, double>;
+  using WPs = vector<shared_ptr<grid_map::Index>>;
+  using direction = Eigen::Vector2f;
 
 
 
@@ -53,27 +55,32 @@ namespace path {
   void updateConfig(map<K,V> config, map<K,V> &update);
 
 
-  cv::Point2f radAngleToDir(double angle);
+  //TODO: adapt to direction vector
+  direction radAngleToDir(double angle);
 
-  cv::Point2f angleToDir(double angle);
+  direction angleToDir(double angle);
+
+  grid_map::Index vecToIdx(direction vec);
 
 
-  enum class ActionType
+  enum class PathActionType
   {
         Ahead = 0,
 	CAhead = 1,
 	Start = 2,
 	End = 3
    };
-  class Action{
+  using PAT = PathActionType;
+
+  class PathAction{
     // An action shold be initialized by an action type
     // or better we need an action factory that will generate an action based on the
   public:
     static grid_map::GridMap obstacle_map;
-    const ActionType get_type() const { return type; }
+    const PAT get_type() const { return type; }
 
-    Action(ActionType type);
-    ~Action(){};
+    PathAction(PAT type):type(type){};
+    ~PathAction(){};
     /*
       Update the current config parameters.
       Parameter:
@@ -86,27 +93,43 @@ namespace path {
     // virtual void calWaypoints(cv::Point start);
     // const robot_standard_config& getConfig(){return config;}
     // time_sec getEstimatedDuration(){return estimatedDuration;};
-    waypoints getWaypoints(cv::Point start, cv::Point2f direction);
-    waypoints calEndpoint(cv::Point &start, cv::Point2f &direction);
-
-  private:
+    virtual WPs generateWPs(grid_map::Index start);
+    // virtual waypoints calEndpoint(grid_map::Index &start);
+    grid_map::Index vecToIdx(direction vec);
+  // private:
+  protected:
     bool modified = true;
-    const ActionType type;
+    const PAT type;
     time_sec estimatedDuration;
-    waypoints wp;
-    robot_standard_config config;
-    modufication_config mod_config;
-    double angle;
-    cv::Point2f direction;
+    WPs wps;
+    PA_config mod_config;
+  };
+
+  class AheadAction : protected  PathAction{
+  public:
+    AheadAction(path::PAT type, PA_config conf);
+    WPs generateWPs(grid_map::Index start) override;
+
 
   };
 
+  class EndAction : protected PathAction{
+    EndAction(WPs endPoints):PathAction(PAT::End){
+      wps.insert(wps.begin(), endPoints.begin(), endPoints.end());
+    };
+  };
+
+  class StartAction : protected PathAction{
+    StartAction(grid_map::Index startPoint, direction dir):PathAction(PAT::Start) {
+      wps.insert(wps.begin(), make_shared<grid_map::Index>(startPoint));
+    };
+  };
 
 
   class Robot{
 
   public:
-    Robot(double initAngle, robot_standard_config conf):lastAngle(initAngle){
+    Robot(double initAngle, rob_config conf):lastAngle(initAngle){
      defaultConfig = {
        {RobotProperty::Width_cm, 1},
        {RobotProperty::Height_cm, 1},
@@ -121,23 +144,21 @@ namespace path {
       Execute an action on the given grid map.
       Return false if execution was not successful (object was in the way)
     */
-    bool execute(Action &action, grid_map::GridMap &map);
+    bool execute(PathAction &action, grid_map::GridMap &map);
 
     /*
       Try to fix given action.
       If timeout criteria is met the return is false
      */
-    bool fixOrDismiss(Action &action);
+    bool fixOrDismiss(PathAction &action);
 
     void resetCounter();
   private:
-    map<ActionType, int> typeCount;
-    robot_standard_config defaultConfig;
+    map<PathActionType, int> typeCount;
+    rob_config defaultConfig;
     distance_cm traveledDist = 0;
     double lastAngle;
-    cv::Point2f lastDirection;
-
-
+    direction lastDirection;
   };
 
   namespace path_mapping{

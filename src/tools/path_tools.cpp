@@ -15,71 +15,70 @@ void path::updateConfig(map<K,V> config, map<K,V> &update){
   }
 }
 
-cv::Point2f path::radAngleToDir(double angle){
-  return cv::Point2f(cos(angle), sin(angle));
+direction path::radAngleToDir(double angle){
+  return direction(cos(angle), sin(angle));
 }
 
-cv::Point2f path::angleToDir(double angle){
+direction path::angleToDir(double angle){
   return radAngleToDir(angle / (180/M_PI));
+}
+
+grid_map::Index vecToIdx(direction vec){
+  return grid_map::Index(round(vec[0]), round(vec[1]));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Action                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
-waypoints path::Action::getWaypoints(cv::Point start, cv::Point2f direction) {
+WPs path::PathAction::generateWPs(grid_map::Index start) {
 
-  if (modified){
-    switch(type){
-    case ActionType::Start:
-      break;
-    case ActionType::End:
-      break;
-    case ActionType::Ahead: case ActionType::CAhead:
-
-      break;
-    }
-  }
-  waypoints b;
-
-  return b;
-}
-
-waypoints path::Action::calEndpoint(cv::Point &start, cv::Point2f &direction){
-
-  int timeout = 3;
-  for (auto it = 0; it != timeout; ++it) {
-    int x = round(start.x + direction.x * mod_config[ModificationParameter::Distance]);
-    int y = round(start.y + direction.y * mod_config[ModificationParameter::Distance]);
-    grid_map::Index idx(x,y);
-    // Check if point is inside
-    obstacle_map.at("env", idx);
-  }
-
-  return wp;
+  return wps;
 }
 
 
 
+grid_map::Index path::PathAction::vecToIdx(direction vec){
 
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                                AheadAction                                //
+///////////////////////////////////////////////////////////////////////////////
+
+path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
+  mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 0}});
+  updateConfig(mod_config, conf);
+}
+
+WPs path::AheadAction::generateWPs(grid_map::Index start){
+  if(modified){
+    wps.clear();
+    direction dir = angleToDir(mod_config[PAP::Angle]);
+    wps.push_back(make_shared<grid_map::Index>(start));
+    dir[0] = start.x() + dir[0] * mod_config[PAP::Distance];
+    dir[0] = start.y() + dir[1] * mod_config[PAP::Distance];
+    wps.push_back(make_shared<grid_map::Index>(vecToIdx(dir)));
+  }
+  return wps;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Robot                                   //
 ///////////////////////////////////////////////////////////////////////////////
 
-
-bool path::Robot::execute(Action &action, grid_map::GridMap &map) {
-  if(action.get_type() == ActionType::Start){
+bool path::Robot::execute(PathAction &action, grid_map::GridMap &map) {
+  if(action.get_type() == PathActionType::Start){
     resetCounter();
   }
   return true;
 }
 
-bool path::Robot::fixOrDismiss(Action &action) {
+bool path::Robot::fixOrDismiss(PathAction &action) {
   return true;
 }
 
 void path::Robot::resetCounter() {
-  typeCount = {{ActionType::Ahead, 0},
-		  {ActionType::CAhead, 0}};
+  typeCount = {{PathActionType::Ahead, 0},
+	       {PathActionType::CAhead, 0}};
 }
