@@ -4,6 +4,9 @@ set(CMAKE_BUILD_TYPE Debug)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
+# -Wno-ignored-attributes
+# -Wno-ignored-attributes
+set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -217,13 +220,16 @@ target_link_libraries(opti ${catkin_LIBRARIES})
 
 ## Add gtest based cpp test target and link libraries
 
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
-# catkin_add_executable_with_gtest(${PROJECT_NAME}-test
-#   test/test_ros_opti.cpp
-#   ${OPTI_ENV}
-#   )
+catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
+catkin_add_executable_with_gtest(opti-test
+  test/test_ros_opti.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
 
 
-# if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${catkin_LIBRARIES})
-# endif()
+if(TARGET opti-test)
+  target_link_libraries(opti-test ${catkin_LIBRARIES})
+endif()

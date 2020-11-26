@@ -52,7 +52,7 @@ namespace path {
 
 
   template<typename K, typename V>
-  void updateConfig(map<K,V> config, map<K,V> &update);
+  void updateConfig(map<K,V> &config, map<K,V> &update);
 
 
   //TODO: adapt to direction vector
@@ -95,7 +95,7 @@ namespace path {
     // time_sec getEstimatedDuration(){return estimatedDuration;};
     virtual WPs generateWPs(grid_map::Index start);
     // virtual waypoints calEndpoint(grid_map::Index &start);
-    grid_map::Index vecToIdx(direction vec);
+    // grid_map::Index vecToIdx(direction vec);
   // private:
   protected:
     bool modified = true;

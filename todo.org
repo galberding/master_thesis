@@ -32,3 +32,22 @@
 ** DONE Implement new fitness funktion and evaluate
 ** DONE Fix timer by introducing a stack
 ** TODO
+
+* 26.11.2020
+** TODO Robot
+*** TODO Execution function to process action on grid map
+*** TODO Processing of the individual actions
+**** TODO Ahead/Cahead
+**** TODO Start: get start parameter for all following actions
+**** TODO End: Perform A* or similar to find the shortest path to the next endpoint
+** DONE PathAction
+*** DONE generator function to compute path
+*** DONE Start action to give start direction and point
+*** DONE End action, lists possible endpoints
+** TODO PAModifier
+*** TODO should also function as initializer for different path actions
+*** TODO get a clomplete configuration or initialize actions randomly
+** TODO GridMap
+*** TODO Scale the map to the robots dimensions before working on it
+Possibly be done in the robot constructor
+*** TODO Initialize obstacle map (which needs to be scaled down too)
