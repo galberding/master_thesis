@@ -2,42 +2,54 @@
 
 using namespace path;
 
+
+// grid_map::GridMap path::global_map = grid_map::GridMap();
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                Path Helper                                //
 ///////////////////////////////////////////////////////////////////////////////
 
 template<typename K, typename V>
 void path::updateConfig(map<K,V> &config, map<K,V> &update){
-    for (auto & [key, value] : config){
+    for (auto &[key, value] : config){
       if(update.find(key) != update.end()){
 	value = update[key];
       }
     }
-  // for(auto it = config.begin(); it != config.end(); it++){
-  //   if(update.find(it->first) != update.end()){
-  //     it->second = update[it->first];
-  //     cout << "Update!" << endl;
-  //   }
-  // }
 }
 
-direction path::radAngleToDir(double angle){
-  return direction(cos(angle), sin(angle));
+template<typename K, typename V>
+void resetConfParameter(map<K, V> &config, K key){
+  // set Parameter if not exists
+  auto ret = config.insert(pair(key, 0.0));
+  if(ret.second == false){
+    config[key] = 0;
+  }
+}
+
+template<typename K, typename V>
+void incConfParameter(map<K, V> &config, K key, V value){
+  // set Parameter if not exists
+  auto ret = config.insert(pair(key, value));
+  if(ret.second == false){
+    config[key] += value;
+  }
+}
+
+
+direction path::radAngleToDir(double angle_rad){
+  return direction(cos(angle_rad), sin(angle_rad));
 }
 
 direction path::angleToDir(double angle){
   return radAngleToDir(angle / (180/M_PI));
 }
 
-grid_map::Index path::vecToIdx(direction vec){
-  return grid_map::Index(round(vec[0]), round(vec[1]));
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Action                                  //
 ///////////////////////////////////////////////////////////////////////////////
 
-WPs path::PathAction::generateWPs(grid_map::Index start) {
+WPs path::PathAction::generateWPs(Position start) {
 
   return wps;
 }
@@ -52,36 +64,193 @@ path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
   updateConfig(mod_config, conf);
 }
 
-WPs path::AheadAction::generateWPs(grid_map::Index start){
+WPs path::AheadAction::generateWPs(Position start){
   if(modified){
     wps.clear();
     direction dir = angleToDir(mod_config[PAP::Angle]);
-    cout << "Direction x: " << dir[0] << "Direction y: " << dir[1] << endl;
-    wps.push_back(make_shared<grid_map::Index>(start));
-    dir[0] = start.x() + dir[0] * mod_config[PAP::Distance];
-    dir[1] = start.y() + dir[1] * mod_config[PAP::Distance];
-    cout << "Direction x: " << dir[0] << "Direction y: " << dir[1] << endl;
-    wps.push_back(make_shared<grid_map::Index>(vecToIdx(dir)));
+    cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
+    wps.push_back(start);
+    cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
+    wps.push_back(start + dir*(mod_config[PAP::Distance] / 100));
   }
   return wps;
+}
+
+WPs path::EndAction::generateWPs(Position start) {
+  WPs b;
+  b.push_back(start);
+  if(wps.size()){
+    b.push_back(wps[0]);
+  }else{
+    b.push_back(start);
+  }
+
+  return b;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Robot                                   //
 ///////////////////////////////////////////////////////////////////////////////
 
+
+path::Robot::Robot(double initAngle, rob_config conf, GridMap gMap):lastAngle(initAngle), cMap(gMap){
+     defaultConfig = {
+       {RobotProperty::Width_cm, 1},
+       {RobotProperty::Height_cm, 1},
+       {RobotProperty::Drive_speed_cm_s, 50},
+       {RobotProperty::Clean_speed_cm_s, 20}};
+
+     updateConfig(defaultConfig, conf);
+     resetCounter();
+    }
+
+
+
 bool path::Robot::execute(PathAction &action, grid_map::GridMap &map) {
-  if(action.get_type() == PathActionType::Start){
+
+  int steps = 0;
+  bool res = false;
+  switch(action.get_type()){
+  case PAT::Start:{
     resetCounter();
+    // map.clear("map");
+    map.add("map", 0.0);
+    // get start position for all following actions
+    currentPos = action.generateWPs(currentPos)[0];
+    res = true;
+    break;
+  }
+  case PAT::Ahead:{
+    res = mapMove(action, steps, currentPos, traveledPath, false);
+    break;
+  }
+  case PAT::CAhead:{
+    res = mapMove(action, steps, currentPos, traveledPath, true);
+    break;
+  }
+  case PAT::End:{
+    WPs wps = action.generateWPs(currentPos);
+    // res = mapMove(action, steps, currentPos);
+    wps = findShortestEndpointPath(wps);
+    break;
+  }
+  default:{
+    // TODO: What in case of error?
+    throw __LINE__;
+    break;
+  }
+  }
+
+  std::cout << "Moved " << steps << " steps" << "\n";
+
+  if(!res && steps == 0){
+      // Action failed, destroy action from genome
+      return false;
+    }else if (!res){
+      // Action was at least partially executable
+      // TODO: Adapt action parameter (How??)
+    //Add generated waypoints to the complete path
+    }
+  return res;
+}
+
+bool path::Robot::evaluateActions(PAs &pas){
+
+  // TODO: Only add endpoints to path
+  bool success;
+  for (auto it = pas.begin(); it != pas.end();){
+
+    success = execute(**it, cMap);
+
+    if(success){
+      it++;
+      incConfParameter(typeCount, (*it)->get_type(), 1);
+    } else {
+      // remove Action from sequence
+      it = pas.erase(it);
+    }
   }
   return true;
 }
 
-bool path::Robot::fixOrDismiss(PathAction &action) {
-  return true;
-}
 
 void path::Robot::resetCounter() {
   typeCount = {{PathActionType::Ahead, 0},
-	       {PathActionType::CAhead, 0}};
+	       {PathActionType::CAhead, 0}
+  };
+  resetConfParameter(typeCount, PAT::Ahead);
+  resetConfParameter(typeCount, PAT::CAhead);
+  resetConfParameter(typeCount, PAT::Start);
+  resetConfParameter(typeCount, PAT::End);
+  traveledPath.clear();
+  traveledDist = 0;
+}
+
+bool path::Robot::mapMove(PathAction& action, int &steps, Position &currentPos, WPs &path, bool clean) {
+
+  // TODO: Ensure start and endpoint are given in waypoint -> use this assumption exclusively
+  // as long as we do not have any other actions available
+  WPs waypoints = action.generateWPs(currentPos);
+  // Check if wp generation was successful
+  steps = 0;
+  if(waypoints.size() < 2){
+    std::cout << "Map Move Failed!" << "\n";
+
+
+    return false;
+  }else{
+    std::cout << "Start Map move" << "\n";
+
+  }
+
+  for (WPs::iterator it = begin(waypoints); it != end(waypoints);){
+    Position start = *it;
+    Position last = *(++it);
+    std::cout << "Start and last waypoint:" << "\n";
+    std::cout << start << "\n";
+    std::cout << last << "\n";
+
+    // Check if points are in range
+    if(!cMap.isInside(start) || !cMap.isInside(last)){
+      return false;
+    }
+
+
+    for(grid_map::LineIterator lit(cMap, Position(start), Position(last)) ; lit.isPastEnd(); ++lit){
+
+      // Check if start or endpoint collidates with obstacle
+      float obstacle = cMap.at("obstacle", *lit);
+
+      if(obstacle > 0){
+	// The current index collides with an object
+	// TODO: store the last valid position to the waypoints
+	return false;
+      }else{
+	// Update last position
+	if (clean){
+	  float mapVal = cMap.at("map", *lit);
+	  if (mapVal)
+	    incConfParameter(action.getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
+	++cMap.at("map", *lit);
+	}
+	// get Position and put it to the visited Path
+
+	if(cMap.getPosition(*lit, last))
+	  path.push_back(last);
+	currentPos = last;
+	steps++;
+      }
+    }
+  }
+
+
+  // Append all collected waypoints
+
+  return true;
+}
+
+WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
+  WPs b;
+  b.push_back(endpoints[0]);
+  return b;
 }

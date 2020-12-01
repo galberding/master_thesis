@@ -37,6 +37,7 @@ namespace path {
     Angle = 1,
     Distance = 2,
     DistanceOffset = 3,
+    CrossCount = 4, // How often did the action cross other actions
   };
   using PAP = PathActionParameter;
 
@@ -46,10 +47,12 @@ namespace path {
   using distance_cm = uint32_t;
   using rob_config = map<RobotProperty, double>;
   using PA_config = map<PAP, double>;
-  using WPs = vector<shared_ptr<grid_map::Index>>;
-  using direction = Eigen::Vector2f;
+  using WPs = vector<grid_map::Position>;
+  using direction = grid_map::Position;
 
 
+  // static grid_map::GridMap global_map;
+  using namespace grid_map;
 
   template<typename K, typename V>
   void updateConfig(map<K,V> &config, map<K,V> &update);
@@ -60,8 +63,6 @@ namespace path {
 
   direction angleToDir(double angle);
 
-  grid_map::Index vecToIdx(direction vec);
-
 
   enum class PathActionType
   {
@@ -69,6 +70,7 @@ namespace path {
 	CAhead = 1,
 	Start = 2,
 	End = 3
+
    };
   using PAT = PathActionType;
 
@@ -76,11 +78,12 @@ namespace path {
     // An action shold be initialized by an action type
     // or better we need an action factory that will generate an action based on the
   public:
-    static grid_map::GridMap obstacle_map;
+    //TODO: substitute public inheritance with getter and setter
+    // static grid_map::GridMap obstacle_map;
     const PAT get_type() const { return type; }
 
-    PathAction(PAT type):type(type){};
-    ~PathAction(){};
+    PathAction(const PAT type):type(type){};
+    ~PathAction() = default;
     /*
       Update the current config parameters.
       Parameter:
@@ -93,11 +96,12 @@ namespace path {
     // virtual void calWaypoints(cv::Point start);
     // const robot_standard_config& getConfig(){return config;}
     // time_sec getEstimatedDuration(){return estimatedDuration;};
-    virtual WPs generateWPs(grid_map::Index start);
+    virtual WPs generateWPs(Position start);
     // virtual waypoints calEndpoint(grid_map::Index &start);
     // grid_map::Index vecToIdx(direction vec);
+    PA_config& getConfig(){return mod_config;}
   // private:
-  protected:
+  // protected:
     bool modified = true;
     const PAT type;
     time_sec estimatedDuration;
@@ -105,23 +109,31 @@ namespace path {
     PA_config mod_config;
   };
 
-  class AheadAction : protected  PathAction{
+  using PAs = list<shared_ptr<PathAction>>;
+
+  class AheadAction : public  PathAction{
   public:
     AheadAction(path::PAT type, PA_config conf);
-    WPs generateWPs(grid_map::Index start) override;
-
-
+    WPs generateWPs(Position start) override;
   };
 
-  class EndAction : protected PathAction{
+  class EndAction : public PathAction{
+  public:
     EndAction(WPs endPoints):PathAction(PAT::End){
       wps.insert(wps.begin(), endPoints.begin(), endPoints.end());
     };
+    /*
+      If no endpoints are given to the end action, the resulting waypoints will contain only the start point which will be listed twice, such that the execution can process it.
+      TODO: mechanism to check if endpoints are coccupied
+For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
+     */
+    WPs generateWPs(Position start);
   };
 
-  class StartAction : protected PathAction{
-    StartAction(grid_map::Index startPoint, direction dir):PathAction(PAT::Start) {
-      wps.insert(wps.begin(), make_shared<grid_map::Index>(startPoint));
+  class StartAction : public PathAction{
+  public:
+    StartAction(Position startPoint):PathAction(PAT::Start) {
+      wps.insert(wps.begin(), startPoint);
     };
   };
 
@@ -129,16 +141,13 @@ namespace path {
   class Robot{
 
   public:
-    Robot(double initAngle, rob_config conf):lastAngle(initAngle){
-     defaultConfig = {
-       {RobotProperty::Width_cm, 1},
-       {RobotProperty::Height_cm, 1},
-       {RobotProperty::Drive_speed_cm_s, 50},
-       {RobotProperty::Clean_speed_cm_s, 20}};
+    const map<PathActionType, int> get_typeCount() const { return typeCount; }
 
-     updateConfig(defaultConfig, conf);
-     resetCounter();
-    }
+    const WPs get_traveledPath() const { return traveledPath; }
+
+    const Position get_currentPos() const { return currentPos; }
+
+    Robot(double initAngle, rob_config conf, GridMap gMap);
 
     /*
       Execute an action on the given grid map.
@@ -146,25 +155,32 @@ namespace path {
     */
     bool execute(PathAction &action, grid_map::GridMap &map);
 
-    /*
-      Try to fix given action.
-      If timeout criteria is met the return is false
-     */
-    bool fixOrDismiss(PathAction &action);
+    bool evaluateActions(PAs &pas);
 
     void resetCounter();
+
+    /*
+      Given a list of endpoints we want to find the endpoint to which the path is shortest.
+      TODO: use A* or similar to get the shortest path
+     */
+    WPs findShortestEndpointPath(WPs endpoints);
+
+    /*
+      Mark points on the map and cal
+     */
+    bool mapMove(PathAction &action, int &steps, Position &currentPos, WPs &path, bool justMove=false);
+
+
   private:
+    grid_map::GridMap cMap;
     map<PathActionType, int> typeCount;
     rob_config defaultConfig;
     distance_cm traveledDist = 0;
+    WPs traveledPath;
     double lastAngle;
     direction lastDirection;
+    Position currentPos;
   };
-
-  namespace path_mapping{
-
-    // namespace to define all action to gridmap operations
-  }
 }
 
 
