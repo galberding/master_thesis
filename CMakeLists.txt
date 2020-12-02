@@ -19,8 +19,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   message_generation
   geometric_shapes
-  pcl_ros
-  pcl_conversions
+  # pcl_ros
+  # pcl_conversions
   geometry_msgs
   nav_msgs
   grid_map_core

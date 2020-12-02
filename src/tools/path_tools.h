@@ -12,7 +12,7 @@
 #include <future>
 #include <exception>
 #include <grid_map_core/grid_map_core.hpp>
-
+#include <grid_map_cv/GridMapCvConverter.hpp>
 
 
 
@@ -78,6 +78,10 @@ namespace path {
     // An action shold be initialized by an action type
     // or better we need an action factory that will generate an action based on the
   public:
+    const WPs get_wps() const { return wps; }
+
+    void set_wps(const WPs wps) { this->wps = wps; }
+
     //TODO: substitute public inheritance with getter and setter
     // static grid_map::GridMap obstacle_map;
     const PAT get_type() const { return type; }
@@ -145,9 +149,9 @@ For now we will just return the start point because the robot object should find
 
     const WPs get_traveledPath() const { return traveledPath; }
 
-    const Position get_currentPos() const { return currentPos; }
+    Position& get_currentPos() { return currentPos; }
 
-    Robot(double initAngle, rob_config conf, GridMap gMap);
+    Robot(double initAngle, rob_config conf, GridMap &gMap);
 
     /*
       Execute an action on the given grid map.
@@ -168,7 +172,9 @@ For now we will just return the start point because the robot object should find
     /*
       Mark points on the map and cal
      */
-    bool mapMove(PathAction &action, int &steps, Position &currentPos, WPs &path, bool justMove=false);
+    bool mapMove(GridMap &cmap, PathAction &action, int &steps, Position &currentPos, WPs &path, bool clean=true);
+
+    cv::Mat gridToImg(string layer);
 
 
   private:

@@ -93,7 +93,7 @@ WPs path::EndAction::generateWPs(Position start) {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-path::Robot::Robot(double initAngle, rob_config conf, GridMap gMap):lastAngle(initAngle), cMap(gMap){
+path::Robot::Robot(double initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap){
      defaultConfig = {
        {RobotProperty::Width_cm, 1},
        {RobotProperty::Height_cm, 1},
@@ -121,11 +121,11 @@ bool path::Robot::execute(PathAction &action, grid_map::GridMap &map) {
     break;
   }
   case PAT::Ahead:{
-    res = mapMove(action, steps, currentPos, traveledPath, false);
+    res = mapMove(map, action, steps, currentPos, traveledPath, false);
     break;
   }
   case PAT::CAhead:{
-    res = mapMove(action, steps, currentPos, traveledPath, true);
+    res = mapMove(map, action, steps, currentPos, traveledPath, true);
     break;
   }
   case PAT::End:{
@@ -186,13 +186,20 @@ void path::Robot::resetCounter() {
   traveledDist = 0;
 }
 
-bool path::Robot::mapMove(PathAction& action, int &steps, Position &currentPos, WPs &path, bool clean) {
+WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
+  WPs b;
+
+  return b;
+}
+
+bool path::Robot::mapMove(GridMap &cmap, PathAction& action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
   // TODO: Ensure start and endpoint are given in waypoint -> use this assumption exclusively
   // as long as we do not have any other actions available
   WPs waypoints = action.generateWPs(currentPos);
   // Check if wp generation was successful
   steps = 0;
+  bool res = true;
   if(waypoints.size() < 2){
     std::cout << "Map Move Failed!" << "\n";
 
@@ -203,54 +210,61 @@ bool path::Robot::mapMove(PathAction& action, int &steps, Position &currentPos, 
 
   }
 
-  for (WPs::iterator it = begin(waypoints); it != end(waypoints);){
-    Position start = *it;
-    Position last = *(++it);
+  // for (WPs::iterator it = begin(waypoints); it != end(waypoints);){
+    Position start =  waypoints.front();
+    Position lastPos = waypoints.back();
     std::cout << "Start and last waypoint:" << "\n";
     std::cout << start << "\n";
-    std::cout << last << "\n";
+    std::cout << lastPos << "\n";
 
     // Check if points are in range
-    if(!cMap.isInside(start) || !cMap.isInside(last)){
+    if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
+      cout << "Not inside!" << endl;
       return false;
     }
 
-
-    for(grid_map::LineIterator lit(cMap, Position(start), Position(last)) ; lit.isPastEnd(); ++lit){
+    Index lastIdx;
+    for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
       // Check if start or endpoint collidates with obstacle
-      float obstacle = cMap.at("obstacle", *lit);
+      float obstacle = cmap.at("obstacle", *lit);
+      std::cout << "Cell" << "\n";
 
       if(obstacle > 0){
 	// The current index collides with an object
 	// TODO: store the last valid position to the waypoints
-	return false;
+	// return false;
+	res = false;
+	break;
       }else{
 	// Update last position
+	lastIdx = *lit;
 	if (clean){
-	  float mapVal = cMap.at("map", *lit);
+	  float mapVal = cmap.at("map", *lit);
 	  if (mapVal)
 	    incConfParameter(action.getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
-	++cMap.at("map", *lit);
+	  cmap.at("map", *lit)++;
 	}
 	// get Position and put it to the visited Path
 
-	if(cMap.getPosition(*lit, last))
-	  path.push_back(last);
-	currentPos = last;
+	// if(cMap.getPosition(*lit, last))
+	//   path.push_back(last);
 	steps++;
       }
     }
-  }
 
+    cmap.getPosition(lastIdx, currentPos);
+  // }
 
+    // cout << "Inner Sum: " << cmap.get("map").sum() << endl;
   // Append all collected waypoints
 
-  return true;
+  return res;
 }
 
-WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
-  WPs b;
-  b.push_back(endpoints[0]);
-  return b;
+
+cv::Mat path::Robot::gridToImg(string layer){
+  cv::Mat img;
+  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, "obstacle", CV_8U, 0.0, 1, img);
+  return img;
 }

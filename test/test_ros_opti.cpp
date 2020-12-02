@@ -9,15 +9,6 @@ using namespace path;
 using namespace grid_map;
 
 
-// TEST(HelperFunctions, vecToIdx){
-//   Index idx = vecToIdx(direction(3.5,3.1));
-
-//   cout << idx.x() << endl;
-//   ASSERT_EQ(idx.x(), 4);
-//   ASSERT_EQ(idx.y(), 3);
-// }
-
-
 TEST(HelperFunctions, updateConfig){
   PA_config conf1 = {{PAP::Angle, 40}};
   PA_config conf2 = {{PAP::Angle, 42}};
@@ -25,38 +16,6 @@ TEST(HelperFunctions, updateConfig){
   updateConfig(conf1, conf2);
   ASSERT_EQ(conf1[PAP::Angle], 42);
 }
-
-
-// TEST(HelperFunctions, angleToDir){
-//   cout << angleToDir(45) << endl;
-//  }
-
-// TEST(AheadActionTest, genWaypointsTest){
-//   // Robot rob;
-
-//   AheadAction aa(PAT::CAhead, {{PAP::Distance, 2.0}, {PAP::Angle, 45}});
-
-//   WPsPtr wps = aa.generateWPs(grid_map::Index(1,1));
-
-
-
-//   for(auto &wp : wps){
-//     cout << wp->x() << " " << wp->y() << endl;
-//   }
-//   ASSERT_EQ(wps.size(), 2);
-//   ASSERT_EQ(wps[1]->x(), 2);
-// }
-
-// TEST(GridMapTester, createGridMap){
-//   grid_map::GridMap map({"obstacle", "map"});
-//   map.setGeometry(Length(1,1), 0.01);
-
-
-//   for(auto &lay : map.getLayers()){
-//     cout << lay << endl;
-//     cout << map.get(lay).rows() << map.get(lay).rows() << endl;
-//   }
-// }
 
 
 
@@ -112,64 +71,97 @@ protected:
     cv::waitKey();
   }
 
+  void displayImage(cv::Mat img){
+    cv::imshow("Grid Map Map", img);
+    cv::waitKey();
+  }
+
   PAs actions;
   shared_ptr<GridMap> cmap;
   shared_ptr<Robot> rob;
 };
 
 
-TEST_F(RobotTest, startActionTest){
-  /*
-    - Check currentPos
-    - clear Map
-    - reset counter
-   */
-  Position pos;
-  cmap->getPosition(Index(11,11), pos);
-  StartAction sa(pos);
-  bool res = rob->execute(sa, *cmap);
+// TEST_F(RobotTest, startActionTest){
+//   /*
+//     - Check currentPos
+//     - clear Map
+//     - reset counter
+//    */
+//   Position pos;
+//   cmap->getPosition(Index(11,11), pos);
+//   StartAction sa(pos);
+//   bool res = rob->execute(sa, *cmap);
 
+//   ASSERT_TRUE(res);
+//   ASSERT_EQ(rob->get_currentPos(), pos);
+//   auto conf = rob->get_typeCount();
+//   for (auto &[k ,v] : conf){
+//     ASSERT_EQ(v, 0);
+//   }
+
+
+//   // displayGridmap();
+// }
+
+
+TEST_F(RobotTest, mapMoveBasicTest){
+  Position pos0, pos1;
+  cmap->getPosition(Index(11,11),pos0);
+  cmap->getPosition(Index(33,33),pos1);
+  PathAction pa(PAT::CAhead);
+  pa.set_wps(vector<Position>({pos0, pos1}));
+  int steps;
+  WPs path;
+  bool res = rob->mapMove(*cmap, pa, steps, rob->get_currentPos(), path, true);
+
+
+  cout << "Current Sum " << cmap->get("map").sum() << endl;
+  cout << steps << endl;
   ASSERT_TRUE(res);
-  ASSERT_EQ(rob->get_currentPos(), pos);
-  auto conf = rob->get_typeCount();
-  for (auto &[k ,v] : conf){
-    ASSERT_EQ(v, 0);
-  }
 
   // displayGridmap();
 }
 
-TEST_F(RobotTest, aheadActionTest){
-  Position pos;
-  cmap->getPosition(Index(11,11),pos);
-  StartAction sa(pos);
-  // EndAction ea(WPs({Position(800, 800)}));
-  AheadAction aa(PAT::CAhead, {{PAP::Angle, 90}, {PAP::Distance, 100}});
+
+TEST_F(RobotTest, executionTest){
+  Position pos0, pos1;
+  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  cmap->getPosition(Index(33,33),pos1);
+  PathAction pa(PAT::CAhead);
+  StartAction sa(pos0);
+  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
+  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
+  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
 
   bool res = rob->execute(sa, *cmap);
-  res &= rob->execute(aa, *cmap);
-
-  cout << "Map sum " << cmap->get("map").sum() << endl;
-  ASSERT_TRUE(res);
-
-  // for(LineIterator it(*cmap, Position(-1,1), Position(2,2)); !it.isPastEnd(); ++it){
-  //   Position pos;
-  //   cmap->getPosition(*it, pos);
-  //   std::cout << "Pos: " << pos[0] << " " << pos[1] << "\n";
-  //   std::cout << "Index: " << *it <<"\n";
-  //   cmap->at("map", *it) = 1;
-
-  // }
-  // Position pos;
-  // cmap->getPosition(Index(0,0), pos);
-  // cout << "first: " << pos << endl;
-  // cmap->getPosition(Index(cmap->getSize().x()-1,cmap->getSize().y()-1), pos);
-  // cout << "last: " << pos << endl;
-  // std::cout << "Size: " << cmap->getSize() << "\n";
-
+  res &= rob->execute(aa1, *cmap);
+  res &= rob->execute(aa2, *cmap);
+  res &= rob->execute(aa3, *cmap);
+  res &= rob->execute(aa4, *cmap);
 
   displayGridmap();
+  ASSERT_TRUE(res);
 }
+
+
+// TEST_F(RobotTest, aheadActionTest){
+//   Position pos;
+//   cmap->getPosition(Index(11,11),pos);
+//   StartAction sa(pos);
+//   // EndAction ea(WPs({Position(800, 800)}));
+//   AheadAction aa(PAT::CAhead, {{PAP::Angle, 90}, {PAP::Distance, 100}});
+
+//   bool res = rob->execute(sa, *cmap);
+//   res &= rob->execute(aa, *cmap);
+
+//   cout << "Map sum " << cmap->get("map").sum() << endl;
+//   ASSERT_TRUE(res);
+
+
+//   // displayGridmap();
+// }
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
