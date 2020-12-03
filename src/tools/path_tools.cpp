@@ -28,12 +28,16 @@ void resetConfParameter(map<K, V> &config, K key){
 }
 
 template<typename K, typename V>
-void incConfParameter(map<K, V> &config, K key, V value){
+void incConfParameter(map<K, V> &config,const K key, V value){
   // set Parameter if not exists
+  cout << "Update Config" << endl;
+
   auto ret = config.insert(pair(key, value));
   if(ret.second == false){
-    config[key] += value;
+    config[key]++;
   }
+  std::cout << "Done update" << "\n";
+
 }
 
 
@@ -70,7 +74,6 @@ WPs path::AheadAction::generateWPs(Position start){
     direction dir = angleToDir(mod_config[PAP::Angle]);
     cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
     wps.push_back(start);
-    cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
     wps.push_back(start + dir*(mod_config[PAP::Distance] / 100));
   }
   return wps;
@@ -106,30 +109,30 @@ path::Robot::Robot(double initAngle, rob_config conf, GridMap &gMap):lastAngle(i
 
 
 
-bool path::Robot::execute(PathAction &action, grid_map::GridMap &map) {
+bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map) {
 
   int steps = 0;
   bool res = false;
-  switch(action.get_type()){
+  switch(action->get_type()){
   case PAT::Start:{
     resetCounter();
     // map.clear("map");
     map.add("map", 0.0);
     // get start position for all following actions
-    currentPos = action.generateWPs(currentPos)[0];
+    currentPos = action->generateWPs(currentPos)[0];
     res = true;
     break;
   }
   case PAT::Ahead:{
-    res = mapMove(map, action, steps, currentPos, traveledPath, false);
+    res = mapMove(map, *action, steps, currentPos, traveledPath, false);
     break;
   }
   case PAT::CAhead:{
-    res = mapMove(map, action, steps, currentPos, traveledPath, true);
+    res = mapMove(map, *action, steps, currentPos, traveledPath, true);
     break;
   }
   case PAT::End:{
-    WPs wps = action.generateWPs(currentPos);
+    WPs wps = action->generateWPs(currentPos);
     // res = mapMove(action, steps, currentPos);
     wps = findShortestEndpointPath(wps);
     break;
@@ -150,26 +153,32 @@ bool path::Robot::execute(PathAction &action, grid_map::GridMap &map) {
       // Action was at least partially executable
       // TODO: Adapt action parameter (How??)
     //Add generated waypoints to the complete path
+
+    cout << "Adapt action" << endl;
     }
+
   return res;
 }
 
 bool path::Robot::evaluateActions(PAs &pas){
 
   // TODO: Only add endpoints to path
-  bool success;
-  for (auto it = pas.begin(); it != pas.end();){
+  bool success = false;
 
-    success = execute(**it, cMap);
-
+  for(PAs::iterator it = begin(pas); it != end(pas);){
+    success = execute(*it, cMap);
     if(success){
-      it++;
+
       incConfParameter(typeCount, (*it)->get_type(), 1);
+      it++;
     } else {
       // remove Action from sequence
       it = pas.erase(it);
     }
   }
+  // TODO: When should it return false?
+  // - When genome falls below a certain Length
+  // - When endpoint cannot be reached
   return true;
 }
 
@@ -195,7 +204,7 @@ WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
 bool path::Robot::mapMove(GridMap &cmap, PathAction& action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
   // TODO: Ensure start and endpoint are given in waypoint -> use this assumption exclusively
-  // as long as we do not have any other actions available
+  // AS LONG as we do not have any other actions available
   WPs waypoints = action.generateWPs(currentPos);
   // Check if wp generation was successful
   steps = 0;
@@ -228,7 +237,7 @@ bool path::Robot::mapMove(GridMap &cmap, PathAction& action, int &steps, Positio
 
       // Check if start or endpoint collidates with obstacle
       float obstacle = cmap.at("obstacle", *lit);
-      std::cout << "Cell" << "\n";
+      // std::cout << "Cell" << "\n";
 
       if(obstacle > 0){
 	// The current index collides with an object
@@ -265,6 +274,6 @@ bool path::Robot::mapMove(GridMap &cmap, PathAction& action, int &steps, Positio
 
 cv::Mat path::Robot::gridToImg(string layer){
   cv::Mat img;
-  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, "obstacle", CV_8U, 0.0, 1, img);
+  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, layer, CV_8U, 0.0, 1, img);
   return img;
 }

@@ -157,7 +157,7 @@ For now we will just return the start point because the robot object should find
       Execute an action on the given grid map.
       Return false if execution was not successful (object was in the way)
     */
-    bool execute(PathAction &action, grid_map::GridMap &map);
+    bool execute(shared_ptr<PathAction> action, grid_map::GridMap &map);
 
     bool evaluateActions(PAs &pas);
 

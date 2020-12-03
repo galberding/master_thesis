@@ -53,9 +53,9 @@ protected:
     EndAction ea(WPs({Position(800, 800)}));
     AheadAction aa(PAT::CAhead, {{PAP::Angle, 45}, {PAP::Distance, 10}});
 
-    actions.push_back(make_shared<PathAction>(sa));
-    actions.push_back(make_shared<PathAction>(aa));
-    actions.push_back(make_shared<PathAction>(ea));
+    // actions.push_back(make_shared<PathAction>(sa));
+    // actions.push_back(make_shared<PathAction>(aa));
+    // actions.push_back(make_shared<PathAction>(ea));
 
   }
 
@@ -76,33 +76,32 @@ protected:
     cv::waitKey();
   }
 
-  PAs actions;
+  // PAs actions;
   shared_ptr<GridMap> cmap;
   shared_ptr<Robot> rob;
 };
 
 
-// TEST_F(RobotTest, startActionTest){
-//   /*
-//     - Check currentPos
-//     - clear Map
-//     - reset counter
-//    */
-//   Position pos;
-//   cmap->getPosition(Index(11,11), pos);
-//   StartAction sa(pos);
-//   bool res = rob->execute(sa, *cmap);
-
-//   ASSERT_TRUE(res);
-//   ASSERT_EQ(rob->get_currentPos(), pos);
-//   auto conf = rob->get_typeCount();
-//   for (auto &[k ,v] : conf){
-//     ASSERT_EQ(v, 0);
-//   }
+TEST_F(RobotTest, startActionTest){
+  /*
+    - Check currentPos
+    - clear Map
+    - reset counter
+   */
+  Position pos;
+  cmap->getPosition(Index(11,11), pos);
+  StartAction sa(pos);
+  bool res = rob->execute(make_shared<StartAction>(sa), *cmap);
+  ASSERT_TRUE(res);
+  ASSERT_EQ(rob->get_currentPos(), pos);
+  auto conf = rob->get_typeCount();
+  for (auto &[k ,v] : conf){
+    ASSERT_EQ(v, 0);
+  }
 
 
 //   // displayGridmap();
-// }
+}
 
 
 TEST_F(RobotTest, mapMoveBasicTest){
@@ -135,33 +134,69 @@ TEST_F(RobotTest, executionTest){
   AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
   AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
 
-  bool res = rob->execute(sa, *cmap);
-  res &= rob->execute(aa1, *cmap);
-  res &= rob->execute(aa2, *cmap);
-  res &= rob->execute(aa3, *cmap);
-  res &= rob->execute(aa4, *cmap);
+  auto sap = make_shared<StartAction>(sa);
+  auto aa1p = make_shared<AheadAction>(aa1);
+  auto aa2p = make_shared<AheadAction>(aa2);
+  auto aa3p = make_shared<AheadAction>(aa3);
+  auto aa4p = make_shared<AheadAction>(aa4);
 
-  displayGridmap();
+  bool res = rob->execute(sap, *cmap);
+  res &= rob->execute(aa1p, *cmap);
+  res &= rob->execute(aa2p, *cmap);
+  res &= rob->execute(aa3p, *cmap);
+  res &= rob->execute(aa4p, *cmap);
+
+  // displayGridmap();
   ASSERT_TRUE(res);
 }
 
+TEST_F(RobotTest, evaluationTest){
+  Position pos0, pos1;
+  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  cmap->getPosition(Index(33,33),pos1);
+  PathAction pa(PAT::CAhead);
+  StartAction sa(pos0);
+  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
+  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
+  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
 
-// TEST_F(RobotTest, aheadActionTest){
-//   Position pos;
-//   cmap->getPosition(Index(11,11),pos);
-//   StartAction sa(pos);
-//   // EndAction ea(WPs({Position(800, 800)}));
-//   AheadAction aa(PAT::CAhead, {{PAP::Angle, 90}, {PAP::Distance, 100}});
-
-//   bool res = rob->execute(sa, *cmap);
-//   res &= rob->execute(aa, *cmap);
-
-//   cout << "Map sum " << cmap->get("map").sum() << endl;
-//   ASSERT_TRUE(res);
+  PAs actions2;
+  actions2.push_back(make_shared<StartAction>(sa));
+  actions2.push_back(make_shared<AheadAction>(aa1));
+  actions2.push_back(make_shared<AheadAction>(aa2));
+  actions2.push_back(make_shared<AheadAction>(aa3));
+  actions2.push_back(make_shared<AheadAction>(aa4));
 
 
-//   // displayGridmap();
-// }
+  bool res = rob->evaluateActions(actions2);
+
+  cout << "aa1: " << aa1.get_wps().size() << endl;
+
+  ASSERT_TRUE(res);
+
+  displayImage(rob->gridToImg("map"));
+
+}
+
+
+
+TEST_F(RobotTest, aheadActionTest){
+  Position pos;
+  cmap->getPosition(Index(11,11),pos);
+  StartAction sa(pos);
+  // EndAction ea(WPs({Position(800, 800)}));
+  AheadAction aa(PAT::CAhead, {{PAP::Angle, 180}, {PAP::Distance, 100}});
+
+  bool res = rob->execute(make_shared<StartAction>(sa), *cmap);
+  res &= rob->execute(make_shared<AheadAction>(aa), *cmap);
+
+  cout << "Map sum " << cmap->get("map").sum() << endl;
+  ASSERT_TRUE(res);
+
+
+  // displayGridmap();
+}
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
