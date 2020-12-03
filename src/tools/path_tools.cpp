@@ -49,7 +49,7 @@ template<class... Args>
 inline void debug(Args... args)
 {
 #if __DEBUG_DEBUG__
-  std::cout << CYAN << "[DEBUG] " << RESET << __LINE__ << ": ";
+  std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
   (std::cout << ... << args) << "\n";
 #endif
 }
@@ -58,7 +58,7 @@ template<class... Args>
 inline void info(Args... args)
 {
 #if __DEBUG_INFO__
-  std::cout << GREEN << "[INFO] " << RESET << __LINE__ << ": ";
+  std::cout << GREEN << "[INFO]" << RESET  << ": ";
   (std::cout << ... << args) << "\n";
 #endif
 }
@@ -67,7 +67,7 @@ template<class... Args>
 inline void warn(Args... args)
 {
 #if __DEBUG_WARN__
-  std::cout << RED << "[WARN]" << RESET << __LINE__ << ": ";
+  std::cout << RED << "[WARN]" << RESET  << ": ";
   (std::cout << ... << args) << "\n";
 #endif
 }
