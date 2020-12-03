@@ -170,11 +170,7 @@ TEST_F(RobotTest, evaluateActionTest){
   actions2.push_back(make_shared<AheadAction>(aa3));
   actions2.push_back(make_shared<AheadAction>(aa4));
 
-
   bool res = rob->evaluateActions(actions2);
-
-  cout << "aa1: " << aa1.get_wps().size() << endl;
-
   ASSERT_TRUE(res);
 
   auto conf = rob->get_typeCount();
@@ -208,8 +204,6 @@ TEST_F(RobotTest, evaluateActionTestCollision){
 
   bool res = rob->evaluateActions(actions2);
 
-  cout << "aa1: " << aa1.get_wps().size() << endl;
-
   ASSERT_TRUE(res);
   ASSERT_EQ(actions2.size(), 5);
   ASSERT_EQ(actions2.back()->getConfig()[PAP::Distance], 7350);
@@ -237,10 +231,7 @@ TEST_F(RobotTest, evaluateActionTestPointOutOfMapBounds){
   actions2.push_back(make_shared<AheadAction>(aa3));
   actions2.push_back(make_shared<AheadAction>(aa4));
 
-
   bool res = rob->evaluateActions(actions2);
-
-  cout << "aa1: " << aa1.get_wps().size() << endl;
 
   ASSERT_TRUE(res);
   ASSERT_EQ(actions2.size(), 4);
@@ -252,6 +243,38 @@ TEST_F(RobotTest, evaluateActionTestPointOutOfMapBounds){
 }
 
 
+TEST_F(RobotTest, evaluateActionTestTooFewActions){
+  // When all action except start and end remain in action list, evaluation action
+  // is supposed to return false to ultimately delete the action sequence / genome
+  Position pos0, pos1;
+  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  cmap->getPosition(Index(33,33),pos1);
+  PathAction pa(PAT::CAhead);
+  StartAction sa(pos0);
+  EndAction ea(WPs({Position(42,42)}));
+  // AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
+  // AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
+  // AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
+  // AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 100500}}));
+
+  PAs actions2;
+  actions2.push_back(make_shared<StartAction>(sa));
+  actions2.push_back(make_shared<EndAction>(ea));
+  // actions2.push_back(make_shared<AheadAction>(aa1));
+  // actions2.push_back(make_shared<AheadAction>(aa2));
+  // actions2.push_back(make_shared<AheadAction>(aa3));
+  // actions2.push_back(make_shared<AheadAction>(aa4));
+
+  bool res = rob->evaluateActions(actions2);
+
+  ASSERT_TRUE(!res);
+  ASSERT_EQ(actions2.size(), 2);
+  // Last PA will be aa3
+  // ASSERT_EQ(*actions2.back(), aa3);
+
+  // displayImage(rob->gridToImg("map"));
+
+}
 
 
 

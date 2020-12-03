@@ -208,9 +208,15 @@ bool path::Robot::evaluateActions(PAs &pas){
       it = pas.erase(it);
     }
   }
+
   // TODO: When should it return false?
   // - When genome falls below a certain Length
   // - When endpoint cannot be reached
+  if(pas.size() == 2){
+    warn("Only start and end action remain in list");
+    return false;
+  }
+
   return true;
 }
 
