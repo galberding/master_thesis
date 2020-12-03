@@ -30,14 +30,10 @@ void resetConfParameter(map<K, V> &config, K key){
 template<typename K, typename V>
 void incConfParameter(map<K, V> &config,const K key, V value){
   // set Parameter if not exists
-  cout << "Update Config" << endl;
-
   auto ret = config.insert(pair(key, value));
   if(ret.second == false){
     config[key]++;
   }
-  std::cout << "Done update" << "\n";
-
 }
 
 
@@ -49,6 +45,33 @@ direction path::angleToDir(double angle){
   return radAngleToDir(angle / (180/M_PI));
 }
 
+template<class... Args>
+inline void debug(Args... args)
+{
+#if __DEBUG_DEBUG__
+  std::cout << CYAN << "[DEBUG] " << RESET << __LINE__ << ": ";
+  (std::cout << ... << args) << "\n";
+#endif
+}
+
+template<class... Args>
+inline void info(Args... args)
+{
+#if __DEBUG_INFO__
+  std::cout << GREEN << "[INFO] " << RESET << __LINE__ << ": ";
+  (std::cout << ... << args) << "\n";
+#endif
+}
+
+template<class... Args>
+inline void warn(Args... args)
+{
+#if __DEBUG_WARN__
+  std::cout << RED << "[WARN]" << RESET << __LINE__ << ": ";
+  (std::cout << ... << args) << "\n";
+#endif
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Action                                  //
 ///////////////////////////////////////////////////////////////////////////////
@@ -56,6 +79,11 @@ direction path::angleToDir(double angle){
 WPs path::PathAction::generateWPs(Position start) {
 
   return wps;
+}
+
+bool path::PathAction::updateConf(PAP param, double val) {
+  mod_config[param] = val;
+  return true;
 }
 
 
@@ -68,11 +96,11 @@ path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
   updateConfig(mod_config, conf);
 }
 
-WPs path::AheadAction::generateWPs(Position start){
+WPs path::AheadAction::generateWPs(Position start) {
   if(modified){
     wps.clear();
     direction dir = angleToDir(mod_config[PAP::Angle]);
-    cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
+    // cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
     wps.push_back(start);
     wps.push_back(start + dir*(mod_config[PAP::Distance] / 100));
   }
@@ -124,38 +152,42 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     break;
   }
   case PAT::Ahead:{
-    res = mapMove(map, *action, steps, currentPos, traveledPath, false);
+    res = mapMove(map, action, steps, currentPos, traveledPath, false);
     break;
   }
   case PAT::CAhead:{
-    res = mapMove(map, *action, steps, currentPos, traveledPath, true);
+    res = mapMove(map, action, steps, currentPos, traveledPath, true);
     break;
   }
   case PAT::End:{
     WPs wps = action->generateWPs(currentPos);
     // res = mapMove(action, steps, currentPos);
     wps = findShortestEndpointPath(wps);
+    res = true;
     break;
   }
   default:{
     // TODO: What in case of error?
-    throw __LINE__;
+    warn("Unknown Action detected!");
     break;
   }
   }
 
-  std::cout << "Moved " << steps << " steps" << "\n";
-
+  // std::cout << "Moved " << steps << " steps" << "\n";
+  debug("Moved ", steps, " steps");
   if(!res && steps == 0){
-      // Action failed, destroy action from genome
-      return false;
-    }else if (!res){
-      // Action was at least partially executable
-      // TODO: Adapt action parameter (How??)
-    //Add generated waypoints to the complete path
-
-    cout << "Adapt action" << endl;
-    }
+    warn("Action from type ", static_cast<int>(action->get_type()), " failed");
+    // Action failed, destroy action from genome
+    return false;
+  }else if (!res){
+    // Action was at least partially executable
+    // Case of Ahead action ...
+    Position start =  action->get_wps().front();
+    double dist = static_cast<double>((start-currentPos).norm() * 100);
+    debug("New distance: ", dist);
+    action->updateConf(PAP::Distance, dist);
+    return true;
+  }
 
   return res;
 }
@@ -201,79 +233,69 @@ WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
   return b;
 }
 
-bool path::Robot::mapMove(GridMap &cmap, PathAction& action, int &steps, Position &currentPos, WPs &path, bool clean) {
+bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
   // TODO: Ensure start and endpoint are given in waypoint -> use this assumption exclusively
   // AS LONG as we do not have any other actions available
-  WPs waypoints = action.generateWPs(currentPos);
+  WPs waypoints = action->generateWPs(currentPos);
   // Check if wp generation was successful
   steps = 0;
   bool res = true;
   if(waypoints.size() < 2){
-    std::cout << "Map Move Failed!" << "\n";
-
-
+    warn("Map move failed, out of bounds!");
     return false;
-  }else{
-    std::cout << "Start Map move" << "\n";
-
   }
 
-  // for (WPs::iterator it = begin(waypoints); it != end(waypoints);){
-    Position start =  waypoints.front();
-    Position lastPos = waypoints.back();
-    std::cout << "Start and last waypoint:" << "\n";
-    std::cout << start << "\n";
-    std::cout << lastPos << "\n";
+  Position start =  waypoints.front();
+  Position lastPos = waypoints.back();
+  debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
-    // Check if points are in range
-    if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
-      cout << "Not inside!" << endl;
-      return false;
-    }
+  // Check if points are in range
+  if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
+    debug("Waypoints not in map range");
+    return false;
+  }
 
-    Index lastIdx;
-    for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
+  Index lastIdx;
+  for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
-      // Check if start or endpoint collidates with obstacle
-      float obstacle = cmap.at("obstacle", *lit);
-      // std::cout << "Cell" << "\n";
+    // Check if start or endpoint collidates with obstacle
+    float obstacle = cmap.at("obstacle", *lit);
+    // std::cout << "Cell" << "\n";
 
-      if(obstacle > 0){
-	// The current index collides with an object
-	// TODO: store the last valid position to the waypoints
-	// return false;
-	res = false;
-	break;
-      }else{
-	// Update last position
-	lastIdx = *lit;
-	if (clean){
-	  float mapVal = cmap.at("map", *lit);
-	  if (mapVal)
-	    incConfParameter(action.getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
-	  cmap.at("map", *lit)++;
+    if(obstacle > 0){
+      // The current index collides with an object
+      debug("Collision detected!");
+      res = false;
+      break;
+    }else{
+      // Update last position
+      lastIdx = *lit;
+      if (clean){
+	float mapVal = cmap.at("map", *lit);
+	if (mapVal){
+	  // TODO: happens almost always at the beginning when marking a new action
+	  debug("Crossing Path detected!");
+	  incConfParameter(action->getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
 	}
-	// get Position and put it to the visited Path
-
-	// if(cMap.getPosition(*lit, last))
-	//   path.push_back(last);
-	steps++;
+	cmap.at("map", *lit)++;
       }
+      // increment steps (to determain if action was successful)
+      // Could be omitted by checking the last index
+      steps++;
     }
-
-    cmap.getPosition(lastIdx, currentPos);
-  // }
-
-    // cout << "Inner Sum: " << cmap.get("map").sum() << endl;
-  // Append all collected waypoints
-
+  }
+  // Update last valid robot position (before possible collision)
+  cmap.getPosition(lastIdx, currentPos);
+  // Update Waypoints
+  path.push_back(start);
+  path.push_back(currentPos);
   return res;
 }
 
 
 cv::Mat path::Robot::gridToImg(string layer){
   cv::Mat img;
-  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, layer, CV_8U, 0.0, 1, img);
+  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, layer, CV_8U, 0.0, 2, img);
   return img;
 }

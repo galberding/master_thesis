@@ -14,6 +14,16 @@
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
 
+#define RESET   "\033[0m"
+#define RED     "\033[31m"      /* Red */
+#define GREEN   "\033[32m"      /* Green */
+#define YELLOW  "\033[33m"      /* Yellow */
+#define CYAN    "\033[36m"
+
+#define __DEBUG__ true
+#define __DEBUG_DEBUG__ true
+#define __DEBUG_INFO__ true
+#define __DEBUG_WARN__ true
 
 
 
@@ -104,6 +114,8 @@ namespace path {
     // virtual waypoints calEndpoint(grid_map::Index &start);
     // grid_map::Index vecToIdx(direction vec);
     PA_config& getConfig(){return mod_config;}
+
+    bool updateConf(PAP param, double val);
   // private:
   // protected:
     bool modified = true;
@@ -118,7 +130,7 @@ namespace path {
   class AheadAction : public  PathAction{
   public:
     AheadAction(path::PAT type, PA_config conf);
-    WPs generateWPs(Position start) override;
+    virtual WPs generateWPs(Position start) override;
   };
 
   class EndAction : public PathAction{
@@ -131,7 +143,7 @@ namespace path {
       TODO: mechanism to check if endpoints are coccupied
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
-    WPs generateWPs(Position start);
+    virtual WPs generateWPs(Position start) override;
   };
 
   class StartAction : public PathAction{
@@ -172,7 +184,7 @@ For now we will just return the start point because the robot object should find
     /*
       Mark points on the map and cal
      */
-    bool mapMove(GridMap &cmap, PathAction &action, int &steps, Position &currentPos, WPs &path, bool clean=true);
+    bool mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
 
     cv::Mat gridToImg(string layer);
 

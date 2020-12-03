@@ -37,7 +37,7 @@ protected:
     map.add("obstacle", 255.0);
     map.add("map", 0.0);
 
-    for (SubmapIterator sm(map, Index(10, 10), Size(map.getSize().x() - 10, map.getSize().y() - 20)); !sm.isPastEnd();
+    for (SubmapIterator sm(map, Index(10, 10), Size(map.getSize().x() - 10, map.getSize().y() - 30)); !sm.isPastEnd();
 	 ++sm) {
     // if (!map.isInside(sm.getSubmapIndex())){
       // cout << "outside the map: " << sm.getSubmapIndex().x() << " " << sm.getSubmapIndex().y() << endl;
@@ -112,7 +112,7 @@ TEST_F(RobotTest, mapMoveBasicTest){
   pa.set_wps(vector<Position>({pos0, pos1}));
   int steps;
   WPs path;
-  bool res = rob->mapMove(*cmap, pa, steps, rob->get_currentPos(), path, true);
+  bool res = rob->mapMove(*cmap, make_shared<PathAction>(pa), steps, rob->get_currentPos(), path, true);
 
 
   cout << "Current Sum " << cmap->get("map").sum() << endl;
@@ -159,7 +159,7 @@ TEST_F(RobotTest, evaluationTest){
   AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
   AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
   AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
-  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 5000}}));
 
   PAs actions2;
   actions2.push_back(make_shared<StartAction>(sa));
@@ -174,6 +174,38 @@ TEST_F(RobotTest, evaluationTest){
   cout << "aa1: " << aa1.get_wps().size() << endl;
 
   ASSERT_TRUE(res);
+
+  // displayImage(rob->gridToImg("map"));
+
+}
+
+
+TEST_F(RobotTest, evaluationTestObjectCollision){
+  Position pos0, pos1;
+  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  cmap->getPosition(Index(33,33),pos1);
+  PathAction pa(PAT::CAhead);
+  StartAction sa(pos0);
+  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
+  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
+  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 7500}}));
+
+  PAs actions2;
+  actions2.push_back(make_shared<StartAction>(sa));
+  actions2.push_back(make_shared<AheadAction>(aa1));
+  actions2.push_back(make_shared<AheadAction>(aa2));
+  actions2.push_back(make_shared<AheadAction>(aa3));
+  actions2.push_back(make_shared<AheadAction>(aa4));
+
+
+  bool res = rob->evaluateActions(actions2);
+
+  cout << "aa1: " << aa1.get_wps().size() << endl;
+
+  ASSERT_TRUE(res);
+  ASSERT_EQ(actions2.size(), 5);
+  ASSERT_EQ(actions2.back()->getConfig()[PAP::Distance], 7350);
 
   displayImage(rob->gridToImg("map"));
 
