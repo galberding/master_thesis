@@ -45,32 +45,32 @@ direction path::angleToDir(double angle){
   return radAngleToDir(angle / (180/M_PI));
 }
 
-template<class... Args>
-inline void debug(Args... args)
-{
-#if __DEBUG_DEBUG__
-  std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
-  (std::cout << ... << args) << "\n";
-#endif
-}
+// template<class ... Args>
+// inline void path::debug(Args ... args)
+// {
+// #if __DEBUG_DEBUG__
+//   std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
+//   (std::cout << ... << args) << "\n";
+// #endif
+// }
 
-template<class... Args>
-inline void info(Args... args)
-{
-#if __DEBUG_INFO__
-  std::cout << GREEN << "[INFO]" << RESET  << ": ";
-  (std::cout << ... << args) << "\n";
-#endif
-}
+// template<class... Args>
+// void path::info(Args... args)
+// {
+// #if __DEBUG_INFO__
+//   std::cout << GREEN << "[INFO]" << RESET  << ": ";
+//   (std::cout << ... << args) << "\n";
+// #endif
+// }
 
-template<class... Args>
-inline void warn(Args... args)
-{
-#if __DEBUG_WARN__
-  std::cout << RED << "[WARN]" << RESET  << ": ";
-  (std::cout << ... << args) << "\n";
-#endif
-}
+// template<class... Args>
+// void path::warn(Args... args)
+// {
+// #if __DEBUG_WARN__
+//   std::cout << RED << "[WARN]" << RESET  << ": ";
+//   (std::cout << ... << args) << "\n";
+// #endif
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Action                                  //

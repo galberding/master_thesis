@@ -1,9 +1,7 @@
-#include "tools.hpp"
+#include "debug.h"
 
-using namespace tools;
-
-inline void debugging::printWaypoints(vector<cv::Point> &waypoints){
-#if __DEBUGGING__
-
-#endif
-}
+// template<class... Args>
+// void print(Args... args) {
+//   std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
+//   (std::cout << ... << args) << "\n";
+// }

@@ -25,6 +25,7 @@
 #define __DEBUG_INFO__ true
 #define __DEBUG_WARN__ true
 
+#include "debug.h"
 
 
 namespace path {
@@ -73,6 +74,12 @@ namespace path {
 
   direction angleToDir(double angle);
 
+  // template<class ... Args>
+  // void debug(Args ... args);
+  // template<class... Args>
+  // void info(Args... args);
+  // template<class... Args>
+  // void warn(Args... args);
 
   enum class PathActionType
   {

@@ -188,6 +188,10 @@ set(OPTI_ENV
   src/pool.cpp
   src/tools/path_tools.h
   src/tools/path_tools.cpp
+  src/optimizer/ga_path_generator.h
+  src/optimizer/ga_path_generator.cpp
+  src/tools/debug.h
+  src/tools/debug.cpp
 )
 
 # include_directories(  )
@@ -220,8 +224,8 @@ target_link_libraries(opti ${catkin_LIBRARIES})
 
 ## Add gtest based cpp test target and link libraries
 
-catkin_add_gtest(${PROJECT_NAME}-test test/test_ros_opti.cpp)
-catkin_add_executable_with_gtest(opti-test
+# catkin_add_gtest(opti-test test/test_ros_opti.cpp)
+catkin_add_executable_with_gtest(test-path-tools
   test/test_ros_opti.cpp
   ${OPTI_ENV}
   # src/tools/path_tools.h
@@ -229,7 +233,15 @@ catkin_add_executable_with_gtest(opti-test
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-opti
+  test/test_optimizer.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
 
-if(TARGET opti-test)
-  target_link_libraries(opti-test ${catkin_LIBRARIES})
-endif()
+# if(TARGET test-path-tools)
+target_link_libraries(test-path-tools ${catkin_LIBRARIES})
+target_link_libraries(test-opti ${catkin_LIBRARIES})
+# endif()
