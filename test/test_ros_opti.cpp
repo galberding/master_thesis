@@ -18,6 +18,18 @@ TEST(HelperFunctions, updateConfig){
 }
 
 
+TEST(HelperFunctions, compyAction){
+  StartAction sa(Position(42,42));
+  StartAction copy(sa);
+
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 42}});
+  AheadAction aa_copy(aa);
+
+  ASSERT_EQ(aa.getConfig()[PAP::Distance], aa_copy.getConfig()[PAP::Distance]);
+
+  ASSERT_EQ(sa.generateWPs(Position(0,0)), copy.generateWPs(Position(0,0)));
+}
+
 
 TEST(ActionTests, aheadActionWPgeneration){
   AheadAction aa(PAT::CAhead, {{PAP::Angle, 45}, {PAP::Distance, 10}});

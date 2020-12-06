@@ -32,20 +32,6 @@ TEST_F(GATest, distroTest){
   debug("blub", hello, "hh");
 }
 
-// template<class... Args>
-// void print2(Args... args) {
-//   std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
-//   (std::cout << ... << args) << "\n";
-// }
-
-TEST(WTF, why){
-  int hello = 42;
-  debug("blub", hello, "hh");
-
-  print2("blub2", "etess", "dasdasd");
-
-  debug("blub", hello); // does not compile
-}
 
   int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

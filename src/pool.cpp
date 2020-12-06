@@ -434,34 +434,13 @@ genome opti_ga::GenPool::roulettWheelSelection(){
   genome gen;
   for(int i=0; i < gens.size(); i++){
     offset += gens.at(i).fitness / totalFitness;
-    // std::cout << "Fitness: " << gens.at(i).fitness << "\n";
-    // std::cout << "total Fitness: " << totalFitness << "\n";
-    // std::cout << "Division " << gens.at(i).fitness / totalFitness << "\n";
-
-
-    // std::cout << "offset: " << offset << "\n";
-    // std::cout << "random val: " << rand << "\n";
 
     if(rand < offset){
-      // std::cout << "Gen found!!" << "\n";
-      // std::cout << "Size before erase: " << gens.size() << "\n";
-
-
       gen = gens.at(i);
       gens.erase(gens.begin() + i);
-      // std::cout << "Selected Gen: " << "\n";
-      // for(auto w : gen.waypoints){
-      // 	cout << w << " | ";
-      // }
-      // cout << endl;
-      // cout<< gen.fitness << endl;
-
-      // std::cout << "Size after erase: " << gens.size() << "\n";
       break;
-      // return gen;
     }
   }
-  // throw 32;
   return gen;
 }
 
