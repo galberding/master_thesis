@@ -20,14 +20,17 @@
 #define YELLOW  "\033[33m"      /* Yellow */
 #define CYAN    "\033[36m"
 
-#define __DEBUG__ true
-#define __DEBUG_DEBUG__ true
-#define __DEBUG_INFO__ true
-#define __DEBUG_WARN__ true
+// #define __DEBUG__ true
+// #define __DEBUG_DEBUG__ true
+// #define __DEBUG_INFO__ true
+// #define __DEBUG_WARN__ true
 
 #include "debug.h"
 
-
+// #ifdef __DEBUG__
+#undef __DEBUG__
+#define __DEBUG__ false
+// #endif
 namespace path {
 
   /*
@@ -42,6 +45,7 @@ namespace path {
     Clean_speed_cm_s = 3,
     // Rotation_speed = 4,
   };
+  using RP = RobotProperty;
 
   enum class PathActionParameter {
     AngleOffset = 0,
@@ -196,6 +200,9 @@ For now we will just return the start point because the robot object should find
     cv::Mat gridToImg(string layer);
 
 
+    rob_config getConfig(){return defaultConfig;};
+
+    int getFreeArea();
   private:
     grid_map::GridMap cMap;
     map<PathActionType, int> typeCount;

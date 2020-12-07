@@ -95,9 +95,7 @@ TEST_F(RobotTest, executionStartActionTest){
   for (auto &[k ,v] : conf){
     ASSERT_EQ(v, 0);
   }
-
-
-//   // displayGridmap();
+// displayGridmap();
 }
 
 
@@ -288,6 +286,15 @@ TEST_F(RobotTest, evaluateActionTestTooFewActions){
 
 }
 
+TEST_F(RobotTest, mapBoundsTest){
+  Position pos;
+  debug(cmap->getSize().x());
+  debug(cmap->getPosition(Index(cmap->getSize().x()-1, cmap->getSize().y()-1), pos));
+  debug(pos);
+  debug(cmap->getPosition(Index(0, 0), pos));
+  debug(pos);
+
+}
 
 
 int main(int argc, char **argv){

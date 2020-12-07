@@ -1,5 +1,10 @@
 #include "path_tools.h"
 
+// #ifdef __DEBUG__
+// #undef __DEBUG__
+// #define __DEBUG__ false
+// #endif
+
 using namespace path;
 
 
@@ -92,7 +97,7 @@ bool path::PathAction::updateConf(PAP param, double val) {
 ///////////////////////////////////////////////////////////////////////////////
 
 path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
-  mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 0}});
+  mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 300}});
   updateConfig(mod_config, conf);
 }
 
@@ -174,7 +179,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   }
 
   // std::cout << "Moved " << steps << " steps" << "\n";
-  debug("Moved ", steps, " steps");
+  // debug("Moved ", steps, " steps");
   if(!res && steps == 0){
     warn("Action from type ", static_cast<int>(action->get_type()), " failed");
     // Action failed, destroy action from genome
@@ -184,7 +189,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     // Case of Ahead action ...
     Position start =  action->get_wps().front();
     double dist = static_cast<double>((start-currentPos).norm() * 100);
-    debug("New distance: ", dist);
+    // debug("New distance: ", dist);
     action->updateConf(PAP::Distance, dist);
     return true;
   }
@@ -254,11 +259,11 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
   Position start =  waypoints.front();
   Position lastPos = waypoints.back();
-  debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
+  // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
   // Check if points are in range
   if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
-    debug("Waypoints not in map range");
+    // debug("Waypoints not in map range");
     return false;
   }
 
@@ -271,7 +276,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
     if(obstacle > 0){
       // The current index collides with an object
-      debug("Collision detected!");
+      // debug("Collision detected!");
       res = false;
       break;
     }else{
@@ -281,7 +286,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 	float mapVal = cmap.at("map", *lit);
 	if (mapVal){
 	  // TODO: happens almost always at the beginning when marking a new action
-	  debug("Crossing Path detected!");
+	  // debug("Crossing Path detected!");
 	  incConfParameter(action->getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
 	}
 	cmap.at("map", *lit)++;
@@ -304,4 +309,9 @@ cv::Mat path::Robot::gridToImg(string layer){
   cv::Mat img;
   grid_map::GridMapCvConverter::toImage<unsigned char, 1>(cMap, layer, CV_8U, 0.0, 2, img);
   return img;
+}
+
+int path::Robot::getFreeArea(){
+  return cMap.getSize().x()*cMap.getSize().y() - (cMap.get("obstacle").sum());
+
 }
