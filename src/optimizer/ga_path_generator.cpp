@@ -112,8 +112,26 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
 }
 
 
+struct MutationType{
+  virtual void* operator()(Genpool &pool, int probability) = 0;
+  virtual ~MutationType(){}
+};
+
+
+
+using Mutation_conf = map<MutationType, int>;
+
+
+
+
+void mutation(Genpool& currentPopulation, Mutation_conf){
+
+}
+
 
 void ga::GA::mutation(Genpool& currentPopulation) {
+  // double
+
 
 }
 
