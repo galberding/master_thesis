@@ -8,7 +8,9 @@ using namespace path;
 class GATest : public ::testing::Test{
 protected:
   void SetUp() override {
-    ga = make_shared<GA>(GA(42, 2, 1, 0, 90));
+
+    Mutation_conf muta;
+    ga = make_shared<GA>(GA(42, 2, 1, 0, 90, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
     map.add("obstacle", 1.0);
@@ -98,6 +100,41 @@ TEST_F(GATest, randTest){
   }
 
 
+}
+
+
+TEST_F(GATest, mutationConfigTest){
+  Genpool pool;
+  ga->populatePool(pool, Position(42,42), {Position(42,42)}, 2, 1);
+
+
+  genome gen1 = pool.front();
+  genome gen2 = pool.back();
+
+  auto size = gen1.actions.size();
+  ga->addAction(gen1);
+  ASSERT_EQ(gen1.actions.size(), size + 1);
+
+  ga->removeAction(gen1);
+  ASSERT_EQ(gen1.actions.size(), size);
+
+  auto action = *next(gen1.actions.begin(), 1);
+
+  auto dOffset = action->mod_config[PAP::DistanceOffset];
+  debug("DistOff: ", dOffset);
+  ga->addDistanceOffset(gen1);
+  ASSERT_NE(action->mod_config[PAP::DistanceOffset], dOffset);
+
+  auto aOffset = action->mod_config[PAP::AngleOffset];
+  debug("AngleOff: ", aOffset);
+  ga->addAngleOffset(gen1);
+  ASSERT_NE(action->mod_config[PAP::AngleOffset], aOffset);
+
+
+  // for(auto [k, v] : muta){
+  //   debug("Execute: ", k);
+  //   v.first(pool, v.second);
+  // }
 }
 
 

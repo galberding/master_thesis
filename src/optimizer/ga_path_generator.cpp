@@ -42,6 +42,12 @@ ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::unifor
   return gen;
 }
 
+int ga::randRange(int lower, int upper){
+  return (rand() % (upper -lower) + lower);
+}
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                     GA                                    //
@@ -53,7 +59,7 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
     PAs actions;
     actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
-      PA_config config{{PAP::Angle, angleDistr(gen)}, {PAP::Distance, distanceDistr(gen)*100}};
+      PA_config config{{PAP::Angle, angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)*100}};
       actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
     }
     actions.push_back(make_shared<EndAction>(EndAction(endpoints)));
@@ -69,13 +75,10 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
   // Perform turnament selection:
   for(int i=0; i<individuals; i++){
-    selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, gen));
+    selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
   }
 }
 
-int randRange(int lower, int upper){
-  return (rand() % (upper -lower) + lower);
-}
 
 void ga::GA::crossover(genome &par1, genome &par2, Genpool& newPopulation){
   PAs parent1, parent2, child1, child2;
@@ -112,19 +115,7 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
 }
 
 
-struct MutationType{
-  virtual void* operator()(Genpool &pool, int probability) = 0;
-  virtual ~MutationType(){}
-};
-
-
-
-using Mutation_conf = map<MutationType, int>;
-
-
-
-
-void mutation(Genpool& currentPopulation, Mutation_conf){
+void mutation(Genpool& currentPopulation, Mutation_conf muat_conf){
 
 }
 
@@ -194,5 +185,47 @@ double ga::GA::calFitness(double cdist,
   // debug("final_occ: ", final_occ);
   double weight = 0.6;
   return ((1-weight)*(final_time + final_occ) + weight*(current_occ / freeSpace)) / 3;
+
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                             Mutation Functions                            //
+///////////////////////////////////////////////////////////////////////////////
+
+void ga::GA::addAction(genome &gen){
+  int idx = randRange(1, gen.actions.size()-1);
+
+  PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
+  PAT type = (*next(gen.actions.begin(), idx))->get_type();
+  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
+}
+
+void ga::GA::removeAction(genome &gen){
+  int idx = randRange(1, gen.actions.size()-1);
+  gen.actions.erase(next(gen.actions.begin(), idx));
+}
+
+void ga::GA::addAngleOffset(genome &gen){
+  int idx = randRange(1, gen.actions.size()-1);
+  double offset = angleDistr(generator);
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Angle] += offset;
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
+}
+
+void ga::GA::addDistanceOffset(genome &gen){
+  int idx = randRange(1, gen.actions.size()-1);
+  double offset = distanceDistr(generator);
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Distance] += offset;
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::DistanceOffset] += offset;
+}
+
+void ga::GA::swapRandomAction(genome &gen){
+  int idx1 = randRange(1, gen.actions.size()-1);
+  int idx2 = randRange(1, gen.actions.size()-1);
+
+  auto item1 = *next(gen.actions.begin(), idx1);
+
+  *next(gen.actions.begin(), idx1) = *next(gen.actions.begin(), idx2);
+  *next(gen.actions.begin(), idx2) = item1;
 
 }
