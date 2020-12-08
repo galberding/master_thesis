@@ -24,7 +24,7 @@ namespace ga{
   };
 
   using Genpool = std::vector<genome>;
-  using mutaPair = pair<void (*)(genome &gen), int>;
+  using mutaPair = pair<void (*)(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator), int>;
   using Mutation_conf = map<string, mutaPair>;
 
 
@@ -33,6 +33,19 @@ namespace ga{
   genome roulettWheelSelection(Genpool &currentPopulation, std::uniform_real_distribution<> selDistr, std::mt19937 generator);
 
   int randRange(int lower, int upper);
+
+///////////////////////////////////////////////////////////////////////////////
+//                             Mutation Functions                            //
+///////////////////////////////////////////////////////////////////////////////
+
+  void addAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator);
+  void removeAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator);
+  void addAngleOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator);
+  void addDistanceOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator);
+  void swapRandomAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator);
+  // void swapRandomActionRegion(genome &gen);
+
+
 
 
 
@@ -67,21 +80,7 @@ namespace ga{
 			      double speed_m_s,
 			      int freeSpace);
 
-///////////////////////////////////////////////////////////////////////////////
-//                             Mutation Functions                            //
-///////////////////////////////////////////////////////////////////////////////
-
-  void addAction(genome &gen);
-  void removeAction(genome &gen);
-  void addAngleOffset(genome &gen);
-  void addDistanceOffset(genome &gen);
-  void swapRandomAction(genome &gen);
-  // void swapRandomActionRegion(genome &gen);
-
 
   };
-
-
 }
-
 #endif /* GA_PATH_GENERATOR_H */

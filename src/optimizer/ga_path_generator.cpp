@@ -46,7 +46,47 @@ int ga::randRange(int lower, int upper){
   return (rand() % (upper -lower) + lower);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//                             Mutation Functions                            //
+///////////////////////////////////////////////////////////////////////////////
 
+void ga::addAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  int idx = randRange(1, gen.actions.size()-1);
+
+  PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
+  PAT type = (*next(gen.actions.begin(), idx))->get_type();
+  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
+}
+
+void ga::removeAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  int idx = randRange(1, gen.actions.size()-1);
+  gen.actions.erase(next(gen.actions.begin(), idx));
+}
+
+void ga::addAngleOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  int idx = randRange(1, gen.actions.size()-1);
+  double offset = angleDist(generator);
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Angle] += offset;
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
+}
+
+void ga::addDistanceOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  int idx = randRange(1, gen.actions.size()-1);
+  double offset = distanceDist(generator);
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Distance] += offset;
+  next(gen.actions.begin(), idx)->get()->mod_config[PAP::DistanceOffset] += offset;
+}
+
+void ga::swapRandomAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  int idx1 = randRange(1, gen.actions.size()-1);
+  int idx2 = randRange(1, gen.actions.size()-1);
+
+  auto item1 = *next(gen.actions.begin(), idx1);
+
+  *next(gen.actions.begin(), idx1) = *next(gen.actions.begin(), idx2);
+  *next(gen.actions.begin(), idx2) = item1;
+
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -121,7 +161,7 @@ void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) {
       int proba = randRange(0,100);
       if(v.second > proba){
 	// execute mutation strategy
-	v.first(gen);
+	v.first(gen, angleDistr, distanceDistr, generator);
       }
     }
   }
@@ -186,47 +226,5 @@ double ga::GA::calFitness(double cdist,
   // debug("final_occ: ", final_occ);
   double weight = 0.6;
   return ((1-weight)*(final_time + final_occ) + weight*(current_occ / freeSpace)) / 3;
-
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//                             Mutation Functions                            //
-///////////////////////////////////////////////////////////////////////////////
-
-void ga::GA::addAction(genome &gen){
-  int idx = randRange(1, gen.actions.size()-1);
-
-  PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
-  PAT type = (*next(gen.actions.begin(), idx))->get_type();
-  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
-}
-
-void ga::GA::removeAction(genome &gen){
-  int idx = randRange(1, gen.actions.size()-1);
-  gen.actions.erase(next(gen.actions.begin(), idx));
-}
-
-void ga::GA::addAngleOffset(genome &gen){
-  int idx = randRange(1, gen.actions.size()-1);
-  double offset = angleDistr(generator);
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Angle] += offset;
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
-}
-
-void ga::GA::addDistanceOffset(genome &gen){
-  int idx = randRange(1, gen.actions.size()-1);
-  double offset = distanceDistr(generator);
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Distance] += offset;
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::DistanceOffset] += offset;
-}
-
-void ga::GA::swapRandomAction(genome &gen){
-  int idx1 = randRange(1, gen.actions.size()-1);
-  int idx2 = randRange(1, gen.actions.size()-1);
-
-  auto item1 = *next(gen.actions.begin(), idx1);
-
-  *next(gen.actions.begin(), idx1) = *next(gen.actions.begin(), idx2);
-  *next(gen.actions.begin(), idx2) = item1;
 
 }

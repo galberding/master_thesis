@@ -9,7 +9,13 @@ class GATest : public ::testing::Test{
 protected:
   void SetUp() override {
 
-    Mutation_conf muta;
+    Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 10)},
+      {"removeAction", make_pair(removeAction, 10)},
+      {"addAngleOffset", make_pair(addAngleOffset, 90)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 90)},
+      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+    };
     ga = make_shared<GA>(GA(42, 2, 1, 0, 90, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
@@ -58,7 +64,7 @@ TEST_F(GATest, initPopulationTest){
   ga->evalFitness(pool, *rob);
 
   for(auto gen : pool){
-    debug("Finess: ", gen.fitness);
+    debug("Fitness: ", gen.fitness);
   }
 
   // displayImage(rob->gridToImg("map"));
@@ -112,31 +118,30 @@ TEST_F(GATest, mutationConfigTest){
   genome gen2 = pool.back();
 
   auto size = gen1.actions.size();
-  ga->addAction(gen1);
+  addAction(gen1, ga->angleDistr, ga->distanceDistr, ga->generator);
   ASSERT_EQ(gen1.actions.size(), size + 1);
 
-  ga->removeAction(gen1);
+  removeAction(gen1, ga->angleDistr, ga->distanceDistr, ga->generator);
   ASSERT_EQ(gen1.actions.size(), size);
 
   auto action = *next(gen1.actions.begin(), 1);
 
   auto dOffset = action->mod_config[PAP::DistanceOffset];
   debug("DistOff: ", dOffset);
-  ga->addDistanceOffset(gen1);
+  addDistanceOffset(gen1, ga->angleDistr, ga->distanceDistr, ga->generator);
   ASSERT_NE(action->mod_config[PAP::DistanceOffset], dOffset);
 
   auto aOffset = action->mod_config[PAP::AngleOffset];
   debug("AngleOff: ", aOffset);
-  ga->addAngleOffset(gen1);
+  addAngleOffset(gen1, ga->angleDistr, ga->distanceDistr, ga->generator);
   ASSERT_NE(action->mod_config[PAP::AngleOffset], aOffset);
 
-
-  // for(auto [k, v] : muta){
-  //   debug("Execute: ", k);
-  //   v.first(pool, v.second);
-  // }
 }
 
+
+TEST_F(GATest, applicationTest){
+
+}
 
 
 int main(int argc, char **argv) {
