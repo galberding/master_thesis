@@ -58,7 +58,7 @@ namespace ga{
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals);
     virtual void crossover(Genpool &currentSelection, Genpool &newPopulation);
     virtual void crossover(genome &par1, genome &par2, Genpool& newPopulation);
-    virtual void mutation(Genpool &currentPopulation);
+    virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf);
     virtual void evalFitness(Genpool &currentPopulation, Robot &rob);
     virtual double calFitness(double cdist,
 			      double dist,

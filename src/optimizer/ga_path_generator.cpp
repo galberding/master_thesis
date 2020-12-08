@@ -115,15 +115,16 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
 }
 
 
-void mutation(Genpool& currentPopulation, Mutation_conf muat_conf){
-
-}
-
-
-void ga::GA::mutation(Genpool& currentPopulation) {
-  // double
-
-
+void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) {
+  for (auto gen : currentPopulation){
+    for(auto [k, v] : muta_conf){
+      int proba = randRange(0,100);
+      if(v.second > proba){
+	// execute mutation strategy
+	v.first(gen);
+      }
+    }
+  }
 }
 
 
