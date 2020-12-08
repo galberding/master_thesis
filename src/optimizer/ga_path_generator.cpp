@@ -11,7 +11,7 @@
 using namespace ga;
 
 bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
-  return genA.fitness > genB.fitness;
+  return genA.fitness >= genB.fitness;
 }
 
 
@@ -35,6 +35,7 @@ ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::unifor
 
     if(rand < offset){
       gen = currentPopulation.at(i);
+      // debug("THE SELECTED ONE: ", gen.actions.size());
       currentPopulation.erase(currentPopulation.begin() + i);
       break;
     }
@@ -66,6 +67,9 @@ void ga::removeAction(genome &gen, std::normal_distribution<double> angleDist, s
 void ga::addAngleOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   double offset = angleDist(generator);
+
+  // debug(("Type: ", (int) next(gen.actions.begin(), idx)->get()->type));
+  // debug("Angle offset: ", offset);
   next(gen.actions.begin(), idx)->get()->mod_config[PAP::Angle] += offset;
   next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
 }
@@ -149,19 +153,24 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
     genome par1 = currentSelection.back();
     currentSelection.pop_back();
     for (auto par2 : currentSelection){
+      // debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
       crossover(par1, par2, newPopulation);
     }
   }
 }
 
 
-void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) {
+void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_config) {
   for (auto gen : currentPopulation){
-    for(auto [k, v] : muta_conf){
+    for(auto [k, v] : muat_config){
       int proba = randRange(0,100);
+      // debug("Mutation Proba: ", proba, " Config Proba: ", v.second);
       if(v.second > proba){
 	// execute mutation strategy
+	// debug("Execute: ", k);
 	v.first(gen, angleDistr, distanceDistr, generator);
+	// debug("Action size: ", gen.actions.size());
+	// debug("Done!");
       }
     }
   }
@@ -224,6 +233,7 @@ double ga::GA::calFitness(double cdist,
   // debug("Optimal time: ", optimal_time);
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
+  // debug("Space relation: ", current_occ / freeSpace);
   double weight = 0.6;
   return ((1-weight)*(final_time + final_occ) + weight*(current_occ / freeSpace)) / 3;
 

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "../src/optimizer/ga_path_generator.h"
 #include "../src/tools/debug.h"
+#include <opencv2/opencv.hpp>
 
 using namespace ga;
 using namespace path;
@@ -139,8 +140,79 @@ TEST_F(GATest, mutationConfigTest){
 }
 
 
-TEST_F(GATest, applicationTest){
+TEST_F(GATest, basicApplicationTest){
+  Genpool pool, sel, newPop;
+  Position start, end;
+  Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 100)},
+      {"removeAction", make_pair(removeAction, 100)},
+      {"addAngleOffset", make_pair(addAngleOffset, 100)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 100)},
+      {"swapRandomAction", make_pair(swapRandomAction, 100)},
+    };
+  cmap->getPosition(Index(11,11), start);
+  cmap->getPosition(Index(11,11), end);
+  debug("Start");
+  ga->populatePool(pool, start, {end}, 10, 30);
+  ASSERT_EQ(pool.size(), 10);
+  for(auto gen : pool){
+    ASSERT_GT(gen.actions.size(), 30);
+  }
+  ga->evalFitness(pool, *rob);
+  ASSERT_GT(pool.size(), 0);
+  debug("Select: ", pool.size());
+  ga->selection(pool, sel, 5);
+  for(auto gen : sel){
+    debug("Check");
+    ASSERT_GT(gen.actions.size(), 2);
+  }
+  ASSERT_EQ(sel.size(), 5);
+  debug("Cross");
+  pool.clear();
+  ga->crossover(sel, pool);
+  ASSERT_GT(pool.size(), 6);
+  for(auto gen : pool){
+    ASSERT_GT(gen.actions.size(), 2);
+  }
 
+  debug("Mutate");
+  ga->mutation(pool, muta);
+  ga->evalFitness(pool, *rob);
+  debug("Done");
+
+}
+
+TEST_F(GATest, algorithmTest){
+  Genpool pool, sel, newPop;
+  Position start, end;
+  Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 20)},
+      {"removeAction", make_pair(removeAction, 10)},
+      {"addAngleOffset", make_pair(addAngleOffset, 20)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 20)},
+      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+    };
+  int iter = 1000;
+  cmap->getPosition(Index(40,40), start);
+  cmap->getPosition(Index(40,40), end);
+  debug("Start");
+  ga->populatePool(pool, start, {end}, 10, 30);
+  ga->evalFitness(pool, *rob);
+  ga->selection(pool, sel, 5);
+
+  for(int i=0; i<iter; i++){
+    pool.clear();
+    ga->crossover(sel, pool);
+    ga->mutation(pool, muta);
+    ga->evalFitness(pool, *rob);
+    ga->selection(pool, sel, 5);
+
+    info("Best fitness: ", pool.front().fitness, " Worst fitness: ", pool.back().fitness);
+
+    rob->evaluateActions(pool.front().actions);
+    auto img = rob->gridToImg("map");
+    cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
+  }
 }
 
 
