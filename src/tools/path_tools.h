@@ -108,7 +108,7 @@ namespace path {
     const PAT get_type() const { return type; }
 
     PathAction(const PAT type):type(type){};
-    ~PathAction() = default;
+    // ~PathAction() = default;
     /*
       Update the current config parameters.
       Parameter:
@@ -136,12 +136,12 @@ namespace path {
     PA_config mod_config;
   };
 
-  using PAs = list<shared_ptr<PathAction>>;
+  using PAs = deque<shared_ptr<PathAction>>;
 
   class AheadAction : public  PathAction{
   public:
     AheadAction(path::PAT type, PA_config conf);
-    virtual WPs generateWPs(Position start) override;
+    virtual WPs generateWPs(Position start);
   };
 
   class EndAction : public PathAction{
@@ -154,7 +154,7 @@ namespace path {
       TODO: mechanism to check if endpoints are coccupied
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
-    virtual WPs generateWPs(Position start) override;
+    virtual WPs generateWPs(Position start);
   };
 
   class StartAction : public PathAction{

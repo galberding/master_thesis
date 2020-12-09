@@ -2,7 +2,6 @@
 #define GA_PATH_GENERATOR_H
 #include <random>
 #include <cmath>
-
 #include "../tools/path_tools.h"
 
 // #ifdef __DEBUG__
@@ -23,7 +22,7 @@ namespace ga{
     double fitness = 0;
   };
 
-  using Genpool = std::vector<genome>;
+  using Genpool = std::deque<genome>;
   using mutaPair = pair<void (*)(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator), int>;
   using Mutation_conf = map<string, mutaPair>;
 

@@ -5,7 +5,7 @@
 #include <cstdio>
 #define __DEBUG__ true
 #define __INFO__ true
-// #define __WARN__ true
+#define __WARN__ true
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"      /* Red */

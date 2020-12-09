@@ -11,7 +11,7 @@
 using namespace ga;
 
 bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
-  return genA.fitness >= genB.fitness;
+  return genA.fitness < genB.fitness;
 }
 
 
@@ -30,6 +30,7 @@ ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::unifor
   double offset = 0.0;
   genome gen;
 
+  // TODO: use Iterater
   for(int i=0; i < currentPopulation.size(); i++){
     offset += currentPopulation.at(i).fitness / totalFitness;
 
@@ -53,13 +54,18 @@ int ga::randRange(int lower, int upper){
 
 void ga::addAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
-
+  // debug("Index: ", idx, " Size: ", gen.actions.size());
   PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
   PAT type = (*next(gen.actions.begin(), idx))->get_type();
+  // debug("Action length before : ", gen.actions.size());
   gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
+  // debug("Action length after: ", gen.actions.size());
 }
 
 void ga::removeAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+  if (gen.actions.size() < 4){
+    return;
+  }
   int idx = randRange(1, gen.actions.size()-1);
   gen.actions.erase(next(gen.actions.begin(), idx));
 }
@@ -115,7 +121,9 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 
 void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals) {
   // Sort descending according to fitness
+  // debug("Start sort");
   sort(currentPopuation.begin(), currentPopuation.end(), compareFitness);
+  // debug("End sort");
 
   // Perform turnament selection:
   for(int i=0; i<individuals; i++){
@@ -157,6 +165,7 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
       crossover(par1, par2, newPopulation);
     }
   }
+  // debug("Cross done!");
 }
 
 
@@ -167,9 +176,11 @@ void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_config) {
       // debug("Mutation Proba: ", proba, " Config Proba: ", v.second);
       if(v.second > proba){
 	// execute mutation strategy
-	// debug("Execute: ", k);
+	// info("Execute: ", k);
+	// info("Action size befor: ", gen.actions.size());
+	// info("Fitness: ", gen.fitness);
 	v.first(gen, angleDistr, distanceDistr, generator);
-	// debug("Action size: ", gen.actions.size());
+	// info("Action size after: ", gen.actions.size());
 	// debug("Done!");
       }
     }
@@ -194,16 +205,25 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
 	if(conf.count(PAP::Distance) > 0){
 	  if(action->type == PAT::CAhead){
 	    // Add cross count (default is 1)
-	    crossed += conf[PAP::CrossCount] - 1;
+	    crossed +=  1;
+	    // crossed += conf[PAP::CrossCount] - 1;
 	    Cdistance += conf[PAP::Distance];
-	  }else{
+ 	  }else{
 	    distance += conf[PAP::Distance];
 	  }
 	}
       }
-      it->fitness = calFitness(Cdistance, distance, crossed, rob.getConfig()[RP::Clean_speed_cm_s] / 100, rob.getConfig()[RP::Drive_speed_cm_s] / 100, rob.getFreeArea());
+      // crossed = crossed / it->actions.size();
+      it->fitness = calFitness(
+			       Cdistance,
+			       distance,
+			       crossed,
+			       rob.getConfig()[RP::Clean_speed_cm_s] / 100,
+			       rob.getConfig()[RP::Drive_speed_cm_s] / 100,
+			       rob.getFreeArea());
       it++;
     }else{
+      warn("Erase Gen!");
       it = currentPopulation.erase(it);
     }
   }
@@ -217,6 +237,9 @@ double ga::GA::calFitness(double cdist,
 			  double speed_m_s,
 			  int freeSpace){
   // Use the different speeds for time calculation
+  // debug("Crossed ", crossed);
+  // debug("cdist ", cdist);
+  // debug("speed", cSpeed_m_s);
 
   double actual_time = cdist / cSpeed_m_s + dist / speed_m_s;
   double optimal_time = (cdist - crossed) / cSpeed_m_s;
@@ -225,6 +248,9 @@ double ga::GA::calFitness(double cdist,
 
   // Calculate the final occ based on the
   double current_occ = cdist - crossed;
+  if (current_occ < 0){
+    current_occ = crossed;
+  }
   double optimal_occ = cdist + crossed;
 
   double final_occ = current_occ / optimal_occ ;
@@ -234,7 +260,7 @@ double ga::GA::calFitness(double cdist,
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
-  double weight = 0.6;
+  double weight = 0.5;
   return ((1-weight)*(final_time + final_occ) + weight*(current_occ / freeSpace)) / 3;
 
 }

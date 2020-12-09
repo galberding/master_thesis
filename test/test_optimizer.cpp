@@ -14,10 +14,10 @@ protected:
       {"addAction", make_pair(addAction, 10)},
       {"removeAction", make_pair(removeAction, 10)},
       {"addAngleOffset", make_pair(addAngleOffset, 90)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 90)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-    ga = make_shared<GA>(GA(42, 2, 1, 0, 90, muta));
+    ga = make_shared<GA>(GA(42, 4, 0.5, 0, 50, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
     map.add("obstacle", 1.0);
@@ -182,36 +182,115 @@ TEST_F(GATest, basicApplicationTest){
 
 }
 
-TEST_F(GATest, algorithmTest){
+
+class GAApplication : public ::testing::Test {
+protected:
+  void SetUp() override {
+
+    Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 60)},
+      {"removeAction", make_pair(removeAction, 10)},
+      {"addAngleOffset", make_pair(addAngleOffset, 90)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
+      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+    };
+    ga = make_shared<GA>(GA(42, 2, 0.5, 0, 30, muta));
+    grid_map::GridMap map({"obstacle", "map"});
+    map.setGeometry(Length(100,100), 0.30);
+    map.add("obstacle", 1.0);
+    map.add("map", 0.0);
+
+    for (SubmapIterator sm(map, Index(10, 10), Size(map.getSize().x() - 10, map.getSize().y() - 30)); !sm.isPastEnd();
+	 ++sm) {
+      map.at("obstacle", *sm) = 0.0;
+    }
+
+    cmap = make_shared<GridMap>(map);
+    rob = make_shared<Robot>(Robot(42, {}, map));
+  }
+
+
+  void displayImage(cv::Mat img){
+    cv::imshow("Grid Map Map", img);
+    cv::waitKey();
+  }
+
+  // PAs actions;
+  shared_ptr<GridMap> cmap;
+  shared_ptr<Robot> rob;
+  shared_ptr<GA> ga;
+};
+
+
+TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 20)},
+      {"addAction", make_pair(addAction, 10)},
       {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 20)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 20)},
+      {"addAngleOffset", make_pair(addAngleOffset, 70)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
       {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-  int iter = 1000;
-  cmap->getPosition(Index(40,40), start);
-  cmap->getPosition(Index(40,40), end);
+  int iter = 100 ;
+  int selected = 15;
+  cmap->getPosition(Index(100,100), start);
+  cmap->getPosition(Index(100,100), end);
   debug("Start");
-  ga->populatePool(pool, start, {end}, 10, 30);
+  genome best;
+  ga->populatePool(pool, start, {end}, 100, 100);
   ga->evalFitness(pool, *rob);
-  ga->selection(pool, sel, 5);
-
+  ga->selection(pool, sel, selected);
+  ASSERT_EQ(sel.size(), selected);
+  best = pool.front();
   for(int i=0; i<iter; i++){
     pool.clear();
+    // debug("Cross");
+    // pool.push_back(genome(best));
     ga->crossover(sel, pool);
+    sel.clear();
+    // debug("Mut");
     ga->mutation(pool, muta);
+    // debug("Cla");
     ga->evalFitness(pool, *rob);
-    ga->selection(pool, sel, 5);
+    // debug("Sel");
+    for (auto gen : pool){
+      ASSERT_GT(gen.actions.size(), 50);
+    }
 
-    info("Best fitness: ", pool.front().fitness, " Worst fitness: ", pool.back().fitness);
+    // for (int i=0;  i<pool.size()-2= var.end(); ++ i=0) {
 
-    rob->evaluateActions(pool.front().actions);
-    auto img = rob->gridToImg("map");
-    cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
+    // }
+    for(auto it = pool.begin(); it != prev(pool.end(), 1);){
+
+      if(it->fitness == next(it, 1)->fitness){
+	it = pool.erase(it);
+      }else{
+	it++;
+      }
+    }
+    ga->selection(pool, sel, selected);
+    for (auto gen : pool){
+      ASSERT_GT(gen.fitness, 0);
+    }
+    ASSERT_EQ(sel.size(), selected);
+    debug("Done");
+
+
+    info("Population size: ", pool.size());
+       if(pool.front().fitness > best.fitness){
+      best = pool.front().fitness;
+    }
+    if (true){
+      for (auto gen : pool){
+	cout << "Gens: " << gen.fitness << " ";
+      }
+      cout << endl;
+      info("Best fitness: ", best.fitness, "Pool best: ", pool.front().fitness," Worst fitness: ", pool.back().fitness);
+      rob->evaluateActions(pool.front().actions);
+      auto img = rob->gridToImg("map");
+      cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
+    }
   }
 }
 
