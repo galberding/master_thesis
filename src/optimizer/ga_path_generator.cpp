@@ -76,7 +76,7 @@ void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::
   PAT type = (*next(gen.actions.begin(), idx))->get_type();
   // debug("Action length before : ", gen.actions.size());
   gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
-  
+
   // debug("Action length after: ", gen.actions.size());
 }
 
@@ -168,8 +168,18 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   child1.insert(child1.end(), std::next(parent2.begin(), idx), parent2.end());
   child2.insert(child2.end(), std::next(parent1.begin(), idx), parent1.end());
 
-  newPopulation.push_back(genome(child1));
-  newPopulation.push_back(genome(child2));
+  // Mark crossing PAs as modufied to connect the two pieces
+  next(child1.begin(), idx)->get()->modified = true;
+  next(child2.begin(), idx)->get()->modified = true;
+  genome gen1(child1), gen2(child2);
+
+  // Calidate the gens
+  validateGen(gen1);
+  validateGen(gen2);
+
+  // Insert to new Population
+  newPopulation.push_back(gen1);
+  newPopulation.push_back(gen2);
 
 }
 
@@ -202,6 +212,7 @@ void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_config) {
 	// debug("Done!");
       }
     }
+    validateGen(gen);
   }
 }
 

@@ -187,18 +187,21 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 
   // std::cout << "Moved " << steps << " steps" << "\n";
   // debug("Moved ", steps, " steps");
-  if(!res && steps == 0){
-    warn("Action from type ", static_cast<int>(action->get_type()), " failed");
-    // Action failed, destroy action from genome
-    return false;
-  }else if (!res){
+  // if(!res && steps == 0){
+  //   warn("Action from type ", static_cast<int>(action->get_type()), " failed");
+  //   // Action failed, destroy action from genome
+  //   return false;
+  // }else
+    if (!res){
+      // TODO: Is the distance calculation sufficient??
+      // TODO: Use all metrics in M
     // Action was at least partially executable
     // Case of Ahead action ...
     Position start =  action->get_wps().front();
-    float dist = static_cast<float>((start-currentPos).norm() * 100);
+    float dist = (start-currentPos).norm() * 100;
     // debug("New distance: ", dist);
     action->updateConf(PAP::Distance, dist);
-    return true;
+    // return true;
   }
 
   return res;
@@ -206,31 +209,23 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 
 bool path::Robot::evaluateActions(PAs &pas){
 
-  // TODO: Only add endpoints to path
   bool success = false;
 
-  for(PAs::iterator it = begin(pas); it != end(pas);){
+  for(PAs::iterator it = begin(pas); it != end(pas); it++){
     success = execute(*it, cMap);
     if(success){
-
       incConfParameter(typeCount, (*it)->get_type(), 1);
-      it++;
     } else {
-      // remove Action from sequence
-      it = pas.erase(it);
+      // TODO: Adapt consecutive action if current action could only be executed partially
+      next(it, 1)->get()->mend(*it->get());
+      // it = pas.erase(it);
     }
   }
 
-  // TODO: When should it return false?
-  // - When genome falls below a certain Length
-  // - When endpoint cannot be reached
   if(pas.size() < 3){
     warn("Only start and end action remain in list");
     return false;
-  }else{
-    // info("All good ", pas.size());
   }
-
   return true;
 }
 
