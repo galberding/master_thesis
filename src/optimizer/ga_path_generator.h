@@ -32,7 +32,7 @@ namespace ga{
   genome roulettWheelSelection(Genpool &currentPopulation, std::uniform_real_distribution<float> selDistr, std::mt19937 generator);
 
   int randRange(int lower, int upper);
-
+  void validateGen(genome &gen);
 ///////////////////////////////////////////////////////////////////////////////
 //                             Mutation Functions                            //
 ///////////////////////////////////////////////////////////////////////////////
@@ -44,6 +44,7 @@ namespace ga{
   void swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
   // void swapRandomActionRegion(genome &gen);
 
+  
 
 
 
@@ -69,7 +70,7 @@ namespace ga{
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals);
     virtual void crossover(Genpool &currentSelection, Genpool &newPopulation);
-    virtual void crossover(genome &par1, genome &par2, Genpool& newPopulation);
+    virtual void mating(genome &par1, genome &par2, Genpool& newPopulation);
     virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf);
     virtual void evalFitness(Genpool &currentPopulation, Robot &rob);
     virtual float calFitness(float cdist,

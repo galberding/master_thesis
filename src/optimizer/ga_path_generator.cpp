@@ -48,6 +48,23 @@ int ga::randRange(int lower, int upper){
   return (rand() % (upper -lower) + lower);
 }
 
+
+void ga::validateGen(genome &gen){
+  for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
+    if(!it->get()->modified) continue;
+    // Action is modified so try to apply the current changes
+    if(!it->get()->applyMods()){
+      warn("No startpoint to apply changes to!");
+      // Case if PA is newly added
+      // Moduification could not be applied because no waypoints have been generated yet
+      // This will automativally apply the new changes
+      // it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
+    }
+    // Change the configuration of the consecutive action
+    next(it, 1)->get()->mend(*(it->get()));
+  }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                             Mutation Functions                            //
 ///////////////////////////////////////////////////////////////////////////////
@@ -59,6 +76,7 @@ void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::
   PAT type = (*next(gen.actions.begin(), idx))->get_type();
   // debug("Action length before : ", gen.actions.size());
   gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
+  
   // debug("Action length after: ", gen.actions.size());
 }
 
@@ -132,7 +150,7 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 }
 
 
-void ga::GA::crossover(genome &par1, genome &par2, Genpool& newPopulation){
+void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   PAs parent1, parent2, child1, child2;
   if(par1.actions.size() > par2.actions.size()){
     parent1 = par2.actions;
@@ -162,7 +180,7 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
     currentSelection.pop_back();
     for (auto par2 : currentSelection){
       // debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
-      crossover(par1, par2, newPopulation);
+      mating(par1, par2, newPopulation);
     }
   }
   // debug("Cross done!");

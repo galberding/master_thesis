@@ -131,7 +131,8 @@ namespace path {
        Will alter the start point.
        Return false if no waypoints have been generated yet
      */
-    bool mend(Position start);
+    bool mend(PathAction &pa);
+    bool applyMods();
 
     bool updateConf(PAP param, float val);
   // private:
@@ -170,7 +171,7 @@ namespace path {
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
     virtual WPs generateWPs(Position start);
-    bool mend(Position start){return true;};
+    bool mend(PathAction &pa){return true;};
   };
 
   /////////////////////////////////////////////////////////////////////////////

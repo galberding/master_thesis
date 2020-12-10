@@ -60,7 +60,6 @@ float path::dirToAngle(direction pos){
 ///////////////////////////////////////////////////////////////////////////////
 
 WPs path::PathAction::generateWPs(Position start) {
-
   return wps;
 }
 
@@ -70,8 +69,9 @@ bool path::PathAction::updateConf(PAP param, float val) {
 }
 
 
-bool path::PathAction::mend(Position start){
+bool path::PathAction::mend(PathAction &pa){
   if(wps.size() != 2) return false;
+  Position start = pa.get_wps().back();
   Position end = wps.back();
   Position V = end - start;
   float dist = V.norm();
@@ -86,6 +86,14 @@ bool path::PathAction::mend(Position start){
   return true;
 }
 
+bool path::PathAction::applyMods(){
+ // Regenerate waypoints based on the already existing start Point
+  // if waypoints are empty return false
+  if(wps.size() == 0) return false;
+
+  generateWPs(*wps.begin());
+  return true;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                AheadAction                                //
@@ -106,6 +114,10 @@ WPs path::AheadAction::generateWPs(Position start) {
   }
   return wps;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//                                 EndAction                                 //
+///////////////////////////////////////////////////////////////////////////////
 
 WPs path::EndAction::generateWPs(Position start) {
   WPs b;
@@ -259,10 +271,10 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
   // Check if points are in range
-  if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
-    // debug("Waypoints not in map range");
-    return false;
-  }
+  // if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
+  //   // debug("Waypoints not in map range");
+  //   return false;
+  // }
 
   Index lastIdx;
   for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
