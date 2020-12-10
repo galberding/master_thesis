@@ -15,19 +15,19 @@ bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
 }
 
 
-ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::uniform_real_distribution<> selDistr, std::mt19937 generator){
+ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::uniform_real_distribution<float> selDistr, std::mt19937 generator){
   // Calculate Probabilities for all individuals
   // std::default_random_engine generator;
-  // std::uniform_real_distribution<double> distribution(0.0,1.0);
+  // std::uniform_real_distribution<float> distribution(0.0,1.0);
 
-  double totalFitness = 0;
+  float totalFitness = 0;
   for(auto &gen :currentPopulation){
     totalFitness += gen.fitness;
   }
 
-  double rand = selDistr(generator);
+  float rand = selDistr(generator);
   // cout << "Wheel: " << rand << endl;
-  double offset = 0.0;
+  float offset = 0.0;
   genome gen;
 
   // TODO: use Iterater
@@ -52,7 +52,7 @@ int ga::randRange(int lower, int upper){
 //                             Mutation Functions                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-void ga::addAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   // debug("Index: ", idx, " Size: ", gen.actions.size());
   PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
@@ -62,7 +62,7 @@ void ga::addAction(genome &gen, std::normal_distribution<double> angleDist, std:
   // debug("Action length after: ", gen.actions.size());
 }
 
-void ga::removeAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   if (gen.actions.size() < 4){
     return;
   }
@@ -70,9 +70,9 @@ void ga::removeAction(genome &gen, std::normal_distribution<double> angleDist, s
   gen.actions.erase(next(gen.actions.begin(), idx));
 }
 
-void ga::addAngleOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
-  double offset = angleDist(generator);
+  float offset = angleDist(generator);
 
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->get()->type));
   // debug("Angle offset: ", offset);
@@ -80,14 +80,14 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<double> angleDist,
   next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
 }
 
-void ga::addDistanceOffset(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
-  double offset = distanceDist(generator);
+  float offset = distanceDist(generator);
   next(gen.actions.begin(), idx)->get()->mod_config[PAP::Distance] += offset;
   next(gen.actions.begin(), idx)->get()->mod_config[PAP::DistanceOffset] += offset;
 }
 
-void ga::swapRandomAction(genome &gen, std::normal_distribution<double> angleDist, std::normal_distribution<double> distanceDist, std::mt19937 generator){
+void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx1 = randRange(1, gen.actions.size()-1);
   int idx2 = randRange(1, gen.actions.size()-1);
 
@@ -196,9 +196,9 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
   for(Genpool::iterator it = currentPopulation.begin(); it != currentPopulation.end();){
     if(rob.evaluateActions(it->actions)){
 
-      double Cdistance = 0; // Cleand distance
-      double distance = 0; // uncleand distance
-      double occ = 0;
+      float Cdistance = 0; // Cleand distance
+      float distance = 0; // uncleand distance
+      float occ = 0;
       int crossed = 0;
       for(auto action : it->actions){
 	PA_config conf = action->getConfig();
@@ -230,37 +230,37 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
 }
 
 
-double ga::GA::calFitness(double cdist,
-			  double dist,
+float ga::GA::calFitness(float cdist,
+			  float dist,
 			  int crossed,
-			  double cSpeed_m_s,
-			  double speed_m_s,
+			  float cSpeed_m_s,
+			  float speed_m_s,
 			  int freeSpace){
   // Use the different speeds for time calculation
   // debug("Crossed ", crossed);
   // debug("cdist ", cdist);
   // debug("speed", cSpeed_m_s);
 
-  double actual_time = cdist / cSpeed_m_s + dist / speed_m_s;
-  double optimal_time = (cdist - crossed) / cSpeed_m_s;
-  double final_time = optimal_time / actual_time;
+  float actual_time = cdist / cSpeed_m_s + dist / speed_m_s;
+  float optimal_time = (cdist - crossed) / cSpeed_m_s;
+  float final_time = optimal_time / actual_time;
 
 
   // Calculate the final occ based on the
-  double current_occ = cdist - crossed;
+  float current_occ = cdist - crossed;
   if (current_occ < 0){
     current_occ = crossed;
   }
-  double optimal_occ = cdist + crossed;
+  float optimal_occ = cdist + crossed;
 
-  double final_occ = current_occ / optimal_occ ;
+  float final_occ = current_occ / optimal_occ ;
 
   // debug("Actual time: ", actual_time);
   // debug("Optimal time: ", optimal_time);
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
-  double weight = 0.5;
+  float weight = 0.5;
   return ((1-weight)*(final_time + final_occ) + weight*(current_occ / freeSpace)) / 3;
 
 }

@@ -19,7 +19,7 @@ void path::updateConfig(map<K,V> &config, map<K,V> &update){
     for (auto &[key, value] : config){
       if(update.find(key) != update.end()){
 	value = update[key];
-      }
+       }
     }
 }
 
@@ -42,40 +42,18 @@ void incConfParameter(map<K, V> &config,const K key, V value){
 }
 
 
-direction path::radAngleToDir(double angle_rad){
+direction path::radAngleToDir(float angle_rad){
   return direction(cos(angle_rad), sin(angle_rad));
 }
 
-direction path::angleToDir(double angle){
+direction path::angleToDir(float angle){
   return radAngleToDir(angle / (180/M_PI));
 }
 
-// template<class ... Args>
-// inline void path::debug(Args ... args)
-// {
-// #if __DEBUG_DEBUG__
-//   std::cout << CYAN << "[DEBUG]" << RESET  << ": ";
-//   (std::cout << ... << args) << "\n";
-// #endif
-// }
+float path::dirToAngle(direction pos){
+  return atan2(pos[1], pos[0]) * (180 / M_PI);
+}
 
-// template<class... Args>
-// void path::info(Args... args)
-// {
-// #if __DEBUG_INFO__
-//   std::cout << GREEN << "[INFO]" << RESET  << ": ";
-//   (std::cout << ... << args) << "\n";
-// #endif
-// }
-
-// template<class... Args>
-// void path::warn(Args... args)
-// {
-// #if __DEBUG_WARN__
-//   std::cout << RED << "[WARN]" << RESET  << ": ";
-//   (std::cout << ... << args) << "\n";
-// #endif
-// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   Action                                  //
@@ -86,8 +64,25 @@ WPs path::PathAction::generateWPs(Position start) {
   return wps;
 }
 
-bool path::PathAction::updateConf(PAP param, double val) {
+bool path::PathAction::updateConf(PAP param, float val) {
   mod_config[param] = val;
+  return true;
+}
+
+
+bool path::PathAction::mend(Position start){
+  if(wps.size() != 2) return false;
+  Position end = wps.back();
+  Position V = end - start;
+  float dist = V.norm();
+  float angle = dirToAngle(V/dist);
+
+  // Update Parameter
+  mod_config[PAP::Distance] = dist;
+  mod_config[PAP::Angle] = angle;
+
+  // set new start Position
+  *wps.begin() = start;
   return true;
 }
 
@@ -129,7 +124,7 @@ WPs path::EndAction::generateWPs(Position start) {
 ///////////////////////////////////////////////////////////////////////////////
 
 
-path::Robot::Robot(double initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap){
+path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap){
      defaultConfig = {
        {RobotProperty::Width_cm, 1},
        {RobotProperty::Height_cm, 1},
@@ -188,7 +183,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     // Action was at least partially executable
     // Case of Ahead action ...
     Position start =  action->get_wps().front();
-    double dist = static_cast<double>((start-currentPos).norm() * 100);
+    float dist = static_cast<float>((start-currentPos).norm() * 100);
     // debug("New distance: ", dist);
     action->updateConf(PAP::Distance, dist);
     return true;
@@ -289,7 +284,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 	if (mapVal){
 	  // TODO: happens almost always at the beginning when marking a new action
 	  // debug("Crossing Path detected!");
-	  incConfParameter(action->getConfig(), PAP::CrossCount, static_cast<double>(mapVal));
+	  incConfParameter(action->getConfig(), PAP::CrossCount, static_cast<float>(mapVal));
 	}
 	cmap.at("map", *lit)++;
       }

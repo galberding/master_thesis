@@ -45,7 +45,6 @@ namespace path {
     Clean_speed_cm_s = 3,
     // Rotation_speed = 4,
   };
-  using RP = RobotProperty;
 
   enum class PathActionParameter {
     AngleOffset = 0,
@@ -54,15 +53,26 @@ namespace path {
     DistanceOffset = 3,
     CrossCount = 4, // How often did the action cross other actions
   };
+
+  enum class PathActionType
+  {
+        Ahead = 0,
+	CAhead = 1,
+	Start = 2,
+	End = 3
+
+   };
+
+  using RP = RobotProperty;
   using PAP = PathActionParameter;
-
-
+  using PAT = PathActionType;
   using namespace std;
   using time_sec = uint32_t;
   using distance_cm = uint32_t;
-  using rob_config = map<RobotProperty, double>;
-  using PA_config = map<PAP, double>;
+  using rob_config = map<RobotProperty, float>;
+  using PA_config = map<PAP, float>;
   using WPs = vector<grid_map::Position>;
+  //Direction needs to be a normed vector
   using direction = grid_map::Position;
 
 
@@ -74,26 +84,16 @@ namespace path {
 
 
   //TODO: adapt to direction vector
-  direction radAngleToDir(double angle);
+  direction radAngleToDir(float angle);
 
-  direction angleToDir(double angle);
+  direction angleToDir(float angle);
+  float dirToAngle(direction pos);
 
-  // template<class ... Args>
-  // void debug(Args ... args);
-  // template<class... Args>
-  // void info(Args... args);
-  // template<class... Args>
-  // void warn(Args... args);
 
-  enum class PathActionType
-  {
-        Ahead = 0,
-	CAhead = 1,
-	Start = 2,
-	End = 3
 
-   };
-  using PAT = PathActionType;
+  /////////////////////////////////////////////////////////////////////////////
+  //                                PathAction                               //
+  /////////////////////////////////////////////////////////////////////////////
 
   class PathAction{
     // An action shold be initialized by an action type
@@ -126,7 +126,14 @@ namespace path {
     // grid_map::Index vecToIdx(direction vec);
     PA_config& getConfig(){return mod_config;}
 
-    bool updateConf(PAP param, double val);
+    /**
+       This will adapt the parameter actions to drive from given start point to last one
+       Will alter the start point.
+       Return false if no waypoints have been generated yet
+     */
+    bool mend(Position start);
+
+    bool updateConf(PAP param, float val);
   // private:
   // protected:
     bool modified = true;
@@ -138,11 +145,19 @@ namespace path {
 
   using PAs = deque<shared_ptr<PathAction>>;
 
+  /////////////////////////////////////////////////////////////////////////////
+  //                              AheadAction                                 //
+  /////////////////////////////////////////////////////////////////////////////
+
   class AheadAction : public  PathAction{
   public:
     AheadAction(path::PAT type, PA_config conf);
     virtual WPs generateWPs(Position start);
   };
+
+  /////////////////////////////////////////////////////////////////////////////
+  //                                EndAction                                //
+  /////////////////////////////////////////////////////////////////////////////
 
   class EndAction : public PathAction{
   public:
@@ -155,14 +170,22 @@ namespace path {
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
     virtual WPs generateWPs(Position start);
+    bool mend(Position start){return true;};
   };
 
+  /////////////////////////////////////////////////////////////////////////////
+  //                               StartAction                               //
+  /////////////////////////////////////////////////////////////////////////////
   class StartAction : public PathAction{
   public:
     StartAction(Position startPoint):PathAction(PAT::Start) {
       wps.insert(wps.begin(), startPoint);
     };
   };
+
+  /////////////////////////////////////////////////////////////////////////////
+  //                                  Robot                                  //
+  /////////////////////////////////////////////////////////////////////////////
 
 
   class Robot{
@@ -174,7 +197,7 @@ For now we will just return the start point because the robot object should find
 
     Position& get_currentPos() { return currentPos; }
 
-    Robot(double initAngle, rob_config conf, GridMap &gMap);
+    Robot(float initAngle, rob_config conf, GridMap &gMap);
 
     /*
       Execute an action on the given grid map.
@@ -209,7 +232,7 @@ For now we will just return the start point because the robot object should find
     rob_config defaultConfig;
     distance_cm traveledDist = 0;
     WPs traveledPath;
-    double lastAngle;
+    float lastAngle;
     direction lastDirection;
     Position currentPos;
   };
