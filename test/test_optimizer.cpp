@@ -15,7 +15,7 @@ protected:
       {"removeAction", make_pair(removeAction, 10)},
       {"addAngleOffset", make_pair(addAngleOffset, 90)},
       {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
-      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
     ga = make_shared<GA>(GA(42, 4, 0.5, 0, 50, muta));
     grid_map::GridMap map({"obstacle", "map"});
@@ -140,20 +140,107 @@ TEST_F(GATest, mutationConfigTest){
 }
 
 
+TEST_F(GATest, adaptationTest){
+  Position start, end;
+
+  cmap->getPosition(Index(41,41), start);
+  cmap->getPosition(Index(22,22), end);
+  debug("Start: ", start);
+  debug("End: ", end);
+  debug("Distance: ", start - end);
+
+  StartAction sa(start);
+  EndAction ea({end});
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 270}});
+  AheadAction aa1(PAT::CAhead, {{PAP::Distance, 30}, {PAP::Angle, 180}});
+  AheadAction aa2(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 90}});
+  AheadAction aa3(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+
+  PAs act = {
+      make_shared<StartAction>(sa),
+      make_shared<AheadAction>(aa),
+      make_shared<AheadAction>(aa1),
+      make_shared<AheadAction>(aa2),
+      make_shared<AheadAction>(aa3),
+      make_shared<EndAction>(ea)
+  };
+
+  genome gen(act);
+  // addAngleOffset(gen, ga->distanceDistr, ga->angleDistr, ga->generator);
+  rob->evaluateActions(gen.actions);
+  addAction(gen, ga->distanceDistr, ga->angleDistr, ga->generator);
+  validateGen(gen);
+  rob->evaluateActions(gen.actions);
+
+  // displayImage(rob->gridToImg("map"));
+
+
+}
+
+
+
+TEST_F(GATest, boundaryMendingTest){
+  Position start, end;
+
+  cmap->getPosition(Index(41,41), start);
+  cmap->getPosition(Index(22,22), end);
+  debug("Start: ", start);
+  debug("End: ", end);
+  debug("Distance: ", start - end);
+
+  StartAction sa(start);
+  EndAction ea({end});
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 2000}, {PAP::Angle, 270}});
+  AheadAction aa1(PAT::CAhead, {{PAP::Distance, 30}, {PAP::Angle, 130}});
+  AheadAction aa2(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 90}});
+  AheadAction aa3(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+
+  PAs act = {
+      make_shared<StartAction>(sa),
+      make_shared<AheadAction>(aa),
+      make_shared<AheadAction>(aa1),
+      make_shared<AheadAction>(aa2),
+      make_shared<AheadAction>(aa3),
+      make_shared<EndAction>(ea)
+  };
+
+  genome gen(act);
+  debug("1New size: ", gen.actions.size());
+  // addAngleOffset(gen, ga->distanceDistr, ga->angleDistr, ga->generator);
+  rob->evaluateActions(gen.actions);
+  // addAction(gen, ga->distanceDistr, ga->angleDistr, ga->generator);
+  // validatldeGen(gen);
+  // displayImage(rob->gridToImg("map"));
+  rob->evaluateActions(gen.actions);
+  rob->evaluateActions(gen.actions);
+
+  debug("2New size: ", gen.actions.size());
+
+  debug("Dist ", next(gen.actions.begin(), 1)->get()->mod_config[PAP::Distance]);
+  debug("Dist ", next(gen.actions.begin(), 2)->get()->mod_config[PAP::Distance]);
+
+  // displayImage(rob->gridToImg("map"));
+
+
+}
+
+
 TEST_F(GATest, basicApplicationTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
       {"addAction", make_pair(addAction, 100)},
-      {"removeAction", make_pair(removeAction, 100)},
+      // {"removeAction", make_pair(removeAction, 100)},
       {"addAngleOffset", make_pair(addAngleOffset, 100)},
       {"addDistanceOffset", make_pair(addDistanceOffset, 100)},
-      {"swapRandomAction", make_pair(swapRandomAction, 100)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 100)},
     };
-  cmap->getPosition(Index(11,11), start);
-  cmap->getPosition(Index(11,11), end);
+  cmap->getPosition(Index(100,100), start);
+  cmap->getPosition(Index(300,300), end);
   debug("Start");
-  ga->populatePool(pool, start, {end}, 10, 30);
+  ga->populatePool(pool, start, {end}, 10, 300);
   ASSERT_EQ(pool.size(), 10);
   for(auto gen : pool){
     ASSERT_GT(gen.actions.size(), 30);
@@ -164,7 +251,7 @@ TEST_F(GATest, basicApplicationTest){
   ga->selection(pool, sel, 5);
   for(auto gen : sel){
     debug("Check");
-    ASSERT_GT(gen.actions.size(), 2);
+    ASSERT_GT(gen.actions.size(), 30);
   }
   ASSERT_EQ(sel.size(), 5);
   debug("Cross");
@@ -180,7 +267,10 @@ TEST_F(GATest, basicApplicationTest){
   ga->evalFitness(pool, *rob);
   debug("Done");
 
+  // displayImage(rob->gridToImg("map"));
+
 }
+
 
 
 class GAApplication : public ::testing::Test {
@@ -221,16 +311,46 @@ protected:
   shared_ptr<GA> ga;
 };
 
+TEST(HelperTest, dirToAngleConversionTest){
+  direction dir(20,20);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  debug("Angle: ", dirToAngle(dir / dist));
+
+}
+
+TEST(HelperTest, dirToAngleConversionDirToSmallTest){
+  direction dir(0.25,0.25);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  debug("Angle: ", dirToAngle(dir / dist));
+}
+
+TEST(HelperTest, dirToAngleConversionZeroTest){
+  direction dir(0,0);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  float angle = dirToAngle(dir / dist);
+  debug("Angle: ", angle);
+  ASSERT_TRUE(!isnan(angle));
+}
+
 
 TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 10)},
-      {"removeAction", make_pair(removeAction, 10)},
+      // {"addAction", make_pair(addAction, 10)},
+      // {"removeAction", make_pair(removeAction, 10)},
       {"addAngleOffset", make_pair(addAngleOffset, 70)},
       {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
-      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 100 ;
   int selected = 15;
@@ -284,12 +404,18 @@ TEST_F(GAApplication, algorithmTest){
     if (true){
       for (auto gen : pool){
 	cout << "Gens: " << gen.fitness << " ";
+	for(auto ac : gen.actions){
+	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
+	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
+	}
       }
       cout << endl;
       info("Best fitness: ", best.fitness, "Pool best: ", pool.front().fitness," Worst fitness: ", pool.back().fitness);
       rob->evaluateActions(pool.front().actions);
       auto img = rob->gridToImg("map");
+      // displayImage(img);
       cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
+
     }
   }
 }

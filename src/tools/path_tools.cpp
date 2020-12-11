@@ -47,11 +47,14 @@ direction path::radAngleToDir(float angle_rad){
 }
 
 direction path::angleToDir(float angle){
+  if(abs(angle) > 360) throw __LINE__;
   return radAngleToDir(angle / (180/M_PI));
 }
 
 float path::dirToAngle(direction pos){
-  return atan2(pos[1], pos[0]) * (180 / M_PI);
+  float angle = atan2(pos[1], pos[0]) * (180 / M_PI);
+  if(isnan(angle)) warn("Broken angle!!");
+  return angle;
 }
 
 
@@ -70,27 +73,42 @@ bool path::PathAction::updateConf(PAP param, float val) {
 
 
 bool path::PathAction::mend(PathAction &pa){
-  if(wps.size() != 2) return false;
+  // debug("Mending!");
+  if(wps.size() == 0 || modified){
+    // During initialization phase
+    generateWPs(pa.wps.back());
+  }else if(wps.size() != 2) {
+    return false;
+  }
   Position start = pa.get_wps().back();
   Position end = wps.back();
   Position V = end - start;
   float dist = V.norm();
+  if(dist == 0){
+    warn("Action has no distrance");
+    return false;
+  }
   float angle = dirToAngle(V/dist);
 
+  debug("Mending -- Dist: ", dist, " Angle: ", angle);
+  if(isnan(angle)) throw __LINE__;
   // Update Parameter
   mod_config[PAP::Distance] = dist;
   mod_config[PAP::Angle] = angle;
 
   // set new start Position
   *wps.begin() = start;
+  // Override all changes
+  pa.modified = false;
   return true;
 }
 
 bool path::PathAction::applyMods(){
+  // debug("Mods!");
  // Regenerate waypoints based on the already existing start Point
   // if waypoints are empty return false
   if(wps.size() == 0) return false;
-
+  debug("Apply Changes");
   generateWPs(*wps.begin());
   return true;
 }
@@ -102,6 +120,7 @@ bool path::PathAction::applyMods(){
 path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
   mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 300}});
   updateConfig(mod_config, conf);
+  modified = true;
 }
 
 WPs path::AheadAction::generateWPs(Position start) {
@@ -110,7 +129,13 @@ WPs path::AheadAction::generateWPs(Position start) {
     direction dir = angleToDir(mod_config[PAP::Angle]);
     // cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
     wps.push_back(start);
-    wps.push_back(start + dir*(mod_config[PAP::Distance] / 100));
+    wps.push_back(start + dir*(mod_config[PAP::Distance]));
+    debug("Generate WPS ...");
+    modified = false;
+  }
+  if(wps.size() != 2){
+    warn("Generation not completed!");
+    throw __LINE__;
   }
   return wps;
 }
@@ -127,7 +152,7 @@ WPs path::EndAction::generateWPs(Position start) {
   }else{
     b.push_back(start);
   }
-
+  modified = false;
   return b;
 }
 
@@ -193,15 +218,18 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   //   return false;
   // }else
     if (!res){
+      // warn("Robot alters action");
       // TODO: Is the distance calculation sufficient??
       // TODO: Use all metrics in M
     // Action was at least partially executable
     // Case of Ahead action ...
-    Position start =  action->get_wps().front();
-    float dist = (start-currentPos).norm() * 100;
-    // debug("New distance: ", dist);
-    action->updateConf(PAP::Distance, dist);
-    // return true;
+      Position start =  action->get_wps().front();
+      float dist = (currentPos-start).norm();
+      // debug("New distance: ", dist);
+      action->updateConf(PAP::Distance, dist);
+      action->modified = true;
+      action->applyMods();
+      // return true;
   }
 
   return res;
@@ -210,14 +238,21 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 bool path::Robot::evaluateActions(PAs &pas){
 
   bool success = false;
-
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     success = execute(*it, cMap);
     if(success){
       incConfParameter(typeCount, (*it)->get_type(), 1);
     } else {
-      // TODO: Adapt consecutive action if current action could only be executed partially
-      next(it, 1)->get()->mend(*it->get());
+
+      // Check if the next gen is ready to be mended
+      auto it_next = next(it, 1);
+      while(!it_next->get()->mend(*(it->get())) && it_next != pas.end()){
+	it_next = pas.erase(it_next);
+	debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
+	warn("Remove Action while execution!");
+	break;
+      }
+      // next(it, 1)->get()->mend(*it->get());
       // it = pas.erase(it);
     }
   }
@@ -257,7 +292,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   steps = 0;
   bool res = true;
   if(waypoints.size() < 2){
-    warn("Map move failed, out of bounds!");
+    warn("Map move failed, out of bounds, type: ", int(action->type));
     return false;
   }
 
@@ -266,10 +301,11 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
   // Check if points are in range
-  // if(!cmap.isInside(start) || !cmap.isInside(lastPos)){
-  //   // debug("Waypoints not in map range");
-  //   return false;
-  // }
+  if(!cmap.isInside(start)){
+    warn("Startpoint not in map range");
+    throw __LINE__;
+    return false;
+  }
 
   Index lastIdx;
   for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){

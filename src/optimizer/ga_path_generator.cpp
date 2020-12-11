@@ -54,14 +54,21 @@ void ga::validateGen(genome &gen){
     if(!it->get()->modified) continue;
     // Action is modified so try to apply the current changes
     if(!it->get()->applyMods()){
-      warn("No startpoint to apply changes to!");
+      warn("No startpoint to apply changes to!, type; ", int(it->get()->type));
+      //
       // Case if PA is newly added
       // Moduification could not be applied because no waypoints have been generated yet
       // This will automativally apply the new changes
-      // it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
+      it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
+    }else{
+      debug("Changes applied!");
     }
     // Change the configuration of the consecutive action
-    next(it, 1)->get()->mend(*(it->get()));
+    auto it_next = next(it, 1);
+    while(!it_next->get()->mend(*(it->get())) && it_next != gen.actions.end()){
+      it_next = gen.actions.erase(it_next);
+      warn("Remove Action because no distance!");
+    }
   }
 }
 
@@ -72,7 +79,13 @@ void ga::validateGen(genome &gen){
 void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   // debug("Index: ", idx, " Size: ", gen.actions.size());
+
   PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
+  distanceDist(generator);
+  conf[PAP::Distance] += distanceDist(generator);
+  debug("NewDist: ", conf[PAP::Distance]);
+  conf[PAP::Angle] += angleDist(generator);
+
   PAT type = (*next(gen.actions.begin(), idx))->get_type();
   // debug("Action length before : ", gen.actions.size());
   gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
@@ -85,24 +98,36 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
     return;
   }
   int idx = randRange(1, gen.actions.size()-1);
-  gen.actions.erase(next(gen.actions.begin(), idx));
+  auto it = gen.actions.erase(next(gen.actions.begin(), idx));
+  it->get()->modified = true;
 }
+
+
+// void modufie(genome &gen, PA_config config){
+
+// }
 
 void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   float offset = angleDist(generator);
-
+  auto it = next(gen.actions.begin(), idx);
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->get()->type));
   // debug("Angle offset: ", offset);
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Angle] += offset;
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::AngleOffset] += offset;
+  it->get()->mod_config[PAP::Angle] += offset;
+  it->get()->mod_config[PAP::AngleOffset] += offset;
+  it->get()->modified = true;
+
 }
 
 void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   float offset = distanceDist(generator);
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::Distance] += offset;
-  next(gen.actions.begin(), idx)->get()->mod_config[PAP::DistanceOffset] += offset;
+  auto it = next(gen.actions.begin(), idx);
+  // debug(("Type: ", (int) next(gen.actions.begin(), idx)->get()->type));
+  // debug("Angle offset: ", offset);
+  it->get()->mod_config[PAP::Distance] += offset;
+  it->get()->mod_config[PAP::DistanceOffset] += offset;
+  it->get()->modified = true;
 }
 
 void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
@@ -127,7 +152,7 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
     PAs actions;
     actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
-      PA_config config{{PAP::Angle, angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)*100}};
+      PA_config config{{PAP::Angle, angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)}};
       actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
     }
     actions.push_back(make_shared<EndAction>(EndAction(endpoints)));

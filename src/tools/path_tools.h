@@ -87,6 +87,8 @@ namespace path {
   direction radAngleToDir(float angle);
 
   direction angleToDir(float angle);
+
+  // Convert direction vector to angle
   float dirToAngle(direction pos);
 
 
@@ -107,7 +109,9 @@ namespace path {
     // static grid_map::GridMap obstacle_map;
     const PAT get_type() const { return type; }
 
-    PathAction(const PAT type):type(type){};
+    PathAction(const PAT type):type(type){
+
+    };
     // ~PathAction() = default;
     /*
       Update the current config parameters.
@@ -131,8 +135,8 @@ namespace path {
        Will alter the start point.
        Return false if no waypoints have been generated yet
      */
-    bool mend(PathAction &pa);
-    bool applyMods();
+    virtual bool mend(PathAction &pa);
+    virtual bool applyMods();
 
     bool updateConf(PAP param, float val);
   // private:
@@ -154,6 +158,7 @@ namespace path {
   public:
     AheadAction(path::PAT type, PA_config conf);
     virtual WPs generateWPs(Position start);
+
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -163,6 +168,7 @@ namespace path {
   class EndAction : public PathAction{
   public:
     EndAction(WPs endPoints):PathAction(PAT::End){
+      modified = false;
       wps.insert(wps.begin(), endPoints.begin(), endPoints.end());
     };
     /*
@@ -171,7 +177,8 @@ namespace path {
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
     virtual WPs generateWPs(Position start);
-    bool mend(PathAction &pa){return true;};
+    bool mend(PathAction &pa){return true;}
+    bool applyMods(){return true;}
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -182,6 +189,8 @@ For now we will just return the start point because the robot object should find
     StartAction(Position startPoint):PathAction(PAT::Start) {
       wps.insert(wps.begin(), startPoint);
     };
+    bool mend(PathAction &pa){return true;};
+    bool applyMods(){return true;}
   };
 
   /////////////////////////////////////////////////////////////////////////////
