@@ -45,6 +45,36 @@ protected:
   shared_ptr<GA> ga;
 };
 
+TEST(HelperTest, dirToAngleConversionTest){
+  direction dir(20,20);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  debug("Angle: ", dirToAngle(dir / dist));
+
+}
+
+TEST(HelperTest, dirToAngleConversionDirToSmallTest){
+  direction dir(0.25,0.25);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  debug("Angle: ", dirToAngle(dir / dist));
+}
+
+TEST(HelperTest, dirToAngleConversionZeroTest){
+  direction dir(0,0);
+  auto dist = dir.norm();
+  debug("Distance: ", dist);
+  debug("Distance: ", (dir/dist).norm());
+
+  float angle = dirToAngle(dir / dist);
+  debug("Angle: ", angle);
+  ASSERT_TRUE(isnan(angle));
+}
+
 
 TEST_F(GATest, initPopulationTest){
   Genpool pool;
@@ -61,7 +91,6 @@ TEST_F(GATest, initPopulationTest){
 
   ASSERT_TRUE(rob->evaluateActions(pool.front().actions));
   debug("Remaining size: ", pool.front().actions.size());
-
   ga->evalFitness(pool, *rob);
 
   for(auto gen : pool){
@@ -227,49 +256,49 @@ TEST_F(GATest, boundaryMendingTest){
 }
 
 
-TEST_F(GATest, basicApplicationTest){
-  Genpool pool, sel, newPop;
-  Position start, end;
-  Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 100)},
-      // {"removeAction", make_pair(removeAction, 100)},
-      {"addAngleOffset", make_pair(addAngleOffset, 100)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 100)},
-      // {"swapRandomAction", make_pair(swapRandomAction, 100)},
-    };
-  cmap->getPosition(Index(100,100), start);
-  cmap->getPosition(Index(300,300), end);
-  debug("Start");
-  ga->populatePool(pool, start, {end}, 10, 300);
-  ASSERT_EQ(pool.size(), 10);
-  for(auto gen : pool){
-    ASSERT_GT(gen.actions.size(), 30);
-  }
-  ga->evalFitness(pool, *rob);
-  ASSERT_GT(pool.size(), 0);
-  debug("Select: ", pool.size());
-  ga->selection(pool, sel, 5);
-  for(auto gen : sel){
-    debug("Check");
-    ASSERT_GT(gen.actions.size(), 30);
-  }
-  ASSERT_EQ(sel.size(), 5);
-  debug("Cross");
-  pool.clear();
-  ga->crossover(sel, pool);
-  ASSERT_GT(pool.size(), 6);
-  for(auto gen : pool){
-    ASSERT_GT(gen.actions.size(), 2);
-  }
+// TEST_F(GATest, basicApplicationTest){
+//   Genpool pool, sel, newPop;
+//   Position start, end;
+//   Mutation_conf muta = {
+//       {"addAction", make_pair(addAction, 100)},
+//       // {"removeAction", make_pair(removeAction, 100)},
+//       {"addAngleOffset", make_pair(addAngleOffset, 100)},
+//       {"addDistanceOffset", make_pair(addDistanceOffset, 100)},
+//       // {"swapRandomAction", make_pair(swapRandomAction, 100)},
+//     };
+//   cmap->getPosition(Index(100,100), start);
+//   cmap->getPosition(Index(300,300), end);
+//   debug("Start");
+//   ga->populatePool(pool, start, {end}, 10, 300);
+//   ASSERT_EQ(pool.size(), 10);
+//   for(auto gen : pool){
+//     ASSERT_GT(gen.actions.size(), 30);
+//   }
+//   ga->evalFitness(pool, *rob);
+//   ASSERT_GT(pool.size(), 0);
+//   debug("Select: ", pool.size());
+//   ga->selection(pool, sel, 5);
+//   for(auto gen : sel){
+//     debug("Check");
+//     ASSERT_GT(gen.actions.size(), 30);
+//   }
+//   ASSERT_EQ(sel.size(), 5);
+//   debug("Cross");
+//   pool.clear();
+//   ga->crossover(sel, pool);
+//   ASSERT_GT(pool.size(), 6);
+//   for(auto gen : pool){
+//     ASSERT_GT(gen.actions.size(), 2);
+//   }
 
-  debug("Mutate");
-  ga->mutation(pool, muta);
-  ga->evalFitness(pool, *rob);
-  debug("Done");
+//   debug("Mutate");
+//   ga->mutation(pool, muta);
+//   ga->evalFitness(pool, *rob);
+//   debug("Done");
 
-  // displayImage(rob->gridToImg("map"));
+//   // displayImage(rob->gridToImg("map"));
 
-}
+// }
 
 
 
@@ -311,114 +340,85 @@ protected:
   shared_ptr<GA> ga;
 };
 
-TEST(HelperTest, dirToAngleConversionTest){
-  direction dir(20,20);
-  auto dist = dir.norm();
-  debug("Distance: ", dist);
-  debug("Distance: ", (dir/dist).norm());
-
-  debug("Angle: ", dirToAngle(dir / dist));
-
-}
-
-TEST(HelperTest, dirToAngleConversionDirToSmallTest){
-  direction dir(0.25,0.25);
-  auto dist = dir.norm();
-  debug("Distance: ", dist);
-  debug("Distance: ", (dir/dist).norm());
-
-  debug("Angle: ", dirToAngle(dir / dist));
-}
-
-TEST(HelperTest, dirToAngleConversionZeroTest){
-  direction dir(0,0);
-  auto dist = dir.norm();
-  debug("Distance: ", dist);
-  debug("Distance: ", (dir/dist).norm());
-
-  float angle = dirToAngle(dir / dist);
-  debug("Angle: ", angle);
-  ASSERT_TRUE(!isnan(angle));
-}
 
 
-TEST_F(GAApplication, algorithmTest){
-  Genpool pool, sel, newPop;
-  Position start, end;
-  Mutation_conf muta = {
-      // {"addAction", make_pair(addAction, 10)},
-      // {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
-      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
-    };
-  int iter = 100 ;
-  int selected = 15;
-  cmap->getPosition(Index(100,100), start);
-  cmap->getPosition(Index(100,100), end);
-  debug("Start");
-  genome best;
-  ga->populatePool(pool, start, {end}, 100, 100);
-  ga->evalFitness(pool, *rob);
-  ga->selection(pool, sel, selected);
-  ASSERT_EQ(sel.size(), selected);
-  best = pool.front();
-  for(int i=0; i<iter; i++){
-    pool.clear();
-    // debug("Cross");
-    // pool.push_back(genome(best));
-    ga->crossover(sel, pool);
-    sel.clear();
-    // debug("Mut");
-    ga->mutation(pool, muta);
-    // debug("Cla");
-    ga->evalFitness(pool, *rob);
-    // debug("Sel");
-    for (auto gen : pool){
-      ASSERT_GT(gen.actions.size(), 50);
-    }
+// TEST_F(GAApplication, algorithmTest){
+//   Genpool pool, sel, newPop;
+//   Position start, end;
+//   Mutation_conf muta = {
+//       // {"addAction", make_pair(addAction, 10)},
+//       // {"removeAction", make_pair(removeAction, 10)},
+//       {"addAngleOffset", make_pair(addAngleOffset, 70)},
+//       {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+//       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
+//     };
+//   int iter = 100 ;
+//   int selected = 15;
+//   cmap->getPosition(Index(100,100), start);
+//   cmap->getPosition(Index(100,100), end);
+//   debug("Start");
+//   genome best;
+//   ga->populatePool(pool, start, {end}, 100, 100);
+//   ga->evalFitness(pool, *rob);
+//   ga->selection(pool, sel, selected);
+//   ASSERT_EQ(sel.size(), selected);
+//   best = pool.front();
+//   for(int i=0; i<iter; i++){
+//     pool.clear();
+//     // debug("Cross");
+//     // pool.push_back(genome(best));
+//     ga->crossover(sel, pool);
+//     sel.clear();
+//     // debug("Mut");
+//     ga->mutation(pool, muta);
+//     // debug("Cla");
+//     ga->evalFitness(pool, *rob);
+//     // debug("Sel");
+//     for (auto gen : pool){
+//       ASSERT_GT(gen.actions.size(), 50);
+//     }
 
-    // for (int i=0;  i<pool.size()-2= var.end(); ++ i=0) {
+//     // for (int i=0;  i<pool.size()-2= var.end(); ++ i=0) {
 
-    // }
-    for(auto it = pool.begin(); it != prev(pool.end(), 1);){
+//     // }
+//     for(auto it = pool.begin(); it != prev(pool.end(), 1);){
 
-      if(it->fitness == next(it, 1)->fitness){
-	it = pool.erase(it);
-      }else{
-	it++;
-      }
-    }
-    ga->selection(pool, sel, selected);
-    for (auto gen : pool){
-      ASSERT_GT(gen.fitness, 0);
-    }
-    ASSERT_EQ(sel.size(), selected);
-    debug("Done");
+//       if(it->fitness == next(it, 1)->fitness){
+// 	it = pool.erase(it);
+//       }else{
+// 	it++;
+//       }
+//     }
+//     ga->selection(pool, sel, selected);
+//     for (auto gen : pool){
+//       ASSERT_GT(gen.fitness, 0);
+//     }
+//     ASSERT_EQ(sel.size(), selected);
+//     debug("Done");
 
 
-    info("Population size: ", pool.size());
-       if(pool.front().fitness > best.fitness){
-      best = pool.front().fitness;
-    }
-    if (true){
-      for (auto gen : pool){
-	cout << "Gens: " << gen.fitness << " ";
-	for(auto ac : gen.actions){
-	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
-	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
-	}
-      }
-      cout << endl;
-      info("Best fitness: ", best.fitness, "Pool best: ", pool.front().fitness," Worst fitness: ", pool.back().fitness);
-      rob->evaluateActions(pool.front().actions);
-      auto img = rob->gridToImg("map");
-      // displayImage(img);
-      cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
+//     info("Population size: ", pool.size());
+//        if(pool.front().fitness > best.fitness){
+//       best = pool.front().fitness;
+//     }
+//     if (true){
+//       for (auto gen : pool){
+// 	cout << "Gens: " << gen.fitness << " ";
+// 	for(auto ac : gen.actions){
+// 	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
+// 	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
+// 	}
+//       }
+//       cout << endl;
+//       info("Best fitness: ", best.fitness, "Pool best: ", pool.front().fitness," Worst fitness: ", pool.back().fitness);
+//       rob->evaluateActions(pool.front().actions);
+//       auto img = rob->gridToImg("map");
+//       // displayImage(img);
+//       cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
 
-    }
-  }
-}
+//     }
+//   }
+// }
 
 
 int main(int argc, char **argv) {

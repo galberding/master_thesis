@@ -152,11 +152,18 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
     PAs actions;
     actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
-      PA_config config{{PAP::Angle, angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)}};
+      PA_config config{{PAP::Angle, static_cast<float>(randRange(0, 720)-360)}, {PAP::Distance, distanceDistr(generator)}};
       actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
     }
     actions.push_back(make_shared<EndAction>(EndAction(endpoints)));
     currentPopuation.push_back(genome(actions));
+  }
+
+  for(auto &gen : currentPopuation){
+    gen.actions.begin()->get()->generateWPs(Position(0,0));
+    for (auto it = next(gen.actions.begin(), 1); it != gen.actions.end(); it++){
+      it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
+    }
   }
 
 }

@@ -74,10 +74,12 @@ bool path::PathAction::updateConf(PAP param, float val) {
 
 bool path::PathAction::mend(PathAction &pa){
   // debug("Mending!");
-  if(wps.size() == 0 || modified){
+  if(wps.size() == 0 && modified){
     // During initialization phase
     generateWPs(pa.wps.back());
+    return true;
   }else if(wps.size() != 2) {
+    warn("Waypoints not generated yet! Should never happen!");
     return false;
   }
   Position start = pa.get_wps().back();
@@ -91,7 +93,9 @@ bool path::PathAction::mend(PathAction &pa){
   float angle = dirToAngle(V/dist);
 
   debug("Mending -- Dist: ", dist, " Angle: ", angle);
-  if(isnan(angle)) throw __LINE__;
+  if(isnan(angle)) {
+    warn("Error!");
+    throw __LINE__;}
   // Update Parameter
   mod_config[PAP::Distance] = dist;
   mod_config[PAP::Angle] = angle;
@@ -109,7 +113,7 @@ bool path::PathAction::applyMods(){
   // if waypoints are empty return false
   if(wps.size() == 0) return false;
   debug("Apply Changes");
-  generateWPs(*wps.begin());
+  generateWPs(wps.front());
   return true;
 }
 
@@ -130,7 +134,7 @@ WPs path::AheadAction::generateWPs(Position start) {
     // cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
     wps.push_back(start);
     wps.push_back(start + dir*(mod_config[PAP::Distance]));
-    debug("Generate WPS ...");
+    // debug("Generate WPS ...");
     modified = false;
   }
   if(wps.size() != 2){
@@ -178,6 +182,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 
   int steps = 0;
   bool res = false;
+  Position pos(currentPos);
   switch(action->get_type()){
   case PAT::Start:{
     resetCounter();
@@ -224,11 +229,15 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     // Action was at least partially executable
     // Case of Ahead action ...
       Position start =  action->get_wps().front();
+      debug("Actual start: ", pos);
       float dist = (currentPos-start).norm();
-      // debug("New distance: ", dist);
+      debug("old Dist: ",action->getConfig()[PAP::Distance],  " New distance: ", dist);
       action->updateConf(PAP::Distance, dist);
       action->modified = true;
+      debug("Old end pos: ", action->get_wps().back());
       action->applyMods();
+      debug("Current Pos: ", currentPos);
+      debug("New end pos: ", action->get_wps().back());
       // return true;
   }
 
@@ -240,6 +249,7 @@ bool path::Robot::evaluateActions(PAs &pas){
   bool success = false;
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     success = execute(*it, cMap);
+    debug("Success: ", success);
     if(success){
       incConfParameter(typeCount, (*it)->get_type(), 1);
     } else {
@@ -302,7 +312,9 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
   // Check if points are in range
   if(!cmap.isInside(start)){
-    warn("Startpoint not in map range");
+
+    warn("Startpoint not in map range: ", start);
+    debug(cmap.getClosestPositionInMap(start));
     throw __LINE__;
     return false;
   }
