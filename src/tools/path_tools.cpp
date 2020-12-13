@@ -47,7 +47,7 @@ direction path::radAngleToDir(float angle_rad){
 }
 
 direction path::angleToDir(float angle){
-  if(abs(angle) > 360) throw __LINE__;
+  // if(abs(angle) > 360) throw __LINE__;
   return radAngleToDir(angle / (180/M_PI));
 }
 
@@ -63,6 +63,8 @@ float path::dirToAngle(direction pos){
 ///////////////////////////////////////////////////////////////////////////////
 
 WPs path::PathAction::generateWPs(Position start) {
+  debug("Haha geflaxt!!");
+  modified = false;
   return wps;
 }
 
@@ -112,6 +114,7 @@ bool path::PathAction::applyMods(){
  // Regenerate waypoints based on the already existing start Point
   // if waypoints are empty return false
   if(wps.size() == 0) return false;
+  modified = true;
   debug("Apply Changes");
   generateWPs(wps.front());
   return true;
@@ -128,7 +131,7 @@ path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
 }
 
 WPs path::AheadAction::generateWPs(Position start) {
-  if(modified){
+  if(modified || (start != wps.front())){
     wps.clear();
     direction dir = angleToDir(mod_config[PAP::Angle]);
     // cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
@@ -190,11 +193,12 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     map.add("map", 0.0);
     // get start position for all following actions
     currentPos = action->generateWPs(currentPos)[0];
+    debug("Startpoint: ", currentPos);
     res = true;
     break;
   }
   case PAT::Ahead:{
-    res = mapMove(map, action, steps, currentPos, traveledPath, false);
+    res = mapMove(map, action, steps, currentPos, traveledPath, true);
     break;
   }
   case PAT::CAhead:{
@@ -215,6 +219,16 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   }
   }
 
+  if(!res){
+    Position start =  action->get_wps().front();
+    float dist = (currentPos-start).norm();
+    action->mod_config[PAP::Distance] = dist;
+    action->applyMods();
+    if(!map.isInside(action->wps.back())){
+      warn("Generated Point outside!!");
+    }
+  }
+
   // std::cout << "Moved " << steps << " steps" << "\n";
   // debug("Moved ", steps, " steps");
   // if(!res && steps == 0){
@@ -222,24 +236,41 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   //   // Action failed, destroy action from genome
   //   return false;
   // }else
-    if (!res){
-      // warn("Robot alters action");
-      // TODO: Is the distance calculation sufficient??
-      // TODO: Use all metrics in M
-    // Action was at least partially executable
-    // Case of Ahead action ...
-      Position start =  action->get_wps().front();
-      debug("Actual start: ", pos);
-      float dist = (currentPos-start).norm();
-      debug("old Dist: ",action->getConfig()[PAP::Distance],  " New distance: ", dist);
-      action->updateConf(PAP::Distance, dist);
-      action->modified = true;
-      debug("Old end pos: ", action->get_wps().back());
-      action->applyMods();
-      debug("Current Pos: ", currentPos);
-      debug("New end pos: ", action->get_wps().back());
-      // return true;
-  }
+ // if (!res){
+ //      // warn("Robot alters action");
+ //      // TODO: Is the distance calculation sufficient??
+ //      // TODO: Use all metrics in M
+ //    // Action was at least partially executable
+ //    // Case of Ahead action ...
+ //     if(steps == 0) {
+ //       for(int i=0; i<4; i++){
+ // 	 action->modified = true;
+ // 	 action->mod_config[PAP::Angle] += 90;
+ // 	 action->applyMods();
+ // 	 currentPos = action->wps.front();
+ // 	 bool res2 = mapMove(map, action, steps, currentPos, traveledPath, true);
+ // 	 if(res2  || steps > 0){
+ // 	   info("---> Success <----");
+ // 	   break;
+ // 	 }else {
+ // 	   warn("Adaptation ",i, " failed!");
+ // 	 }
+ //       }
+ //     } else if(!res) {
+ //      Position start =  action->get_wps().front();
+ //      debug("Actual start: ", pos);
+ //      float dist = (currentPos-start).norm();
+ //      debug("old Dist: ",action->getConfig()[PAP::Distance],  " New distance: ", dist);
+ //      action->updateConf(PAP::Distance, dist);
+ //      action->modified = true;
+ //      debug("Old end pos: ", action->get_wps().back());
+ //      action->applyMods();
+ //      debug("Current Pos: ", currentPos);
+ //      debug("New end pos: ", action->get_wps().back());
+ //      // return true;
+ //     }
+
+ //  }
 
   return res;
 }
@@ -248,6 +279,7 @@ bool path::Robot::evaluateActions(PAs &pas){
 
   bool success = false;
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
+    debug("--------------------");
     success = execute(*it, cMap);
     debug("Success: ", success);
     if(success){
@@ -307,6 +339,11 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   }
 
   Position start =  waypoints.front();
+  if(cmap.getClosestPositionInMap(start) != currentPos) {
+    warn("Positions do not match!!");
+    cout << cmap.getClosestPositionInMap(start) << endl;
+    cout << currentPos << endl;
+  }
   Position lastPos = waypoints.back();
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
@@ -315,11 +352,13 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
     warn("Startpoint not in map range: ", start);
     debug(cmap.getClosestPositionInMap(start));
+
     throw __LINE__;
     return false;
   }
 
   Index lastIdx;
+  int count = 0;
   for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
     // Check if start or endpoint collidates with obstacle
@@ -328,8 +367,13 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
     if(obstacle > 0){
       // The current index collides with an object
-      // debug("Collision detected!");
-      res = false;
+      debug("Collision detected!");
+      if(steps == 0){
+	warn("Fail in first round!!");
+	return false;
+      }else{
+	res = false;
+      }
       break;
     }else{
       // Update last position
@@ -342,14 +386,16 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 	  incConfParameter(action->getConfig(), PAP::CrossCount, static_cast<float>(mapVal));
 	}
 	cmap.at("map", *lit)++;
+	debug("Mark map");
       }
       // increment steps (to determain if action was successful)
       // Could be omitted by checking the last index
       steps++;
     }
   }
+
   // Update last valid robot position (before possible collision)
-  cmap.getPosition(lastIdx, currentPos);
+  if (!cmap.getPosition(lastIdx, currentPos)) warn("Point Transition faulty!");
   // Update Waypoints
   path.push_back(start);
   path.push_back(currentPos);

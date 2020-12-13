@@ -159,12 +159,13 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
     currentPopuation.push_back(genome(actions));
   }
 
-  for(auto &gen : currentPopuation){
-    gen.actions.begin()->get()->generateWPs(Position(0,0));
-    for (auto it = next(gen.actions.begin(), 1); it != gen.actions.end(); it++){
-      it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
-    }
-  }
+  // for(auto &gen : currentPopuation){
+  //   gen.actions.begin()->get()->generateWPs(Position(0,0));
+  //   for (auto it = next(gen.actions.begin(), 1); it != gen.actions.end(); it++){
+  //     it->get()->generateWPs(prev(it, 1)->get()->get_wps().back());
+  //     // debug("gen");
+  //   }
+  // }
 
 }
 
