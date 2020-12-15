@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cassert>
+
+#define assertm(exp, msg) assert(((void)msg, exp))
+
 #define __DEBUG__ true
 #define __INFO__ true
 #define __WARN__ true

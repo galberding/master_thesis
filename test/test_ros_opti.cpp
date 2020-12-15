@@ -88,7 +88,7 @@ TEST_F(RobotTest, executionStartActionTest){
   Position pos;
   cmap->getPosition(Index(11,11), pos);
   StartAction sa(pos);
-  bool res = rob->execute(make_shared<StartAction>(sa), *cmap);
+  bool res = rob->execute(sa, *cmap);
   ASSERT_TRUE(res);
   ASSERT_EQ(rob->get_currentPos(), pos);
   auto conf = rob->get_typeCount();
@@ -107,7 +107,7 @@ TEST_F(RobotTest, mapMoveBasicTest){
   pa.set_wps(vector<Position>({pos0, pos1}));
   int steps;
   WPs path;
-  bool res = rob->mapMove(*cmap, make_shared<PathAction>(pa), steps, rob->get_currentPos(), path, true);
+  bool res = rob->mapMove(*cmap, pa, steps, rob->get_currentPos(), path, true);
 
   ASSERT_GT(steps, 0);
   ASSERT_GT(cmap->get("map").sum(), 0);
@@ -124,8 +124,8 @@ TEST_F(RobotTest, executionAheadActionTest){
   // EndAction ea(WPs({Position(800, 800)}));
   AheadAction aa(PAT::CAhead, {{PAP::Angle, 180}, {PAP::Distance, 100}});
 
-  bool res = rob->execute(make_shared<StartAction>(sa), *cmap);
-  res &= rob->execute(make_shared<AheadAction>(aa), *cmap);
+  bool res = rob->execute(sa, *cmap);
+  res &= rob->execute(aa, *cmap);
 
   ASSERT_GT(cmap->get("map").sum(), 0);
   ASSERT_TRUE(res);
@@ -145,11 +145,11 @@ TEST_F(RobotTest, executionTest){
   AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
   AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
 
-  auto sap = make_shared<StartAction>(sa);
-  auto aa1p = make_shared<AheadAction>(aa1);
-  auto aa2p = make_shared<AheadAction>(aa2);
-  auto aa3p = make_shared<AheadAction>(aa3);
-  auto aa4p = make_shared<AheadAction>(aa4);
+  auto sap = sa;
+  auto aa1p = aa1;
+  auto aa2p = aa2;
+  auto aa3p = aa3;
+  auto aa4p = aa4;
 
   bool res = rob->execute(sap, *cmap);
   res &= rob->execute(aa1p, *cmap);
@@ -174,11 +174,11 @@ TEST_F(RobotTest, evaluateActionTest){
   AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 5000}}));
 
   PAs actions2;
-  actions2.push_back(make_shared<StartAction>(sa));
-  actions2.push_back(make_shared<AheadAction>(aa1));
-  actions2.push_back(make_shared<AheadAction>(aa2));
-  actions2.push_back(make_shared<AheadAction>(aa3));
-  actions2.push_back(make_shared<AheadAction>(aa4));
+  actions2.push_back(sa);
+  actions2.push_back(aa1);
+  actions2.push_back(aa2);
+  actions2.push_back(aa3);
+  actions2.push_back(aa4);
 
   bool res = rob->evaluateActions(actions2);
   ASSERT_TRUE(res);
@@ -205,18 +205,18 @@ TEST_F(RobotTest, evaluateActionTestCollision){
   AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 7500}}));
 
   PAs actions2;
-  actions2.push_back(make_shared<StartAction>(sa));
-  actions2.push_back(make_shared<AheadAction>(aa1));
-  actions2.push_back(make_shared<AheadAction>(aa2));
-  actions2.push_back(make_shared<AheadAction>(aa3));
-  actions2.push_back(make_shared<AheadAction>(aa4));
+  actions2.push_back(sa);
+  actions2.push_back(aa1);
+  actions2.push_back(aa2);
+  actions2.push_back(aa3);
+  actions2.push_back(aa4);
 
 
   bool res = rob->evaluateActions(actions2);
 
   ASSERT_TRUE(res);
   ASSERT_EQ(actions2.size(), 5);
-  ASSERT_EQ(actions2.back()->getConfig()[PAP::Distance], 7350);
+  ASSERT_EQ(actions2.back().mod_config[PAP::Distance], 7350);
 
   // displayImage(rob->gridToImg("map"));
 

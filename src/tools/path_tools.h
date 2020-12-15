@@ -52,6 +52,7 @@ namespace path {
     Distance = 2,
     DistanceOffset = 3,
     CrossCount = 4, // How often did the action cross other actions
+    StepCount = 5
   };
 
   enum class PathActionType
@@ -62,6 +63,11 @@ namespace path {
 	End = 3
 
    };
+
+  enum class Counter{
+    CrossCount = 0,
+    StepCount = 1
+  };
 
   using RP = RobotProperty;
   using PAP = PathActionParameter;
@@ -91,44 +97,37 @@ namespace path {
   // Convert direction vector to angle
   float dirToAngle(direction pos);
 
-
-
   /////////////////////////////////////////////////////////////////////////////
   //                                PathAction                               //
   /////////////////////////////////////////////////////////////////////////////
 
-  class PathAction{
+  struct PathAction{
     // An action shold be initialized by an action type
     // or better we need an action factory that will generate an action based on the
-  public:
-    const WPs get_wps() const { return wps; }
+    static uint32_t id;
 
-    void set_wps(const WPs wps) { this->wps = wps; }
+    int pa_id;
+    bool modified = true;
+    PAT type;
+    time_sec estimatedDuration;
+    WPs wps;
+    PA_config mod_config;
+    map<Counter, int> c_config;
 
-    //TODO: substitute public inheritance with getter and setter
-    // static grid_map::GridMap obstacle_map;
-    const PAT get_type() const { return type; }
+    WPs get_wps() { return wps; }
 
-    PathAction(const PAT type):type(type){
+    void set_wps(WPs wps) { this->wps = wps; }
 
+    PathAction(PAT type):pa_id(id), type(type), c_config{{Counter::StepCount, 0}, {Counter::CrossCount, 0}}{
+      id++;
     };
     // ~PathAction() = default;
-    /*
-      Update the current config parameters.
-      Parameter:
-      config the action specific configuration
 
-      return:
-      false if the configuration was faulty. The previous parameters will be used
-     */
-    // virtual bool updateConfig(robot_standard_config config);
-    // virtual void calWaypoints(cv::Point start);
-    // const robot_standard_config& getConfig(){return config;}
-    // time_sec getEstimatedDuration(){return estimatedDuration;};
     virtual WPs generateWPs(Position start);
     // virtual waypoints calEndpoint(grid_map::Index &start);
     // grid_map::Index vecToIdx(direction vec);
     PA_config& getConfig(){return mod_config;}
+
 
     /**
        This will adapt the parameter actions to drive from given start point to last one
@@ -139,16 +138,11 @@ namespace path {
     virtual bool applyMods();
 
     bool updateConf(PAP param, float val);
-  // private:
-  // protected:
-    bool modified = true;
-    const PAT type;
-    time_sec estimatedDuration;
-    WPs wps;
-    PA_config mod_config;
   };
 
-  using PAs = deque<shared_ptr<PathAction>>;
+
+
+  using PAs = deque<PathAction>;
 
   /////////////////////////////////////////////////////////////////////////////
   //                              AheadAction                                 //
@@ -213,7 +207,7 @@ For now we will just return the start point because the robot object should find
       Execute an action on the given grid map.
       Return false if execution was not successful (object was in the way)
     */
-    bool execute(shared_ptr<PathAction> action, grid_map::GridMap &map);
+    bool execute(PathAction action, grid_map::GridMap &map);
 
     bool evaluateActions(PAs &pas);
 
@@ -228,7 +222,7 @@ For now we will just return the start point because the robot object should find
     /*
       Mark points on the map and cal
      */
-    bool mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
+    bool mapMove(GridMap &cmap, PathAction action, int &steps, Position &currentPos, WPs &path, bool clean=true);
 
     cv::Mat gridToImg(string layer);
 
