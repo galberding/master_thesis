@@ -59,7 +59,7 @@ void ga::validateGen(genome &gen){
       // Case if PA is newly added
       // Moduification could not be applied because no waypoints have been generated yet
       // This will automativally apply the new changes
-      debug("No waypoints --> regenerate ...");
+      // debug("No waypoints --> regenerate ...");
       (*it)->generateWPs((*prev(it, 1))->get_wps().back());
     }else{
 
@@ -68,8 +68,8 @@ void ga::validateGen(genome &gen){
     // Change the configuration of the consecutive action
     auto it_next = next(it, 1);
     while(!(*it_next)->mend(**it) && it_next != gen.actions.end()){
+      warn("Validation: Remove Action ", (*it_next)->pa_id, " because no distance!");
       it_next = gen.actions.erase(it_next);
-      warn("Validation: Remove Action because no distance!");
     }
   }
 }
@@ -85,12 +85,14 @@ void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::
   PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
   distanceDist(generator);
   conf[PAP::Distance] = distanceDist(generator);
-  debug("NewDist: ", conf[PAP::Distance]);
+  // debug("NewDist: ", conf[PAP::Distance]);
   conf[PAP::Angle] += angleDist(generator);
 
   PAT type = (*next(gen.actions.begin(), idx))->type;
   // debug("Action length before : ", gen.actions.size());
-  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
+  AheadAction aa(type, conf);
+  debug("Adding Gen: ", aa.pa_id);
+  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(aa));
 
   // debug("Action length after: ", gen.actions.size());
 }
@@ -99,9 +101,9 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
   if (gen.actions.size() < 4){
     return;
   }
-  int idx = randRange(1, gen.actions.size()-1);
+  int idx = randRange(1, gen.actions.size()-2);
   auto it = gen.actions.erase(next(gen.actions.begin(), idx));
-  (*it)->modified = true;
+  (*prev(it,1))->modified = true;
 }
 
 
@@ -185,6 +187,27 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 }
 
 
+void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
+  for(auto it = begin; it != end; it++){
+    switch((*it)->type){
+    case PAT::Start:{
+      StartAction sa((*it)->wps.front());
+      child.push_back(make_shared<StartAction>(sa));
+      break;
+    }
+    case PAT::Ahead: case PAT::CAhead:{
+      AheadAction aa((*it)->type, (*it)->mod_config);
+      aa.generateWPs((*it)->wps.front());
+      child.push_back(make_shared<AheadAction>(aa));
+      break;
+    }
+    case PAT::End:
+      child.push_back(make_shared<EndAction>(EndAction((*it)->wps)));
+    }
+    // child1.push_back(make_shared<typename _Tp>(_Args &&__args...))
+  }
+}
+
 void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   // debug("Start Mating");
   PAs parent1, parent2, child1, child2;
@@ -196,21 +219,33 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
     parent2 = par2.actions;
   }
 
-  int idx = randRange(1, parent1.size() - 2);
+  int idx1 = randRange(1, parent1.size() - 2);
+  // int idx2 = randRange(1, parent2.size() - 2);
+  int idx2 = idx1;
   // int idx = 5;
   // debug("Index: ", idx);
   // child1.insert(child1.begin(), parent1.begin(), parent1.begin() + idx);
-  child1.insert(child1.begin(), parent1.begin(), std::next(parent1.begin(), idx));
-  child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
+  // create deep copy of parents:
+  copyActions(parent1.begin(), next(parent1.begin(), idx1), child1);
+  copyActions(parent2.begin(), next(parent2.begin(), idx2), child2);
+  // child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
 
-  child1.insert(child1.end(), std::next(parent2.begin(), idx), parent2.end());
-  child2.insert(child2.end(), std::next(parent1.begin(), idx), parent1.end());
+  copyActions(std::next(parent2.begin(), idx2), parent2.end(), child1);
+  copyActions(std::next(parent1.begin(), idx1), parent1.end(), child2);
+  // child2.insert(child2.end(), std::next(parent1.begin(), idx), parent1.end());
+  // child1.insert(child1.begin(), parent1.begin(), std::next(parent1.begin(), idx));
+  // child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
+
+  // child1.insert(child1.end(), std::next(parent2.begin(), idx), parent2.end());
+
 
   // Mark crossing PAs as modufied to connect the two pieces
-  (*next(child1.begin(), idx-1))->modified = true;
-  (*next(child2.begin(), idx-1))->modified = true;
+  (*next(child1.begin(), idx1-1))->modified = true;
+  (*next(child2.begin(), idx2-1))->modified = true;
   genome child_gen1(child1);
   genome child_gen2(child2);
+
+
 
   // Calidate the gens
   validateGen(child_gen1);
@@ -238,20 +273,21 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
 
 void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_config) {
   for (auto gen : currentPopulation){
-    for(auto [k, v] : muat_config){
+    for(auto &[k, v] : muat_config){
       int proba = randRange(0,100);
       // debug("Mutation Proba: ", proba, " Config Proba: ", v.second);
-      if(v.second > proba){
+      if(v.second <= proba){
 	// execute mutation strategy
 	// info("Execute: ", k);
 	// info("Action size befor: ", gen.actions.size());
 	// info("Fitness: ", gen.fitness);
 	v.first(gen, angleDistr, distanceDistr, generator);
+	validateGen(gen);
 	// info("Action size after: ", gen.actions.size());
 	// debug("Done!");
       }
     }
-    validateGen(gen);
+
   }
 }
 
@@ -341,7 +377,7 @@ float ga::GA::calFitness(float cdist,
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
-  float weight = 0.5;
+  float weight = 0.6;
   return ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
 
 }

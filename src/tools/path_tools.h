@@ -148,9 +148,9 @@ namespace path {
   //                              AheadAction                                 //
   /////////////////////////////////////////////////////////////////////////////
 
-  class AheadAction : public  PathAction{
-  public:
+  struct AheadAction : public  PathAction{
     AheadAction(path::PAT type, PA_config conf);
+    // AheadAction(AheadAction &aa);
     virtual WPs generateWPs(Position start);
 
   };
@@ -159,8 +159,7 @@ namespace path {
   //                                EndAction                                //
   /////////////////////////////////////////////////////////////////////////////
 
-  class EndAction : public PathAction{
-  public:
+  struct EndAction : public PathAction{
     EndAction(WPs endPoints):PathAction(PAT::End){
       modified = false;
       wps.insert(wps.begin(), endPoints.begin(), endPoints.end());
@@ -178,8 +177,7 @@ For now we will just return the start point because the robot object should find
   /////////////////////////////////////////////////////////////////////////////
   //                               StartAction                               //
   /////////////////////////////////////////////////////////////////////////////
-  class StartAction : public PathAction{
-  public:
+  struct StartAction : public PathAction{
     StartAction(Position startPoint):PathAction(PAT::Start) {
       wps.insert(wps.begin(), startPoint);
     };

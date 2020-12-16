@@ -83,10 +83,8 @@ bool path::PathAction::mend(PathAction &pa){
     // During initialization phase
     generateWPs(pa.wps.back());
     return true;
-  }else if(wps.size() != 2) {
-    warn("Waypoints not generated yet! Should never happen!");
-    return false;
   }
+  assertm(wps.size() >= 2, "Waypoint generation failure while mending!");
   Position start = pa.get_wps().back();
   Position end = wps.back();
   Position V = end - start;
@@ -134,6 +132,10 @@ path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
   updateConfig(mod_config, conf);
   modified = true;
 }
+// path::AheadAction::AheadAction(AheadAction &aa):AheadAction(aa.type, ){
+//   wps = aa.wps;
+
+// }
 
 WPs path::AheadAction::generateWPs(Position start) {
   if(modified || (start != wps.front())){
@@ -150,6 +152,7 @@ WPs path::AheadAction::generateWPs(Position start) {
   //   warn("Generation not completed!");
 
   // }
+  assertm(mod_config[PAP::Distance], "");
   return wps;
 }
 
@@ -226,6 +229,10 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   }
 
   if(!res){
+    if(action->c_config[Counter::StepCount] == 0){
+      warn("No move at all ...");
+      return false;
+    }
     Position start =  action->get_wps().front();
     float dist = (currentPos-start).norm();
     action->mod_config[PAP::Distance] = dist;
@@ -250,11 +257,21 @@ bool path::Robot::evaluateActions(PAs &pas){
     } else {
 
       // Check if the next gen is ready to be mended
+      if((*it)->c_config[Counter::StepCount] == 0){
+	warn("Delete: ", (*it)->pa_id);
+	it = pas.erase(it);
+	debug("Deleted");
+	if(!it->get()->mend(**prev(it,1))){
+	  assertm(false, "Cannot mend after deleted action");
+	}
+	continue;
+      }
+      debug("Next");
       auto it_next = next(it, 1);
       while(!(*it_next)->mend(**it) && it_next != pas.end()){
+	warn("Remove Action while execution!");
 	it_next = pas.erase(it_next);
 	// debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
-	warn("Remove Action while execution!");
 	// assertm(false, "Action cannot be mended and got removed!!");
 	// break;
       }
@@ -321,7 +338,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   assertm(cmap.isInside(start), "Start-point is not in map range!");
   if((waypoints.back()-waypoints.front()).norm() <= 0){
     // Action is not doing anything, delete it!!
-    warn("Delete action, distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
+    warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
     return false;
   }
 

@@ -17,6 +17,7 @@ namespace ga{
     genome(){};
     genome(float fitness):fitness(fitness){};
     genome(PAs actions):actions(actions){};
+    int id = 0;
     PAs actions;
     WPs waypoints;
     float fitness = 0;

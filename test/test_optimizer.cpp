@@ -251,7 +251,7 @@ TEST_F(GATest, actionModifivationTest){
 
   rob->evaluateActions(gen.actions);
 
-  displayImage(rob->gridToImg("map"));
+  // displayImage(rob->gridToImg("map"));
 
   next(gen.actions.begin(), 3)->get()->mod_config[PAP::Angle] += 90;
   next(gen.actions.begin(), 3)->get()->mod_config[PAP::Angle] += 90;
@@ -262,7 +262,7 @@ TEST_F(GATest, actionModifivationTest){
 
   rob->evaluateActions(gen.actions);
 
-  displayImage(rob->gridToImg("map"));
+  // displayImage(rob->gridToImg("map"));
 
 
 }
@@ -510,19 +510,21 @@ protected:
       {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-    ga = make_shared<GA>(GA(42, 1, 0.1, 0, 60, muta));
+    ga = make_shared<GA>(GA(42, 4, 0.7, 0, 70, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
     map.add("obstacle", 1.0);
     map.add("map", 0.0);
 
-    for (SubmapIterator sm(map, Index(10, 10), Size(map.getSize().x() - 10, map.getSize().y() - 30)); !sm.isPastEnd();
+    for (SubmapIterator sm(map, Index(100, 100), Size(map.getSize().x() - 100, map.getSize().y() - 10)); !sm.isPastEnd();
 	 ++sm) {
       map.at("obstacle", *sm) = 0.0;
     }
 
     cmap = make_shared<GridMap>(map);
     rob = make_shared<Robot>(Robot(42, {}, map));
+
+    // displayImage(rob->gridToImg("obstacle"));
   }
 
 
@@ -543,20 +545,20 @@ TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
-      // {"addAction", make_pair(addAction, 10)},
+      // {"addAction", make_pair(addAction, 100)},
       // {"removeAction", make_pair(removeAction, 10)},
       {"addAngleOffset", make_pair(addAngleOffset, 70)},
       {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-  int iter = 100 ;
+  int iter = 10000 ;
   int selected = 15;
-  cmap->getPosition(Index(100,100), start);
-  cmap->getPosition(Index(100,100), end);
+  cmap->getPosition(Index(110,110), start);
+  cmap->getPosition(Index(110,110), end);
   debug("Start");
   genome best;
 
-  ga->populatePool(pool, start, {end}, 100, 20);
+  ga->populatePool(pool, start, {end}, 100, 200);
   ga->evalFitness(pool, *rob);
   ga->selection(pool, sel, selected);
   ASSERT_EQ(sel.size(), selected);
@@ -570,6 +572,7 @@ TEST_F(GAApplication, algorithmTest){
 
     sel.clear();
     // debug("Mut");
+    // addAction(pool.back(), ga->angleDistr, ga->distanceDistr, ga->generator);
     ga->mutation(pool, muta);
     // debug("Cla");
     ga->evalFitness(pool, *rob);
@@ -594,27 +597,28 @@ TEST_F(GAApplication, algorithmTest){
 
     ASSERT_EQ(sel.size(), selected);
     // debug("Done");
-    info("Population size: ", pool.size());
-    if(pool.front().fitness > best.fitness){
+    // info("Population size: ", pool.size());
+    if(pool.back().fitness > best.fitness){
       best = pool.front().fitness;
     }
-    float lowest = 1000;
-    float highest = 0;
+    int lowest = 1000;
+    int highest = 0;
     if (true){
-      for (auto gen : pool){
-	cout << "Gens: " << gen.fitness << " ";
+      for (auto &gen : pool){
+	// cout << "Gens: " << gen.fitness << " ";
 	for(auto ac : gen.actions){
 	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
 	  ASSERT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
 	}
-	if(gen.actions.size() < lowest){
-	  lowest = gen.actions.size();
+	int a_size = gen.actions.size();
+	if(a_size < lowest){
+	  lowest = a_size;
 	}
-	if(gen.actions.size() > highest){
-	  highest = gen.actions.size();
+	if(a_size > highest){
+	  highest = a_size;
 	}
       }
-      cout << endl;
+      // cout << endl;
       info("Best fitness: ", best.fitness,
 	   " Pool best: ", pool.front().fitness,
 	   " Worst fitness: ", pool.back().fitness,
@@ -630,13 +634,79 @@ TEST_F(GAApplication, algorithmTest){
     }
 
   }
-  for (auto gen : pool){
-    for (auto ac : gen.actions){
-      cout << ac->pa_id << "|";
-    }
-    cout << endl;
-    cout << "-------" << endl;
-  }
+  // for (auto gen : pool){
+  //   for (auto ac : gen.actions){
+  //     cout << ac->pa_id << "|";
+  //   }
+  //   cout << endl;
+  //   cout << "-------" << endl;
+  // }
+}
+
+
+// TEST_F(GAApplication, mutationTest){
+
+//   Position start, end;
+
+//   cmap->getPosition(Index(41,41), start);
+//   cmap->getPosition(Index(22,22), end);
+//   debug("Start: ", start);
+//   debug("End: ", end);
+//   debug("Distance: ", start - end);
+
+//   StartAction sa(start);
+//   EndAction ea({end});
+//   AheadAction aa(PAT::CAhead, {{PAP::Distance, 2000}, {PAP::Angle, 270}});
+//   AheadAction aa1(PAT::CAhead, {{PAP::Distance, 30}, {PAP::Angle, 130}});
+//   AheadAction aa2(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 90}});
+//   AheadAction aa3(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+
+//   PAs act = {
+//       make_shared<StartAction>(sa),
+//       make_shared<AheadAction>(aa),
+//       make_shared<AheadAction>(aa1),
+//       make_shared<AheadAction>(aa2),
+//       make_shared<AheadAction>(aa3),
+//       make_shared<EndAction>(ea)
+//   };
+
+//   genome gen(act);
+
+//   int size = act.size();
+//   int iter = 4;
+
+//   rob->evaluateActions(gen.actions);
+
+//   for(int i=0; i<iter;i++){
+//     addAction(gen,  ga->angleDistr,  ga->distanceDistr,  ga->generator);
+//     validateGen(gen);
+//     rob->evaluateActions(gen.actions);
+//     // displayImage(rob->gridToImg("map"));
+//   }
+
+//   ASSERT_EQ(gen.actions.size(), size + iter);
+
+//   for(int i=0; i<iter;i++){
+//     removeAction(gen,  ga->angleDistr,  ga->distanceDistr,  ga->generator);
+//     validateGen(gen);
+//     rob->evaluateActions(gen.actions);
+//     // displayImage(rob->gridToImg("map"));
+//   }
+//   ASSERT_EQ(gen.actions.size(), size );
+// }
+
+
+TEST(ActionCopy, copytest){
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 42}});
+  aa.generateWPs(Position(42,42));
+  ASSERT_EQ(aa.wps.size(), 2);
+  AheadAction aa_copy(aa);
+
+  ASSERT_EQ(aa_copy.wps.size(), 2);
+  ASSERT_EQ(aa_copy.wps.front(), aa.wps.front());
+  ASSERT_TRUE(!aa_copy.modified);
+
 }
 
 
