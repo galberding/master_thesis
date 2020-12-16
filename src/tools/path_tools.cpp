@@ -187,18 +187,18 @@ path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(in
 
 
 
-bool path::Robot::execute(PathAction action, grid_map::GridMap &map) {
+bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map) {
 
   int steps = 0;
   bool res = false;
   Position pos(currentPos);
-  switch(action.type){
+  switch(action->type){
   case PAT::Start:{
     resetCounter();
     // map.clear("map");
     map.add("map", 0.0);
     // get start position for all following actions
-    currentPos = action.generateWPs(currentPos)[0];
+    currentPos = action->generateWPs(currentPos)[0];
     // debug("Startpoint: ", currentPos);
     res = true;
     break;
@@ -212,7 +212,7 @@ bool path::Robot::execute(PathAction action, grid_map::GridMap &map) {
     break;
   }
   case PAT::End:{
-    WPs wps = action.generateWPs(currentPos);
+    WPs wps = action->generateWPs(currentPos);
     // res = mapMove(action, steps, currentPos);
     wps = findShortestEndpointPath(wps);
     res = true;
@@ -226,11 +226,11 @@ bool path::Robot::execute(PathAction action, grid_map::GridMap &map) {
   }
 
   if(!res){
-    Position start =  action.get_wps().front();
+    Position start =  action->get_wps().front();
     float dist = (currentPos-start).norm();
-    action.mod_config[PAP::Distance] = dist;
-    action.applyMods();
-    if(!map.isInside(action.wps.back())){
+    action->mod_config[PAP::Distance] = dist;
+    action->applyMods();
+    if(!map.isInside(action->wps.back())){
       warn("Generated Point outside!!");
       assertm(false, "Geneerated point outside the map");
     }
@@ -246,12 +246,12 @@ bool path::Robot::evaluateActions(PAs &pas){
     success = execute(*it, cMap);
     // debug("Success: ", success);
     if(success){
-      incConfParameter(typeCount, it->type, 1);
+      incConfParameter(typeCount, (*it)->type, 1);
     } else {
 
       // Check if the next gen is ready to be mended
       auto it_next = next(it, 1);
-      while(!it_next->mend(*it) && it_next != pas.end()){
+      while(!(*it_next)->mend(**it) && it_next != pas.end()){
 	it_next = pas.erase(it_next);
 	// debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
 	warn("Remove Action while execution!");
@@ -293,14 +293,14 @@ WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
   return b;
 }
 
-bool path::Robot::mapMove(GridMap &cmap, PathAction action, int &steps, Position &currentPos, WPs &path, bool clean) {
+bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
 
-  WPs waypoints = action.generateWPs(currentPos);
+  WPs waypoints = action->generateWPs(currentPos);
   // Reset counter values
 
-  resetConfParameter(action.c_config, Counter::CrossCount);
-  resetConfParameter(action.c_config, Counter::StepCount);
+  resetConfParameter(action->c_config, Counter::CrossCount);
+  resetConfParameter(action->c_config, Counter::StepCount);
   // Check if wp generation was successful
   steps = 0;
   bool res = true;
@@ -342,7 +342,7 @@ bool path::Robot::mapMove(GridMap &cmap, PathAction action, int &steps, Position
     if(obstacle > 0){
       // The current index collides with an object
       // debug("Collision detected!");
-      if(action.c_config[Counter::StepCount] == 0){
+      if(action->c_config[Counter::StepCount] == 0){
 	warn("Fail in first round!!");
 	return false;
       }else{
@@ -359,10 +359,10 @@ bool path::Robot::mapMove(GridMap &cmap, PathAction action, int &steps, Position
 	  // TODO: happens almost always at the beginning when marking a new action
 	  // debug("Crossing Path detected!");
 	  // incConfParameter(action->c_config, Counter::CrossCount, 1);
-	  action.c_config[Counter::CrossCount] +=  1;
+	  action->c_config[Counter::CrossCount] +=  1;
 	}
 
-	action.c_config[Counter::StepCount] +=  1;
+	action->c_config[Counter::StepCount] +=  1;
 	cmap.at("map", *lit) = 1;
 	// debug("Mark map");
       }

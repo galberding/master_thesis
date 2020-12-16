@@ -51,23 +51,23 @@ int ga::randRange(int lower, int upper){
 
 void ga::validateGen(genome &gen){
   for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
-    if(!it->modified) continue;
+    if(!(*it)->modified) continue;
     // Action is modified so try to apply the current changes
-    if(!it->applyMods()){
+    if(!(*it)->applyMods()){
       // warn("No startpoint to apply changes to!, type; ", int(it->type));
       //
       // Case if PA is newly added
       // Moduification could not be applied because no waypoints have been generated yet
       // This will automativally apply the new changes
       debug("No waypoints --> regenerate ...");
-      it->generateWPs(prev(it, 1)->get_wps().back());
+      (*it)->generateWPs((*prev(it, 1))->get_wps().back());
     }else{
 
       // debug("Changes applied!");
     }
     // Change the configuration of the consecutive action
     auto it_next = next(it, 1);
-    while(!it_next->mend(*it) && it_next != gen.actions.end()){
+    while(!(*it_next)->mend(**it) && it_next != gen.actions.end()){
       it_next = gen.actions.erase(it_next);
       warn("Validation: Remove Action because no distance!");
     }
@@ -82,15 +82,15 @@ void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::
   int idx = randRange(1, gen.actions.size()-1);
   // debug("Index: ", idx, " Size: ", gen.actions.size());
 
-  PA_config conf = next(gen.actions.begin(), idx)->getConfig();
+  PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
   distanceDist(generator);
   conf[PAP::Distance] = distanceDist(generator);
   debug("NewDist: ", conf[PAP::Distance]);
   conf[PAP::Angle] += angleDist(generator);
 
-  PAT type = next(gen.actions.begin(), idx)->type;
+  PAT type = (*next(gen.actions.begin(), idx))->type;
   // debug("Action length before : ", gen.actions.size());
-  gen.actions.insert(next(gen.actions.begin(), idx),AheadAction(type, conf));
+  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(AheadAction(type, conf)));
 
   // debug("Action length after: ", gen.actions.size());
 }
@@ -101,7 +101,7 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
   }
   int idx = randRange(1, gen.actions.size()-1);
   auto it = gen.actions.erase(next(gen.actions.begin(), idx));
-  it->modified = true;
+  (*it)->modified = true;
 }
 
 
@@ -115,9 +115,9 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, 
   auto it = next(gen.actions.begin(), idx);
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->type));
   // debug("Angle offset: ", offset);
-  it->mod_config[PAP::Angle] += offset;
-  it->mod_config[PAP::AngleOffset] += offset;
-  it->modified = true;
+  (*it)->mod_config[PAP::Angle] += offset;
+  (*it)->mod_config[PAP::AngleOffset] += offset;
+  (*it)->modified = true;
 
 }
 
@@ -127,9 +127,9 @@ void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDis
   auto it = next(gen.actions.begin(), idx);
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->type));
   // debug("Angle offset: ", offset);
-  it->mod_config[PAP::Distance] += offset;
-  it->mod_config[PAP::DistanceOffset] += offset;
-  it->modified = true;
+  (*it)->mod_config[PAP::Distance] += offset;
+  (*it)->mod_config[PAP::DistanceOffset] += offset;
+  (*it)->modified = true;
 }
 
 void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
@@ -152,12 +152,12 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 
   for(int j=0; j<individuals; j++){
     PAs actions;
-    actions.push_back(StartAction(start));
+    actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
       PA_config config{{PAP::Angle,angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)}};
-      actions.push_back(AheadAction(PAT::CAhead, config));
+      actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
     }
-    actions.push_back(EndAction(endpoints));
+    actions.push_back(make_shared<EndAction>(EndAction(endpoints)));
     currentPopuation.push_back(genome(actions));
   }
 
@@ -207,8 +207,8 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   child2.insert(child2.end(), std::next(parent1.begin(), idx), parent1.end());
 
   // Mark crossing PAs as modufied to connect the two pieces
-  next(child1.begin(), idx-1)->modified = true;
-  next(child2.begin(), idx-1)->modified = true;
+  (*next(child1.begin(), idx-1))->modified = true;
+  (*next(child2.begin(), idx-1))->modified = true;
   genome child_gen1(child1);
   genome child_gen2(child2);
 

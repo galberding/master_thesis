@@ -142,7 +142,7 @@ namespace path {
 
 
 
-  using PAs = deque<PathAction>;
+  using PAs = deque<shared_ptr<PathAction>>;
 
   /////////////////////////////////////////////////////////////////////////////
   //                              AheadAction                                 //
@@ -207,7 +207,7 @@ For now we will just return the start point because the robot object should find
       Execute an action on the given grid map.
       Return false if execution was not successful (object was in the way)
     */
-    bool execute(PathAction action, grid_map::GridMap &map);
+    bool execute(shared_ptr<PathAction> action, grid_map::GridMap &map);
 
     bool evaluateActions(PAs &pas);
 
@@ -222,7 +222,7 @@ For now we will just return the start point because the robot object should find
     /*
       Mark points on the map and cal
      */
-    bool mapMove(GridMap &cmap, PathAction action, int &steps, Position &currentPos, WPs &path, bool clean=true);
+    bool mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
 
     cv::Mat gridToImg(string layer);
 
