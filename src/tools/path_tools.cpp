@@ -329,11 +329,6 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   assertm(waypoints.size() >= 2, "Map move failed, not enough points given by action");
   Position start =  waypoints.front();
   assertm(cmap.getClosestPositionInMap(start) == currentPos, "Positions do not match!");
-  // if(cmap.getClosestPositionInMap(start) != currentPos) {
-  //   warn("Positions do not match!!");
-  //   cout << cmap.getClosestPositionInMap(start) << endl;
-  //   cout << currentPos << endl;
-  // }
   Position lastPos = waypoints.back();
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
@@ -344,13 +339,6 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
     warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
     return false;
   }
-
-    // assertm((waypoints.back()-waypoints.front()).norm() > 0, "Distance smaller than movement");
-  // if(!cmap.isInside(start)){
-  //   warn("Startpoint not in map range: ", start);
-  //   debug(cmap.getClosestPositionInMap(start));
-  //   return false;
-  // }
 
   Index lastIdx;
   for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
@@ -376,18 +364,12 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 	float mapVal = cmap.at("map", *lit);
 	// debug("Map Val: ", mapVal);
 	if (mapVal > 0){
-	  // TODO: happens almost always at the beginning when marking a new action
-	  // debug("Crossing Path detected!");
-	  // incConfParameter(action->c_config, Counter::CrossCount, 1);
 	  action->c_config[Counter::CrossCount] +=  1;
 	}
-
 	action->c_config[Counter::StepCount] +=  1;
 	cmap.at("map", *lit) = 1;
 	// debug("Mark map");
       }
-      // increment steps (to determain if action was successful)
-      // Could be omitted by checking the last index
       steps++;
     }
   }
