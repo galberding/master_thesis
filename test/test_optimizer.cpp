@@ -257,7 +257,7 @@ TEST_F(GATest, actionModifivationTest){
   next(gen.actions.begin(), 3)->get()->mod_config[PAP::Angle] += 90;
   next(gen.actions.begin(), 3)->get()->mod_config[PAP::Distance] += 1000;
   // next(gen.actions.begin(), 3)->get()->modified = true;
-  next(gen.actions.begin(), 3)->get()->generateEndpointFromChangedConfig();
+  next(gen.actions.begin(), 3)->get()->applyModifications();
   next(gen.actions.begin(), 4)->get()->mendConfig(*(next(gen.actions.begin(), 3)->get()));
 
   rob->evaluateActions(gen.actions);

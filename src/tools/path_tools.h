@@ -147,7 +147,7 @@ namespace path {
        Return false if no waypoints have been generated yet
      */
     virtual bool mendConfig(PathAction &pa, bool overrideChanges=true);
-    virtual bool generateEndpointFromChangedConfig();
+    virtual bool applyModifications();
 
     bool updateConf(PAP param, float val);
   };

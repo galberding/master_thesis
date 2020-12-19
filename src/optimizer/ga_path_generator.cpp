@@ -53,7 +53,7 @@ void ga::validateGen(genome &gen){
   for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
     if(!(*it)->modified) continue;
     // Action is modified so try to apply the current changes
-    if(!(*it)->generateEndpointFromChangedConfig()){
+    if(!(*it)->applyModifications()){
       // warn("No startpoint to apply changes to!, type; ", int(it->type));
       //
       // Case if PA is newly added

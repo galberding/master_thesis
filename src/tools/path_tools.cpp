@@ -70,7 +70,7 @@ uint32_t path::PathAction::id = 0;
 WPs path::PathAction::generateWPs(Position start) {
   // debug("Haha geflaxt!!");
   // debug("MyType: ", static_cast<int>(type));
-  assertm(PAT::CAhead != type, "CAhead called generic Implementation!!");
+  assertm(!(PAT::CAhead == type || PAT::Ahead == type), "C/Ahead called generic Implementation!!");
   modified = false;
   return wps;
 }
@@ -123,7 +123,7 @@ bool path::PathAction::mendConfig(PathAction &pa, bool overrideChanges){
   return true;
 }
 
-bool path::PathAction::generateEndpointFromChangedConfig(){
+bool path::PathAction::applyModifications(){
 
   assertm(!(wps.size() == 0), "Cannot apply a changed config without waypoints");
   modified = true;
@@ -202,7 +202,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 
   int steps = 0;
   bool res = false;
-  bool init = action->wps.size() == 0 && !action->modified;
+
   Position pos(currentPos);
 
   switch(action->type){
@@ -232,8 +232,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     break;
   }
   default:{
-    // TODO: What in case of error?
-    warn("Unknown Action detected!");
+    assertm(false, ("Unknown Action to process while execution: " + to_string(static_cast<int>(action->type))));
     break;
   }
   }
@@ -242,7 +241,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   if(!res){
     // Ignore actions that have no distance
     if(action->c_config[Counter::StepCount] == 0){
-      warn("Action has no distance ...");
+      debug("Action has distance 0");
       return true;
     }
 
@@ -250,62 +249,47 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     Position start =  action->get_wps().front();
     float dist = (currentPos-start).norm();
     action->mod_config[PAP::Distance] = dist;
-    action->generateEndpointFromChangedConfig();
+    // action->modified = true;
+    // action->generateWPs(action->wps.front());
+    action->applyModifications();
     assertm(map.isInside(action->wps.back()), "Generated point outside the map");
   }
 
   // When initializing we do not want to modify the next action
-  return res || init;
+  return res;
 }
 
 bool path::Robot::evaluateActions(PAs &pas){
 
   bool success = false;
+  bool overrideChanges = true;
+
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     // debug("--------------------");
+
+    bool init = (*it)->wps.size() == 0 || !(*it)->modified;
+    if(init){
+      // initialize the action by generating the waypoints
+      // this enables evaluateActions to handle completely uninitialized action sequences
+      (*it)->modified = true;
+      (*it)->generateWPs((*prev(it, 1))->wps.back());
+    }
+
     success = execute(*it, cMap);
     // debug("Success: ", success);
-    if(success){
-      incConfParameter(typeCount, (*it)->type, 1);
-    } else {
-
-      // TODO: Actions should not be removed when distance is 0
-      // the current action was adapted so we need to mend the consecutive action
-
-      // Check if the next gen is ready to be mended
-      // if((*it)->c_config[Counter::StepCount] == 0){
-      // 	warn("Delete: ", (*it)->pa_id);
-      // 	it = pas.erase(it);
-      // 	debug("Deleted");
-      // 	if(!it->get()->mend(**prev(it,1))){
-      // 	  assertm(false, "Cannot mend after deleted action");
-      // 	}
-      // 	continue;
-      // }
-      // debug("Next");
-      // auto it_next = next(it, 1);
-      // while(!(*it_next)->mend(**it) && it_next != pas.end()){
-      // 	warn("Remove Action while execution!");
-      // 	it_next = pas.erase(it_next);
-      // 	// debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
-      // 	// assertm(false, "Action cannot be mended and got removed!!");
-      // 	// break;
-      // }
-
-
-      assertm(pas.size() > 3, "Too few actions to proceed!");
-      // cv::imshow("Map state", gridToImg("map"));
-      // cv::waitKey(1);
-      // next(it, 1)->get()->mend(*it->get());
-      // it = pas.erase(it);
+    // do not propagate changes when actions are initialized
+    if(!(success || init)){
+      auto it_next = next(it, 1);
+      auto it_prev = it;
+      while(!(*it_next)->mendConfig(**it_prev, overrideChanges) && it_next != pas.end()){
+	debug("Propagate change ...");
+	it_prev = it_next;
+	it_next++;
+      }
     }
+    incConfParameter(typeCount, (*it)->type, 1);
   }
-  // info("Remaining Size: ", pas.size());
-  if(pas.size() < 3){
-    //TODO: What to do in case of too few actions
-    assertm(false, "TOO few action remain in action!");
-    return false;
-  }
+  assertm(pas.size() > 3, "TOO few action remain in action!");
   return true;
 }
 
@@ -324,6 +308,7 @@ void path::Robot::resetCounter() {
 
 WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
   WPs b;
+  b.push_back(endpoints.front());
 
   return b;
 }
