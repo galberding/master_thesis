@@ -53,7 +53,7 @@ void ga::validateGen(genome &gen){
   for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
     if(!(*it)->modified) continue;
     // Action is modified so try to apply the current changes
-    if(!(*it)->applyMods()){
+    if(!(*it)->generateEndpointFromChangedConfig()){
       // warn("No startpoint to apply changes to!, type; ", int(it->type));
       //
       // Case if PA is newly added
@@ -67,7 +67,7 @@ void ga::validateGen(genome &gen){
     }
     // Change the configuration of the consecutive action
     auto it_next = next(it, 1);
-    while(!(*it_next)->mend(**it) && it_next != gen.actions.end()){
+    while(!(*it_next)->mendConfig(**it) && it_next != gen.actions.end()){
       warn("Validation: Remove Action ", (*it_next)->pa_id, " because no distance!");
       it_next = gen.actions.erase(it_next);
     }

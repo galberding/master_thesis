@@ -97,6 +97,9 @@ namespace path {
   // Convert direction vector to angle
   float dirToAngle(direction pos);
 
+  // return true if the conversion to angle was successful
+  bool dirToAngle(direction pos, float &angle);
+
   /////////////////////////////////////////////////////////////////////////////
   //                                PathAction                               //
   /////////////////////////////////////////////////////////////////////////////
@@ -114,13 +117,22 @@ namespace path {
     PA_config mod_config;
     map<Counter, int> c_config;
 
+    PathAction(PAT type):
+      pa_id(id),
+      modified(false),
+      type(type),
+      c_config{
+	{Counter::StepCount, 0},
+	{Counter::CrossCount, 0}}{
+      id++;
+    };
+
     WPs get_wps() { return wps; }
 
     void set_wps(WPs wps) { this->wps = wps; }
 
-    PathAction(PAT type):pa_id(id), type(type), c_config{{Counter::StepCount, 0}, {Counter::CrossCount, 0}}{
-      id++;
-    };
+
+
     // ~PathAction() = default;
 
     virtual WPs generateWPs(Position start);
@@ -134,8 +146,8 @@ namespace path {
        Will alter the start point.
        Return false if no waypoints have been generated yet
      */
-    virtual bool mend(PathAction &pa);
-    virtual bool applyMods();
+    virtual bool mendConfig(PathAction &pa, bool overrideChanges=true);
+    virtual bool generateEndpointFromChangedConfig();
 
     bool updateConf(PAP param, float val);
   };

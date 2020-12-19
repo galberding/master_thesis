@@ -52,10 +52,14 @@ direction path::angleToDir(float angle){
 
 float path::dirToAngle(direction pos){
   float angle = atan2(pos[1], pos[0]) * (180 / M_PI);
-  if(isnan(angle)) warn("Broken angle!!");
+  // if(isnan(angle)) warn("Broken angle!!");
   return angle;
 }
 
+bool path::dirToAngle(direction pos, float &angle) {
+  angle = dirToAngle(pos);
+  return !isnan(angle);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   PathAction                                  //
@@ -77,33 +81,40 @@ bool path::PathAction::updateConf(PAP param, float val) {
 }
 
 
-bool path::PathAction::mend(PathAction &pa){
-  // debug("Mending!");
-  if(wps.size() == 0 && modified){
-    // During initialization phase
-    generateWPs(pa.wps.back());
-    return true;
-  }
+bool path::PathAction::mendConfig(PathAction &pa, bool overrideChanges){
+
+  // Choose one of the stategies with overrideChanges
+  // [x] override change of current mutation --> always return true
+  // [ ] apply changes and propagate to next action --> return false
+
+  assertm(!(wps.size() == 0 && !modified), "Mending during initialization!");
+  assertm(!(wps.size() == 0 && modified), "Modified action (probably added action while modification?) with no waypoints. \nWe do not allow this anymore!");
   assertm(wps.size() >= 2, "Waypoint generation failure while mending!");
+
+
+  if(modified && overrideChanges){
+    debug("Propagate changes");
+    generateWPs(pa.wps.back());
+    return false;
+  }
+
+  // Start the mending process by
+  float angle;
   Position start = pa.get_wps().back();
   Position end = wps.back();
   Position V = end - start;
   float dist = V.norm();
-  if(dist == 0){
-    warn("Action has no distrance");
-    return false;
+  // ensure that the calculation does not divide by 0
+  if(dist > 0 && dirToAngle(V/dist, angle)){
+    // Only adapt the angle if distance is greater 0
+    // otherwise we just want to ignore it
+    mod_config[PAP::Angle] = angle;
+  } else {
+    debug("Angle calculation failed, dist = ", dist);
   }
-  float angle = dirToAngle(V/dist);
 
-  // debug("Mending -- Dist: ", dist, " Angle: ", angle);
-  assertm(!isnan(angle), "Angle is not a number!");
-  // if(isnan(angle)) {
-  //   warn("Error!");
-
-  // }
   // Update Parameter
   mod_config[PAP::Distance] = dist;
-  mod_config[PAP::Angle] = angle;
 
   // set new start Position
   *wps.begin() = start;
@@ -112,13 +123,10 @@ bool path::PathAction::mend(PathAction &pa){
   return true;
 }
 
-bool path::PathAction::applyMods(){
-  // debug("Mods!");
-  // Regenerate waypoints based on the already existing start Point
-  // if waypoints are empty return false
-  if(wps.size() == 0) return false;
+bool path::PathAction::generateEndpointFromChangedConfig(){
+
+  assertm(!(wps.size() == 0), "Cannot apply a changed config without waypoints");
   modified = true;
-  // debug("Apply Changes");
   generateWPs(wps.front());
   return true;
 }
@@ -130,7 +138,7 @@ bool path::PathAction::applyMods(){
 path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
   mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 10}, {PAP::CrossCount, 0}, {PAP::StepCount, 0}});
   updateConfig(mod_config, conf);
-  modified = true;
+  // modified = false;
 }
 // path::AheadAction::AheadAction(AheadAction &aa):AheadAction(aa.type, ){
 //   wps = aa.wps;
@@ -168,7 +176,7 @@ WPs path::EndAction::generateWPs(Position start) {
   }else{
     b.push_back(start);
   }
-  modified = false;
+  // modified = false;
   return b;
 }
 
@@ -194,7 +202,9 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
 
   int steps = 0;
   bool res = false;
+  bool init = action->wps.size() == 0 && !action->modified;
   Position pos(currentPos);
+
   switch(action->type){
   case PAT::Start:{
     resetCounter();
@@ -207,7 +217,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     break;
   }
   case PAT::Ahead:{
-    res = mapMove(map, action, steps, currentPos, traveledPath, true);
+    res = mapMove(map, action, steps, currentPos, traveledPath, false);
     break;
   }
   case PAT::CAhead:{
@@ -228,21 +238,24 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   }
   }
 
+  // Post processing of action
   if(!res){
+    // Ignore actions that have no distance
     if(action->c_config[Counter::StepCount] == 0){
-      warn("No move at all ...");
-      return false;
+      warn("Action has no distance ...");
+      return true;
     }
+
+    // Recalculate action parameter
     Position start =  action->get_wps().front();
     float dist = (currentPos-start).norm();
     action->mod_config[PAP::Distance] = dist;
-    action->applyMods();
-    if(!map.isInside(action->wps.back())){
-      warn("Generated Point outside!!");
-      assertm(false, "Geneerated point outside the map");
-    }
+    action->generateEndpointFromChangedConfig();
+    assertm(map.isInside(action->wps.back()), "Generated point outside the map");
   }
-  return res;
+
+  // When initializing we do not want to modify the next action
+  return res || init;
 }
 
 bool path::Robot::evaluateActions(PAs &pas){
@@ -256,25 +269,30 @@ bool path::Robot::evaluateActions(PAs &pas){
       incConfParameter(typeCount, (*it)->type, 1);
     } else {
 
+      // TODO: Actions should not be removed when distance is 0
+      // the current action was adapted so we need to mend the consecutive action
+
       // Check if the next gen is ready to be mended
-      if((*it)->c_config[Counter::StepCount] == 0){
-	warn("Delete: ", (*it)->pa_id);
-	it = pas.erase(it);
-	debug("Deleted");
-	if(!it->get()->mend(**prev(it,1))){
-	  assertm(false, "Cannot mend after deleted action");
-	}
-	continue;
-      }
-      debug("Next");
-      auto it_next = next(it, 1);
-      while(!(*it_next)->mend(**it) && it_next != pas.end()){
-	warn("Remove Action while execution!");
-	it_next = pas.erase(it_next);
-	// debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
-	// assertm(false, "Action cannot be mended and got removed!!");
-	// break;
-      }
+      // if((*it)->c_config[Counter::StepCount] == 0){
+      // 	warn("Delete: ", (*it)->pa_id);
+      // 	it = pas.erase(it);
+      // 	debug("Deleted");
+      // 	if(!it->get()->mend(**prev(it,1))){
+      // 	  assertm(false, "Cannot mend after deleted action");
+      // 	}
+      // 	continue;
+      // }
+      // debug("Next");
+      // auto it_next = next(it, 1);
+      // while(!(*it_next)->mend(**it) && it_next != pas.end()){
+      // 	warn("Remove Action while execution!");
+      // 	it_next = pas.erase(it_next);
+      // 	// debug("WPs: ", it_next->get()->wps.size(), " Modified: ", it_next->get()->modified);
+      // 	// assertm(false, "Action cannot be mended and got removed!!");
+      // 	// break;
+      // }
+
+
       assertm(pas.size() > 3, "Too few actions to proceed!");
       // cv::imshow("Map state", gridToImg("map"));
       // cv::waitKey(1);
