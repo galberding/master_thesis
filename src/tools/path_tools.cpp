@@ -242,7 +242,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   if(!res){
     // Ignore actions that have no distance
     if(action->c_config[Counter::StepCount] == 0){
-      debug("Action has distance 0");
+      // debug("Action has distance 0");
       return true;
     }
 
@@ -337,9 +337,10 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
   // Check if points are in range
   assertm(cmap.isInside(start), "Start-point is not in map range!");
-  if((waypoints.back()-waypoints.front()).norm() <= 0){
+  if(action->mod_config[PAP::Distance] == 0){
     // Action is not doing anything, delete it!!
-    warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
+    // warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
+
     return false;
   }
 
