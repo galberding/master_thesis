@@ -31,16 +31,31 @@ ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::unifor
   genome gen;
 
   // TODO: use Iterater
-  for(int i=0; i < currentPopulation.size(); i++){
-    offset += currentPopulation.at(i).fitness / totalFitness;
+
+  for(auto it = currentPopulation.begin(); it != currentPopulation.end(); it++){
+    offset += it->fitness / totalFitness;
 
     if(rand < offset){
-      gen = currentPopulation.at(i);
+      // gen = genome(*it);
+      gen.fitness = it->fitness;
+      gen.actions = it->actions;
       // debug("THE SELECTED ONE: ", gen.actions.size());
-      currentPopulation.erase(currentPopulation.begin() + i);
+      currentPopulation.erase(it);
       break;
     }
+
   }
+
+  // for(int i=0; i < currentPopulation.size(); i++){
+  //   offset += currentPopulation.at(i).fitness / totalFitness;
+
+  //   if(rand < offset){
+  //     gen = currentPopulation.at(i);
+  //     // debug("THE SELECTED ONE: ", gen.actions.size());
+  //     currentPopulation.erase(currentPopulation.begin() + i);
+  //     break;
+  //   }
+  // }
   return gen;
 }
 
@@ -154,6 +169,7 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 
   for(int j=0; j<individuals; j++){
     PAs actions;
+    assertm(currentPopuation.size() > 0, "Cannot draw any individuals for current population");
     actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
       PA_config config{{PAP::Angle,angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)}};
@@ -162,28 +178,22 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
     actions.push_back(make_shared<EndAction>(EndAction(endpoints)));
     currentPopuation.push_back(genome(actions));
   }
-
-  // for(auto &gen : currentPopuation){
-  //   gen.actions.begin()->generateWPs(Position(0,0));
-  //   for (auto it = next(gen.actions.begin(), 1); it != gen.actions.end(); it++){
-  //     it->generateWPs(prev(it, 1)->get_wps().back());
-  //     // debug("gen");
-  //   }
-  // }
-
 }
 
 
 void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals) {
-  // Sort descending according to fitness
-  // debug("Start sort");
-  sort(currentPopuation.begin(), currentPopuation.end(), compareFitness);
-  // debug("End sort");
+
+  sort(currentPopuation.begin(), currentPopuation.end());
 
   // Perform turnament selection:
   for(int i=0; i<individuals; i++){
     selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
   }
+  for(auto gen : selectionPool){
+    debug("Size selected: ", gen.actions.size());
+    assertm(gen.actions.size() > 0, "Gen has no actions after roulette");
+  }
+
 }
 
 

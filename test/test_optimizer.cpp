@@ -514,6 +514,9 @@ TEST_F(GAApplication, algorithmTest){
 
   int actionSize = 20;
   ga->populatePool(pool, start, {end}, 10, actionSize);
+  for(auto gen : pool){
+    EXPECT_EQ(gen.actions.size(), actionSize + 2);
+  }
   ga->evalFitness(pool, *rob);
   for(auto gen : pool){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
@@ -670,6 +673,55 @@ TEST(ActionCopy, copytest){
 
 }
 
+
+
+TEST(SortingTest, sortStuff){
+
+  struct Action{
+    Action(int blub):blub(blub){};
+    int blub;
+  };
+
+  using PAs = vector<shared_ptr<Action>>;
+
+  struct genomeS{
+    genomeS(){};
+    genomeS(float fitness):fitness(fitness){};
+    genomeS(PAs actions):actions(actions){};
+    genomeS(PAs actions, float fitness):actions(actions), fitness(fitness){};
+    bool operator < (const genomeS& gen) const
+    {
+        return (fitness > gen.fitness);
+    }
+
+    int id = 0;
+    PAs actions;
+    WPs waypoints;
+    float fitness = 0;
+  };
+  deque<genomeS> pool;
+
+  for(int i=0; i<10; i++){
+    PAs actions;
+    for (int j=0; j < 10; j++) {
+
+      actions.push_back(make_shared<Action>(Action(j)));
+    }
+    pool.push_back(genomeS(actions, static_cast<float>(0)));
+  }
+
+  for(auto gen : pool){
+    debug("Current size: ", gen.actions.size());
+    assert(("Gen has no actions -- before!", gen.actions.size() > 0));
+  }
+  sort(pool.begin(), pool.end());
+  for(auto gen : pool){
+    debug("Current size: ", gen.actions.size());
+    assert(("Gen has no actions -- after!", gen.actions.size() > 0));
+  }
+
+
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

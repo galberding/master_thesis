@@ -2,6 +2,7 @@
 #define GA_PATH_GENERATOR_H
 #include <random>
 #include <cmath>
+#include <algorithm>
 #include "../tools/path_tools.h"
 
 // #ifdef __DEBUG__
@@ -17,6 +18,11 @@ namespace ga{
     genome(){};
     genome(float fitness):fitness(fitness){};
     genome(PAs actions):actions(actions){};
+    bool operator < (const genome& gen) const
+    {
+        return (fitness < gen.fitness);
+    }
+
     int id = 0;
     PAs actions;
     WPs waypoints;
@@ -45,7 +51,7 @@ namespace ga{
   void swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
   // void swapRandomActionRegion(genome &gen);
 
-  
+
 
 
 
