@@ -146,7 +146,8 @@ path::AheadAction::AheadAction(path::PAT type, PA_config conf):PathAction(type){
 // }
 
 WPs path::AheadAction::generateWPs(Position start) {
-  if(modified || (start != wps.front())){
+
+  if(modified || (wps.size() == 0)  || (start != wps.front())){
     wps.clear();
     direction dir = angleToDir(mod_config[PAP::Angle]);
     // cout << "Direction x: " << dir[0] << " Direction y: " << dir[1] << endl;
@@ -160,7 +161,7 @@ WPs path::AheadAction::generateWPs(Position start) {
   //   warn("Generation not completed!");
 
   // }
-  assertm(mod_config[PAP::Distance], "");
+  // assertm(mod_config[PAP::Distance], "");
   return wps;
 }
 
@@ -267,7 +268,9 @@ bool path::Robot::evaluateActions(PAs &pas){
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     // debug("--------------------");
 
-    bool init = (*it)->wps.size() == 0 || !(*it)->modified;
+    bool init = ((*it)->wps.size() == 0 ) && !(*it)->modified;
+    // assertm()
+    assertm(!((*it)->type == PAT::Start && init), "Init should be skipped if start action appeared!");
     if(init){
       // initialize the action by generating the waypoints
       // this enables evaluateActions to handle completely uninitialized action sequences

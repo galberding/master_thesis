@@ -191,7 +191,8 @@ For now we will just return the start point because the robot object should find
   /////////////////////////////////////////////////////////////////////////////
   struct StartAction : public PathAction{
     StartAction(Position startPoint):PathAction(PAT::Start) {
-      wps.insert(wps.begin(), startPoint);
+      // wps.insert(wps.begin(), startPoint);
+      wps.push_back(startPoint);
     };
     bool mend(PathAction &pa){return true;};
     bool applyMods(){return true;}

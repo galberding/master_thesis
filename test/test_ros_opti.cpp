@@ -14,27 +14,27 @@ TEST(HelperFunctions, updateConfig){
   PA_config conf2 = {{PAP::Angle, 42}};
 
   updateConfig(conf1, conf2);
-  ASSERT_EQ(conf1[PAP::Angle], 42);
+  EXPECT_EQ(conf1[PAP::Angle], 42);
 }
 
 
-TEST(HelperFunctions, compyAction){
+TEST(HelperFunctions, copyAction){
   StartAction sa(Position(42,42));
   StartAction copy(sa);
 
   AheadAction aa(PAT::CAhead, {{PAP::Distance, 42}});
   AheadAction aa_copy(aa);
 
-  ASSERT_EQ(aa.getConfig()[PAP::Distance], aa_copy.getConfig()[PAP::Distance]);
+  EXPECT_EQ(aa.getConfig()[PAP::Distance], aa_copy.getConfig()[PAP::Distance]);
 
-  ASSERT_EQ(sa.generateWPs(Position(0,0)), copy.generateWPs(Position(0,0)));
+  EXPECT_EQ(sa.generateWPs(Position(0,0)), copy.generateWPs(Position(0,0)));
 }
 
 
 TEST(ActionTests, aheadActionWPgeneration){
   AheadAction aa(PAT::CAhead, {{PAP::Angle, 45}, {PAP::Distance, 10}});
 
-  ASSERT_EQ(aa.generateWPs(Position(42,42)).size(), 2);
+  EXPECT_EQ(aa.generateWPs(Position(42,42)).size(), 2);
 }
 
 class RobotTest : public ::testing::Test{
@@ -89,11 +89,11 @@ TEST_F(RobotTest, executionStartActionTest){
   cmap->getPosition(Index(11,11), pos);
   shared_ptr<StartAction> sa = make_shared<StartAction>(StartAction(pos));
   bool res = rob->execute(sa, *cmap);
-  ASSERT_TRUE(res);
-  ASSERT_EQ(rob->get_currentPos(), pos);
+  EXPECT_TRUE(res);
+  EXPECT_EQ(rob->get_currentPos(), pos);
   auto conf = rob->get_typeCount();
   for (auto &[k ,v] : conf){
-    ASSERT_EQ(v, 0);
+    EXPECT_EQ(v, 0);
   }
 // displayGridmap();
 }
@@ -103,15 +103,15 @@ TEST_F(RobotTest, mapMoveBasicTest){
   Position pos0, pos1;
   cmap->getPosition(Index(11,11),pos0);
   cmap->getPosition(Index(33,33),pos1);
-  shared_ptr<PathAction> pa = make_shared<PathAction>(PathAction(PAT::CAhead));
+  shared_ptr<AheadAction> pa = make_shared<AheadAction>(AheadAction(PAT::CAhead, {{PAP::Angle, 0}, {PAP::Distance, 10}}));
   pa->set_wps(vector<Position>({pos0, pos1}));
   int steps;
   WPs path;
   bool res = rob->mapMove(*cmap, pa, steps, rob->get_currentPos(), path, true);
 
-  ASSERT_GT(steps, 0);
-  ASSERT_GT(cmap->get("map").sum(), 0);
-  ASSERT_TRUE(res);
+  EXPECT_GT(steps, 0);
+  EXPECT_GT(cmap->get("map").sum(), 0);
+  EXPECT_TRUE(res);
 
   // displayGridmap();
 }
@@ -126,8 +126,8 @@ TEST_F(RobotTest, executionAheadActionTest){
   bool res = rob->execute(sa, *cmap);
   res &= rob->execute(aa, *cmap);
 
-  ASSERT_GT(cmap->get("map").sum(), 0);
-   ASSERT_TRUE(res);
+  EXPECT_GT(cmap->get("map").sum(), 0);
+  EXPECT_TRUE(res);
 
 
   // displayGridmap();
@@ -135,14 +135,14 @@ TEST_F(RobotTest, executionAheadActionTest){
 
 TEST_F(RobotTest, executionTest){
   Position pos0, pos1;
-  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  EXPECT_TRUE(cmap->getPosition(Index(100,100),pos0));
   cmap->getPosition(Index(33,33),pos1);
-  PathAction pa(PAT::CAhead);
+  // PathAction pa(PAT::CAhead);
   StartAction sa(pos0);
-  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
-  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
-  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
-  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 1000}}));
+  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 10}}));
+  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 10}}));
+  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 10}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 10}}));
 
   auto sap = make_shared<StartAction>(sa);
   auto aa1p = make_shared<AheadAction>(aa1);
@@ -151,26 +151,30 @@ TEST_F(RobotTest, executionTest){
   auto aa4p = make_shared<AheadAction>(aa4);
 
   bool res = rob->execute(sap, *cmap);
+  EXPECT_TRUE(res);
   res &= rob->execute(aa1p, *cmap);
+  EXPECT_TRUE(res);
   res &= rob->execute(aa2p, *cmap);
+  EXPECT_TRUE(res);
   res &= rob->execute(aa3p, *cmap);
+  EXPECT_TRUE(res);
   res &= rob->execute(aa4p, *cmap);
 
   // displayGridmap();
-  ASSERT_TRUE(res);
-  ASSERT_GT(cmap->get("map").sum(), 0);
+  EXPECT_TRUE(res);
+  EXPECT_GT(cmap->get("map").sum(), 0);
 }
 
 TEST_F(RobotTest, evaluateActionTest){
   Position pos0, pos1;
-  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  EXPECT_TRUE(cmap->getPosition(Index(100,100),pos0));
   cmap->getPosition(Index(33,33),pos1);
   PathAction pa(PAT::CAhead);
   StartAction sa(pos0);
-  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
-  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
-  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
-  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 5000}}));
+  AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 5}}));
+  AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 10}}));
+  AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 10}}));
+  AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 50}}));
 
   PAs actions2;
   actions2.push_back(make_shared<StartAction>(sa));
@@ -180,11 +184,11 @@ TEST_F(RobotTest, evaluateActionTest){
   actions2.push_back(make_shared<AheadAction>(aa4));
 
   bool res = rob->evaluateActions(actions2);
-  ASSERT_TRUE(res);
+  EXPECT_TRUE(res);
 
   auto conf = rob->get_typeCount();
-  ASSERT_EQ(conf[PAT::Start], 1);
-  ASSERT_EQ(conf[PAT::CAhead], 4);
+  EXPECT_EQ(conf[PAT::Start], 1);
+  EXPECT_EQ(conf[PAT::CAhead], 4);
 
   // displayImage(rob->gridToImg("map"));
 
@@ -194,7 +198,7 @@ TEST_F(RobotTest, evaluateActionTest){
 TEST_F(RobotTest, evaluateActionTestCollision){
   // Adapt action to not hit the obstacle
   Position pos0, pos1;
-  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  EXPECT_TRUE(cmap->getPosition(Index(100,100),pos0));
   cmap->getPosition(Index(33,33),pos1);
   PathAction pa(PAT::CAhead);
   StartAction sa(pos0);
@@ -213,9 +217,9 @@ TEST_F(RobotTest, evaluateActionTestCollision){
 
   bool res = rob->evaluateActions(actions2);
 
-  ASSERT_TRUE(res);
-  ASSERT_EQ(actions2.size(), 5);
-  ASSERT_EQ(actions2.back()->mod_config[PAP::Distance], 7350);
+  EXPECT_TRUE(res);
+  EXPECT_EQ(actions2.size(), 5);
+  // EXPECT_EQ(actions2.back()->mod_config[PAP::Distance], 7350);
 
   // displayImage(rob->gridToImg("map"));
 
@@ -224,14 +228,16 @@ TEST_F(RobotTest, evaluateActionTestCollision){
 TEST_F(RobotTest, evaluateActionTestPointOutOfMapBounds){
   // Remove failed action from action list
   Position pos0, pos1;
-  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  EXPECT_TRUE(cmap->getPosition(Index(100,100),pos0));
   cmap->getPosition(Index(33,33),pos1);
   PathAction pa(PAT::CAhead);
   StartAction sa(pos0);
+  EndAction ea({pos0});
   AheadAction aa1(PAT::CAhead, PA_config({{PAP::Angle ,0}, {PAP::Distance, 500}}));
   AheadAction aa2(PAT::CAhead, PA_config({{PAP::Angle ,90}, {PAP::Distance, 1000}}));
   AheadAction aa3(PAT::CAhead, PA_config({{PAP::Angle ,180}, {PAP::Distance, 1000}}));
   AheadAction aa4(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 100500}}));
+  AheadAction aa5(PAT::CAhead, PA_config({{PAP::Angle ,270}, {PAP::Distance, 100500}}));
 
   PAs actions2;
   actions2.push_back(make_shared<StartAction>(sa));
@@ -239,14 +245,18 @@ TEST_F(RobotTest, evaluateActionTestPointOutOfMapBounds){
   actions2.push_back(make_shared<AheadAction>(aa2));
   actions2.push_back(make_shared<AheadAction>(aa3));
   actions2.push_back(make_shared<AheadAction>(aa4));
+  actions2.push_back(make_shared<AheadAction>(aa5));
+  actions2.push_back(make_shared<EndAction>(ea));
 
 
   bool res = rob->evaluateActions(actions2);
+  // EXPECT_DEATH(rob->evaluateActions(actions>)
 
-  ASSERT_TRUE(res);
-  ASSERT_EQ(actions2.size(), 4);
+  EXPECT_TRUE(res);
+
+  EXPECT_EQ(actions2.size(), 7);
   // Last PA will be aa3
-  // ASSERT_EQ(*actions2.back(), aa3);
+  // EXPECT_EQ(*actions2.back(), aa3);
 
   // displayImage(rob->gridToImg("map"));
 
@@ -257,7 +267,7 @@ TEST_F(RobotTest, evaluateActionTestTooFewActions){
   // When all action except start and end remain in action list, evaluation action
   // is supposed to return false to ultimately delete the action sequence / genome
   Position pos0, pos1;
-  ASSERT_TRUE(cmap->getPosition(Index(100,100),pos0));
+  EXPECT_TRUE(cmap->getPosition(Index(100,100),pos0));
   cmap->getPosition(Index(33,33),pos1);
   PathAction pa(PAT::CAhead);
   StartAction sa(pos0);
@@ -275,12 +285,13 @@ TEST_F(RobotTest, evaluateActionTestTooFewActions){
   // actions2.push_back(make_shared<AheadAction>(aa3));
   // actions2.push_back(make_shared<AheadAction>(aa4));
 
-  bool res = rob->evaluateActions(actions2);
+  ASSERT_DEATH(rob->evaluateActions(actions2), "");
+  // bool res = rob->evaluateActions(actions2);
 
-  ASSERT_TRUE(!res);
-  ASSERT_EQ(actions2.size(), 2);
+  // EXPECT_TRUE(!res);
+  // EXPECT_EQ(actions2.size(), 2);
   // Last PA will be aa3
-  // ASSERT_EQ(*actions2.back(), aa3);
+  // EXPECT_EQ(*actions2.back(), aa3);
 
   // displayImage(rob->gridToImg("map"));
 
