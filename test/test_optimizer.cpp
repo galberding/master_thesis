@@ -6,7 +6,7 @@
 using namespace ga;
 using namespace path;
 
-class GATest : public ::testing::Test{
+class DISABLED_GATest : public ::testing::Test{
 protected:
   void SetUp() override {
 
@@ -88,7 +88,7 @@ TEST(HelperTest, dirToAngleConversionZeroTest){
 }
 
 
-TEST_F(GATest, initPopulationTest){
+TEST_F(DISABLED_GATest, initPopulationTest){
   Genpool pool;
   Genpool selection_pool;
   Position pos, end1, end2;
@@ -105,7 +105,7 @@ TEST_F(GATest, initPopulationTest){
 }
 
 
-TEST_F(GATest, evalFitnessTest){
+TEST_F(DISABLED_GATest, evalFitnessTest){
   Genpool pool;
   Genpool selection_pool;
   Position pos, end1, end2;
@@ -126,7 +126,7 @@ TEST_F(GATest, evalFitnessTest){
   }
 }
 
-TEST_F(GATest, crossoverMatingTest){
+TEST_F(DISABLED_GATest, crossoverMatingTest){
   // Create two gens that are obviously different
   // mate them
   // show the and their children
@@ -173,7 +173,7 @@ TEST_F(GATest, crossoverMatingTest){
 }
 
 
-TEST_F(GATest, actionModifivationTest){
+TEST_F(DISABLED_GATest, actionModifivationTest){
    Position start, end;
 
   cmap->getPosition(Index(11,11), start);
@@ -223,7 +223,7 @@ TEST_F(GATest, actionModifivationTest){
 
 }
 
-TEST_F(GATest, sortingTest){
+TEST_F(DISABLED_GATest, sortingTest){
 
   Genpool pool;
   Genpool selection_pool;
@@ -242,7 +242,7 @@ TEST_F(GATest, sortingTest){
 
 }
 
-TEST_F(GATest, selectionTest){
+TEST_F(DISABLED_GATest, selectionTest){
 
   Genpool pool;
   Genpool selection_pool;
@@ -261,13 +261,13 @@ TEST_F(GATest, selectionTest){
   EXPECT_EQ(selection_pool.size(), 3);
 }
 
-TEST_F(GATest, calculateFreeArea){
+TEST_F(DISABLED_GATest, calculateFreeArea){
   // debug("Size: ", (cmap->get("obstacle").sum()));
   // debug("Size: ", cmap->getSize().x()*cmap->getSize().y() - (cmap->get("obstacle").sum()));
   EXPECT_EQ(cmap->getSize().x()*cmap->getSize().y() - (cmap->get("obstacle").sum()), rob->getFreeArea());
 }
 
-TEST_F(GATest, randTest){
+TEST_F(DISABLED_GATest, randTest){
 
   list<int> l1, l2, c1, c2;
 
@@ -290,7 +290,7 @@ TEST_F(GATest, randTest){
 }
 
 
-TEST_F(GATest, mutationConfigTest){
+TEST_F(DISABLED_GATest, mutationConfigTest){
   Genpool pool;
   ga->populatePool(pool, Position(42,42), {Position(42,42)}, 2, 1);
 
@@ -320,7 +320,7 @@ TEST_F(GATest, mutationConfigTest){
 }
 
 
-TEST_F(GATest, adaptationTest){
+TEST_F(DISABLED_GATest, adaptationTest){
   Position start, end;
 
   cmap->getPosition(Index(41,41), start);
@@ -360,7 +360,7 @@ TEST_F(GATest, adaptationTest){
 
 
 
-TEST_F(GATest, boundaryMendingTest){
+TEST_F(DISABLED_GATest, boundaryMendingTest){
   Position start, end;
 
   cmap->getPosition(Index(41,41), start);
@@ -407,7 +407,7 @@ TEST_F(GATest, boundaryMendingTest){
 }
 
 
-TEST_F(GATest, basicApplicationTest){
+TEST_F(DISABLED_GATest, basicApplicationTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
@@ -453,7 +453,7 @@ TEST_F(GATest, basicApplicationTest){
 
 
 
-class DISABLED_GAApplication : public ::testing::Test {
+class GAApplication : public ::testing::Test {
 protected:
   void SetUp() override {
 
@@ -495,7 +495,7 @@ protected:
 
 
 
-TEST_F(DISABLED_GAApplication, algorithmTest){
+TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
@@ -512,9 +512,16 @@ TEST_F(DISABLED_GAApplication, algorithmTest){
   debug("Start");
   genome best;
 
-  ga->populatePool(pool, start, {end}, 100, 200);
+  int actionSize = 20;
+  ga->populatePool(pool, start, {end}, 10, actionSize);
   ga->evalFitness(pool, *rob);
+  for(auto gen : pool){
+    EXPECT_EQ(gen.actions.size(), actionSize + 2);
+  }
   ga->selection(pool, sel, selected);
+  for(auto gen : sel){
+    EXPECT_EQ(gen.actions.size(), actionSize + 2);
+  }
   EXPECT_EQ(sel.size(), selected);
   best = pool.front();
   for(int i=0; i<iter; i++){
@@ -527,7 +534,7 @@ TEST_F(DISABLED_GAApplication, algorithmTest){
     sel.clear();
     // debug("Mut");
     // addAction(pool.back(), ga->angleDistr, ga->distanceDistr, ga->generator);
-    ga->mutation(pool, muta);
+    // ga->mutation(pool, muta);
     // debug("Cla");
     ga->evalFitness(pool, *rob);
     for (auto gen : pool){

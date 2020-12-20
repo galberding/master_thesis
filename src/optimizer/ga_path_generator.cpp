@@ -188,21 +188,22 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
 
 void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
-  for(auto it = begin; it != end; it++){
-    switch((*it)->type){
+  for(begin; begin != end; begin++){
+    debug("Type: ", (int) (*begin)->type);
+    switch((*begin)->type){
     case PAT::Start:{
-      StartAction sa((*it)->wps.front());
+      StartAction sa((*begin)->wps.front());
       child.push_back(make_shared<StartAction>(sa));
       break;
     }
     case PAT::Ahead: case PAT::CAhead:{
-      AheadAction aa((*it)->type, (*it)->mod_config);
-      aa.generateWPs((*it)->wps.front());
+      AheadAction aa((*begin)->type, (*begin)->mod_config);
+      aa.generateWPs((*begin)->wps.front());
       child.push_back(make_shared<AheadAction>(aa));
       break;
     }
     case PAT::End:
-      child.push_back(make_shared<EndAction>(EndAction((*it)->wps)));
+      child.push_back(make_shared<EndAction>(EndAction((*begin)->wps)));
     }
     // child1.push_back(make_shared<typename _Tp>(_Args &&__args...))
   }
@@ -211,6 +212,9 @@ void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
 void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   // debug("Start Mating");
   PAs parent1, parent2, child1, child2;
+  assertm(par1.actions.size() > 3, "Parent1 has too few actions");
+  assertm(par1.actions.size() > 3, "Parent2 has too few actions");
+
   if(par1.actions.size() > par2.actions.size()){
     parent1 = par2.actions;
     parent2 = par1.actions;
@@ -226,6 +230,8 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
   // debug("Index: ", idx);
   // child1.insert(child1.begin(), parent1.begin(), parent1.begin() + idx);
   // create deep copy of parents:
+  assertm(parent1.size() > 3, "Parent1 has too few actions");
+  assertm(parent1.size() > 3, "Parent2 has too few actions");
   copyActions(parent1.begin(), next(parent1.begin(), idx1), child1);
   copyActions(parent2.begin(), next(parent2.begin(), idx2), child2);
   // child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
@@ -259,11 +265,14 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
 
 void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation) {
   // Single point Crossover
+  assertm(currentSelection.size() >= 2, "Not enough individuals for crossover in pool!");
   for(int i=0; i<currentSelection.size(); i++){
     genome par1 = currentSelection.back();
     currentSelection.pop_back();
     for (auto par2 : currentSelection){
       // debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
+      assertm(par1.actions.size() > 3, "Parent1 has not enough actions for mating!");
+      assertm(par2.actions.size() > 3, "Parent2 has not enough actions for mating!");
       mating(par1, par2, newPopulation);
     }
   }
