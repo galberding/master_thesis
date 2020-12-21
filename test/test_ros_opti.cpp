@@ -308,6 +308,64 @@ TEST_F(RobotTest, mapBoundsTest){
 }
 
 
+TEST(ActionTest, EndActionMendingTest){
+  Position start(42,42), end(42,42);
+
+  debug("Start: ", start);
+  debug("End: ", end);
+  debug("Distance: ", start - end);
+
+  StartAction sa(start);
+  EndAction ea({end});
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 2000}, {PAP::Angle, 270}});
+  AheadAction aa1(PAT::CAhead, {{PAP::Distance, 30}, {PAP::Angle, 130}});
+  AheadAction aa2(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 90}});
+  AheadAction aa3(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+
+  PAs act = {
+      make_shared<StartAction>(sa),
+      make_shared<AheadAction>(aa),
+      make_shared<AheadAction>(aa1),
+      make_shared<AheadAction>(aa2),
+      make_shared<AheadAction>(aa3),
+      make_shared<EndAction>(ea)
+  };
+
+  debug("Execute Mending on end action");
+  act.back()->mendConfig(act.front());
+
+  auto sta = act.begin();
+  auto nxt = next(sta, 1);
+  (*nxt)->modified = true;
+  (*nxt)->generateWPs((*sta)->wps.front());
+  while(nxt != act.end()){
+    debug("Mend: ", int((*nxt)->type));
+    (*nxt)->mendConfig(*sta);
+    sta = nxt;
+    nxt++;
+    if(nxt == act.end()) break;
+    (*nxt)->generateWPs((*sta)->wps.front());
+    debug("Done!");
+  }
+}
+
+
+TEST(ActionCopy, copytest){
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 42}});
+  aa.generateWPs(Position(42,42));
+  EXPECT_EQ(aa.wps.size(), 2);
+  AheadAction aa_copy(aa);
+
+  EXPECT_EQ(aa_copy.wps.size(), 2);
+  EXPECT_EQ(aa_copy.wps.front(), aa.wps.front());
+  EXPECT_TRUE(!aa_copy.modified);
+
+}
+
+
+
+
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
   // ros::init(argc, argv, "tester");

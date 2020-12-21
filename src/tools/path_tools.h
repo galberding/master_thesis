@@ -110,7 +110,7 @@ namespace path {
     static uint32_t id;
 
     int pa_id;
-    bool modified = true;
+    bool modified = false;
     PAT type;
     time_sec estimatedDuration;
     WPs wps;
@@ -146,7 +146,7 @@ namespace path {
        Will alter the start point.
        Return false if no waypoints have been generated yet
      */
-    virtual bool mendConfig(PathAction &pa, bool overrideChanges=true);
+    virtual bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges=true);
     virtual bool applyModifications();
 
     bool updateConf(PAP param, float val);
@@ -181,9 +181,9 @@ namespace path {
       TODO: mechanism to check if endpoints are coccupied
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
-    virtual WPs generateWPs(Position start);
-    bool mend(PathAction &pa){return true;}
-    bool applyMods(){return true;}
+    virtual WPs generateWPs(Position start) override;
+    virtual bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges) override {return true;}
+    virtual bool applyModifications() override {return true;}
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -194,8 +194,8 @@ For now we will just return the start point because the robot object should find
       // wps.insert(wps.begin(), startPoint);
       wps.push_back(startPoint);
     };
-    bool mend(PathAction &pa){return true;};
-    bool applyMods(){return true;}
+    bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges){return true;};
+    bool applyModifications(){return true;}
   };
 
   /////////////////////////////////////////////////////////////////////////////

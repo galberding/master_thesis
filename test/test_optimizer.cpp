@@ -214,7 +214,7 @@ TEST_F(DISABLED_GATest, actionModifivationTest){
   next(gen.actions.begin(), 3)->get()->mod_config[PAP::Distance] += 1000;
   // next(gen.actions.begin(), 3)->get()->modified = true;
   next(gen.actions.begin(), 3)->get()->applyModifications();
-  next(gen.actions.begin(), 4)->get()->mendConfig(*(next(gen.actions.begin(), 3)->get()));
+  next(gen.actions.begin(), 4)->get()->mendConfig(*(next(gen.actions.begin(), 3)));
 
   rob->evaluateActions(gen.actions);
 
@@ -494,7 +494,6 @@ protected:
 };
 
 
-
 TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
@@ -506,40 +505,55 @@ TEST_F(GAApplication, algorithmTest){
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 10000 ;
-  int selected = 15;
+
+  int initPop = 20;
+  int selected = 25;
   cmap->getPosition(Index(110,110), start);
   cmap->getPosition(Index(110,110), end);
   debug("Start");
   genome best;
 
-  int actionSize = 20;
-  ga->populatePool(pool, start, {end}, 10, actionSize);
+  int actionSize = 30;
+
+  ga->populatePool(pool, start, {end}, initPop, actionSize);
   for(auto gen : pool){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
   }
+  debug("First eval fitness");
   ga->evalFitness(pool, *rob);
   for(auto gen : pool){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
   }
+  debug("First Select");
   ga->selection(pool, sel, selected);
   for(auto gen : sel){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
   }
+
   EXPECT_EQ(sel.size(), selected);
-  best = pool.front();
+  if (pool.size() > 0) {
+    best = pool.front();
+  }else{
+    best = genome();
+  }
+  // debug("Enter Loop");
   for(int i=0; i<iter; i++){
 
     pool.clear();
     // debug("Cross");
     // pool.push_back(genome(best));
     ga->crossover(sel, pool);
-
     sel.clear();
+    for(auto gen : pool){
+      EXPECT_EQ(gen.actions.size(), actionSize + 2);
+    }
+
     // debug("Mut");
     // addAction(pool.back(), ga->angleDistr, ga->distanceDistr, ga->generator);
     // ga->mutation(pool, muta);
     // debug("Cla");
     ga->evalFitness(pool, *rob);
+
     for (auto gen : pool){
       EXPECT_GT(gen.fitness, 0);
     }
@@ -563,7 +577,7 @@ TEST_F(GAApplication, algorithmTest){
     // debug("Done");
     // info("Population size: ", pool.size());
     if(pool.back().fitness > best.fitness){
-      best = pool.front().fitness;
+      best = pool.back().fitness;
     }
     int lowest = 1000;
     int highest = 0;
@@ -582,10 +596,18 @@ TEST_F(GAApplication, algorithmTest){
 	  highest = a_size;
 	}
       }
+
+      for (auto gen : pool){
+	cout << gen.id << "|" << endl;
+	for (auto ac : gen.actions){
+	  cout << ac->pa_id << "|";
+	}
+	cout << endl;
+      }
       // cout << endl;
       info("Best fitness: ", best.fitness,
-	   " Pool best: ", pool.front().fitness,
-	   " Worst fitness: ", pool.back().fitness,
+	   " Pool best: ", pool.back().fitness,
+	   " Worst fitness: ", pool.front().fitness,
 	   " Max Actions: ", highest,
 	   " Min Actions: ", lowest
 	   );
@@ -606,6 +628,7 @@ TEST_F(GAApplication, algorithmTest){
   //   cout << "-------" << endl;
   // }
 }
+
 
 
 // TEST_F(GAApplication, mutationTest){
@@ -660,18 +683,6 @@ TEST_F(GAApplication, algorithmTest){
 //   EXPECT_EQ(gen.actions.size(), size );
 // }
 
-
-TEST(ActionCopy, copytest){
-  AheadAction aa(PAT::CAhead, {{PAP::Distance, 42}});
-  aa.generateWPs(Position(42,42));
-  EXPECT_EQ(aa.wps.size(), 2);
-  AheadAction aa_copy(aa);
-
-  EXPECT_EQ(aa_copy.wps.size(), 2);
-  EXPECT_EQ(aa_copy.wps.front(), aa.wps.front());
-  EXPECT_TRUE(!aa_copy.modified);
-
-}
 
 
 

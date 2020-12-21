@@ -81,7 +81,7 @@ bool path::PathAction::updateConf(PAP param, float val) {
 }
 
 
-bool path::PathAction::mendConfig(PathAction &pa, bool overrideChanges){
+bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChanges){
 
   // Choose one of the stategies with overrideChanges
   // [x] override change of current mutation --> always return true
@@ -89,18 +89,19 @@ bool path::PathAction::mendConfig(PathAction &pa, bool overrideChanges){
 
   assertm(!(wps.size() == 0 && !modified), "Mending during initialization!");
   assertm(!(wps.size() == 0 && modified), "Modified action (probably added action while modification?) with no waypoints. \nWe do not allow this anymore!");
+  assertm(!(type == PAT::End), "End action was called for mending!");
   assertm(wps.size() >= 2, "Waypoint generation failure while mending!");
 
 
   if(modified && overrideChanges){
     debug("Propagate changes");
-    generateWPs(pa.wps.back());
+    generateWPs(pa->wps.back());
     return false;
   }
 
   // Start the mending process by
   float angle;
-  Position start = pa.get_wps().back();
+  Position start = pa->get_wps().back();
   Position end = wps.back();
   Position V = end - start;
   float dist = V.norm();
@@ -119,7 +120,7 @@ bool path::PathAction::mendConfig(PathAction &pa, bool overrideChanges){
   // set new start Position
   *wps.begin() = start;
   // Override all changes
-  pa.modified = false;
+  pa->modified = false;
   return true;
 }
 
@@ -169,7 +170,8 @@ WPs path::AheadAction::generateWPs(Position start) {
 //                                 EndAction                                 //
 ///////////////////////////////////////////////////////////////////////////////
 
-WPs path::EndAction::generateWPs(Position start) {
+WPs path::EndAction::generateWPs(Position start){
+  // debug("End ACtion WP generation");
   WPs b;
   b.push_back(start);
   if(wps.size()){
@@ -284,7 +286,7 @@ bool path::Robot::evaluateActions(PAs &pas){
     if(!(success || init)){
       auto it_next = next(it, 1);
       auto it_prev = it;
-      while(!(*it_next)->mendConfig(**it_prev, overrideChanges) && it_next != pas.end()){
+      while(!((*it_next)->mendConfig(*it_prev, overrideChanges) && it_next != pas.end())){
 	debug("Propagate change ...");
 	it_prev = it_next;
 	it_next++;

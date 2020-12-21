@@ -65,26 +65,37 @@ int ga::randRange(int lower, int upper){
 
 
 void ga::validateGen(genome &gen){
-  for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
-    if(!(*it)->modified) continue;
-    // Action is modified so try to apply the current changes
-    if(!(*it)->applyModifications()){
-      // warn("No startpoint to apply changes to!, type; ", int(it->type));
-      //
-      // Case if PA is newly added
-      // Moduification could not be applied because no waypoints have been generated yet
-      // This will automativally apply the new changes
-      // debug("No waypoints --> regenerate ...");
-      (*it)->generateWPs((*prev(it, 1))->get_wps().back());
-    }else{
+ for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
+   // What is needed to validate the gens?
+   // Gens are not validated after initialization!
+   // Gens need to be falidated after crossover to fix the crossing
+   // Consequently each gen that is flagged as modified needs to be adapted or its changes need to be
+   // propagated to the next Gen
+   if(!(*it)->modified) continue;
 
-      // debug("Changes applied!");
-    }
+   // Assumptions:
+   // What about newly created actions? -> generate waypoints by adding!
+   assertm((*it)->wps.size() >= 1, "Not enough gens to validate!");
+   // Ensures that we can always access the previous action without segfault
+   assertm(!((*it)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
+   assertm(!((*it)->modified && ((*it)->type == PAT::End)), "Not allowed!, End points cannot be modified!");
+
+
+    (*it)->applyModifications();
     // Change the configuration of the consecutive action
+    // Propagate changes until properly applied
+    // We do not want to override any changes here!
+    auto it_current = it;
     auto it_next = next(it, 1);
-    while(!(*it_next)->mendConfig(**it) && it_next != gen.actions.end()){
-      warn("Validation: Remove Action ", (*it_next)->pa_id, " because no distance!");
-      it_next = gen.actions.erase(it_next);
+    while(!(*it_next)->mendConfig(*it_current)){
+      // warn("Validation: Remove Action ", (*it_next)->pa_id, " because no distance!");
+      // Cannot mend means that the current changes are applied and we need to mend the consecutive action
+      it_current = it_next;
+      it_next++;
+      // TODO: goto end or just return because all changes had been applied
+      if(it_next == gen.actions.end()) break;
+
+
     }
   }
 }
@@ -94,24 +105,33 @@ void ga::validateGen(genome &gen){
 ///////////////////////////////////////////////////////////////////////////////
 
 void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+
+  // Copy action at Index
+  // Add offset to angle and draw distance from distribution
+  // insert action at i+1
+  // flag current action as modified? -> will trigger mend in evaluateGen
+
   int idx = randRange(1, gen.actions.size()-1);
   // debug("Index: ", idx, " Size: ", gen.actions.size());
 
-  PA_config conf = (*next(gen.actions.begin(), idx))->getConfig();
+  auto it = next(gen.actions.begin(), idx);
+  assertm((*it)->wps.size() >= 1, "Cannot add action when there is no waypoint in the previous one");
+
+  PA_config conf = (*it)->getConfig();
   distanceDist(generator);
   conf[PAP::Distance] = distanceDist(generator);
-  // debug("NewDist: ", conf[PAP::Distance]);
   conf[PAP::Angle] += angleDist(generator);
 
-  PAT type = (*next(gen.actions.begin(), idx))->type;
-  // debug("Action length before : ", gen.actions.size());
-  AheadAction aa(type, conf);
-  debug("Adding Gen: ", aa.pa_id);
-  gen.actions.insert(next(gen.actions.begin(), idx),make_shared<AheadAction>(aa));
-
-  // debug("Action length after: ", gen.actions.size());
+  PAT type = (*it)->type;
+  AheadAction aa(type,conf);
+  aa.generateWPs((*it)->wps.back());
+  assertm(aa.wps.size() >= 2, "Newly added actions has not generated waypoints properly!");
+  aa.modified = true;
+  // Insert after the current position
+  it = gen.actions.insert(next(it,1),make_shared<AheadAction>(aa));
 }
 
+//TODO:
 void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   if (gen.actions.size() < 4){
     return;
@@ -126,6 +146,7 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
 
 // }
 
+//TODO:
 void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   float offset = angleDist(generator);
@@ -138,6 +159,7 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, 
 
 }
 
+//TODO:
 void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
   float offset = distanceDist(generator);
@@ -149,6 +171,7 @@ void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDis
   (*it)->modified = true;
 }
 
+//TODO: or remove
 void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx1 = randRange(1, gen.actions.size()-1);
   int idx2 = randRange(1, gen.actions.size()-1);
@@ -169,7 +192,7 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 
   for(int j=0; j<individuals; j++){
     PAs actions;
-    assertm(currentPopuation.size() > 0, "Cannot draw any individuals for current population");
+
     actions.push_back(make_shared<StartAction>(StartAction(start)));
     for(int i=0; i<initialActions; i++){
       PA_config config{{PAP::Angle,angleDistr(generator)}, {PAP::Distance, distanceDistr(generator)}};
@@ -187,19 +210,19 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
   // Perform turnament selection:
   for(int i=0; i<individuals; i++){
-    selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
+    if(currentPopuation.size() > 0)
+      selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
+    else{
+      warn("Not enough individuals left in the pool for mation ...");
+      break;
+    }
   }
-  for(auto gen : selectionPool){
-    debug("Size selected: ", gen.actions.size());
-    assertm(gen.actions.size() > 0, "Gen has no actions after roulette");
-  }
-
 }
 
 
 void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
   for(begin; begin != end; begin++){
-    debug("Type: ", (int) (*begin)->type);
+    // debug("Type: ", (int) (*begin)->type);
     switch((*begin)->type){
     case PAT::Start:{
       StartAction sa((*begin)->wps.front());
@@ -233,15 +256,15 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
     parent2 = par2.actions;
   }
 
-  int idx1 = randRange(1, parent1.size() - 2);
+  int idx1 = randRange(2, parent1.size() - 2);
   // int idx2 = randRange(1, parent2.size() - 2);
   int idx2 = idx1;
   // int idx = 5;
   // debug("Index: ", idx);
   // child1.insert(child1.begin(), parent1.begin(), parent1.begin() + idx);
   // create deep copy of parents:
-  assertm(parent1.size() > 3, "Parent1 has too few actions");
-  assertm(parent1.size() > 3, "Parent2 has too few actions");
+  assertm(parent1.size() > 4, "Parent1 has too few actions");
+  assertm(parent1.size() > 4, "Parent2 has too few actions");
   copyActions(parent1.begin(), next(parent1.begin(), idx1), child1);
   copyActions(parent2.begin(), next(parent2.begin(), idx2), child2);
   // child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
