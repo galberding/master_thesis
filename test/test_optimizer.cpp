@@ -459,10 +459,10 @@ protected:
 
     Mutation_conf muta = {
       {"addAction", make_pair(addAction, 60)},
-      {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 90)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
-      {"swapRandomAction", make_pair(swapRandomAction, 10)},
+      // {"removeAction", make_pair(removeAction, 10)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 90)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
     ga = make_shared<GA>(GA(42, 4, 0.7, 0, 70, muta));
     grid_map::GridMap map({"obstacle", "map"});
@@ -498,10 +498,10 @@ TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
-      // {"addAction", make_pair(addAction, 100)},
+      {"addAction", make_pair(addAction, 100)},
       // {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 10000 ;
@@ -550,7 +550,7 @@ TEST_F(GAApplication, algorithmTest){
 
     // debug("Mut");
     // addAction(pool.back(), ga->angleDistr, ga->distanceDistr, ga->generator);
-    // ga->mutation(pool, muta);
+    ga->mutation(pool, muta);
     // debug("Cla");
     ga->evalFitness(pool, *rob);
 
@@ -597,13 +597,13 @@ TEST_F(GAApplication, algorithmTest){
 	}
       }
 
-      for (auto gen : pool){
-	cout << gen.id << "|" << endl;
-	for (auto ac : gen.actions){
-	  cout << ac->pa_id << "|";
-	}
-	cout << endl;
-      }
+      // for (auto gen : pool){
+      // 	cout << gen.id << "|" << endl;
+      // 	for (auto ac : gen.actions){
+      // 	  cout << ac->pa_id << "|";
+      // 	}
+      // 	cout << endl;
+      // }
       // cout << endl;
       info("Best fitness: ", best.fitness,
 	   " Pool best: ", pool.back().fitness,

@@ -93,7 +93,7 @@ void ga::validateGen(genome &gen){
       it_current = it_next;
       it_next++;
       // TODO: goto end or just return because all changes had been applied
-      if(it_next == gen.actions.end()) break;
+      if(it_next == gen.actions.end()) return;
 
 
     }
@@ -105,7 +105,7 @@ void ga::validateGen(genome &gen){
 ///////////////////////////////////////////////////////////////////////////////
 
 void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
-
+  debug("Add Action!");
   // Copy action at Index
   // Add offset to angle and draw distance from distribution
   // insert action at i+1
@@ -151,6 +151,9 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, 
   int idx = randRange(1, gen.actions.size()-1);
   float offset = angleDist(generator);
   auto it = next(gen.actions.begin(), idx);
+  // We do not want to modify a already modified actions!
+  if((*it)->modified) return;
+  assertm((*it)->wps.size() >= 2, "Actions has no waypoints -- muation while initialization not allowed!");
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->type));
   // debug("Angle offset: ", offset);
   (*it)->mod_config[PAP::Angle] += offset;
@@ -164,6 +167,9 @@ void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDis
   int idx = randRange(1, gen.actions.size()-1);
   float offset = distanceDist(generator);
   auto it = next(gen.actions.begin(), idx);
+  // We do not want to modify a already modified actions!
+  if((*it)->modified) return;
+  assertm((*it)->wps.size() >= 2, "Actions has no waypoints -- muation while initialization not allowed!");
   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->type));
   // debug("Angle offset: ", offset);
   (*it)->mod_config[PAP::Distance] += offset;
@@ -314,11 +320,12 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
 
 
 void ga::GA::mutation(Genpool& currentPopulation, Mutation_conf& muat_config) {
-  for (auto gen : currentPopulation){
+  for (auto &gen : currentPopulation){
     for(auto &[k, v] : muat_config){
       int proba = randRange(0,100);
       // debug("Mutation Proba: ", proba, " Config Proba: ", v.second);
-      if(v.second <= proba){
+      if(v.second >= proba){
+	// debug("Mutate: ", k);
 	// execute mutation strategy
 	// info("Execute: ", k);
 	// info("Action size befor: ", gen.actions.size());
