@@ -105,7 +105,7 @@ void ga::validateGen(genome &gen){
 ///////////////////////////////////////////////////////////////////////////////
 
 void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
-  debug("Add Action!");
+  // debug("Add Action!");
   // Copy action at Index
   // Add offset to angle and draw distance from distribution
   // insert action at i+1
@@ -136,7 +136,9 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
   if (gen.actions.size() < 4){
     return;
   }
-  int idx = randRange(1, gen.actions.size()-2);
+  assertm(gen.actions.size() >= 4, "Too few actions left to remove further actions");
+
+  int idx = randRange(2, gen.actions.size()-2);
   auto it = gen.actions.erase(next(gen.actions.begin(), idx));
   (*prev(it,1))->modified = true;
 }
@@ -210,7 +212,13 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 }
 
 
-void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals) {
+void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals, int keepBest) {
+  debug("Selected!!!");
+  Genpool keep;
+  if(keepBest > 0){
+    assertm(keepBest < currentPopuation.size(), "Cannot keep more individuals than in the pool");
+    keep.insert(keep.begin(), prev(currentPopuation.end(), keepBest), currentPopuation.end());
+  }
 
   sort(currentPopuation.begin(), currentPopuation.end());
 
@@ -223,6 +231,15 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
       break;
     }
   }
+
+  currentPopuation.clear();
+
+  // assertm()
+
+  if(keepBest > 0){
+    currentPopuation.insert(currentPopuation.begin(), keep.begin(), keep.end());
+  }
+
 }
 
 
@@ -426,7 +443,7 @@ float ga::GA::calFitness(float cdist,
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
-  float weight = 0.6;
+  float weight = 0.5;
   return ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
 
 }

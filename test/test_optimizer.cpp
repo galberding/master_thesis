@@ -6,7 +6,7 @@
 using namespace ga;
 using namespace path;
 
-class DISABLED_GATest : public ::testing::Test{
+class GATest : public ::testing::Test{
 protected:
   void SetUp() override {
 
@@ -88,7 +88,7 @@ TEST(HelperTest, dirToAngleConversionZeroTest){
 }
 
 
-TEST_F(DISABLED_GATest, initPopulationTest){
+TEST_F(GATest, initPopulationTest){
   Genpool pool;
   Genpool selection_pool;
   Position pos, end1, end2;
@@ -105,7 +105,7 @@ TEST_F(DISABLED_GATest, initPopulationTest){
 }
 
 
-TEST_F(DISABLED_GATest, evalFitnessTest){
+TEST_F(GATest, evalFitnessTest){
   Genpool pool;
   Genpool selection_pool;
   Position pos, end1, end2;
@@ -126,7 +126,7 @@ TEST_F(DISABLED_GATest, evalFitnessTest){
   }
 }
 
-TEST_F(DISABLED_GATest, crossoverMatingTest){
+TEST_F(GATest, crossoverMatingTest){
   // Create two gens that are obviously different
   // mate them
   // show the and their children
@@ -159,21 +159,21 @@ TEST_F(DISABLED_GATest, crossoverMatingTest){
   cv::Mat child2 = rob->gridToImg("map");
   // ga->mating(pool.front(), pool.back(), newPop);
 
-  cv::imshow("gen1", gen1);
-  cv::imshow("gen2", gen2);
-  cv::imshow("child1", child1);
-  cv::imshow("child2", child2);
-  cv::moveWindow("gen1", 0, 0);
-  cv::moveWindow("gen2", 500, 0);
-  cv::moveWindow("child2", 500, 500);
-  cv::moveWindow("child1", 0, 500);
+  // cv::imshow("gen1", gen1);
+  // cv::imshow("gen2", gen2);
+  // cv::imshow("child1", child1);
+  // cv::imshow("child2", child2);
+  // cv::moveWindow("gen1", 0, 0);
+  // cv::moveWindow("gen2", 500, 0);
+  // cv::moveWindow("child2", 500, 500);
+  // cv::moveWindow("child1", 0, 500);
 
-  cv::waitKey();
+  // cv::waitKey();
 
 }
 
 
-TEST_F(DISABLED_GATest, actionModifivationTest){
+TEST_F(GATest, actionModifivationTest){
    Position start, end;
 
   cmap->getPosition(Index(11,11), start);
@@ -223,7 +223,7 @@ TEST_F(DISABLED_GATest, actionModifivationTest){
 
 }
 
-TEST_F(DISABLED_GATest, sortingTest){
+TEST_F(GATest, sortingTest){
 
   Genpool pool;
   Genpool selection_pool;
@@ -242,7 +242,7 @@ TEST_F(DISABLED_GATest, sortingTest){
 
 }
 
-TEST_F(DISABLED_GATest, selectionTest){
+TEST_F(GATest, selectionTest){
 
   Genpool pool;
   Genpool selection_pool;
@@ -261,13 +261,13 @@ TEST_F(DISABLED_GATest, selectionTest){
   EXPECT_EQ(selection_pool.size(), 3);
 }
 
-TEST_F(DISABLED_GATest, calculateFreeArea){
+TEST_F(GATest, calculateFreeArea){
   // debug("Size: ", (cmap->get("obstacle").sum()));
   // debug("Size: ", cmap->getSize().x()*cmap->getSize().y() - (cmap->get("obstacle").sum()));
   EXPECT_EQ(cmap->getSize().x()*cmap->getSize().y() - (cmap->get("obstacle").sum()), rob->getFreeArea());
 }
 
-TEST_F(DISABLED_GATest, randTest){
+TEST_F(GATest, randTest){
 
   list<int> l1, l2, c1, c2;
 
@@ -290,13 +290,14 @@ TEST_F(DISABLED_GATest, randTest){
 }
 
 
-TEST_F(DISABLED_GATest, mutationConfigTest){
+TEST_F(GATest, mutationConfigTest){
   Genpool pool;
-  ga->populatePool(pool, Position(42,42), {Position(42,42)}, 2, 1);
-
+  ga->populatePool(pool, Position(42,42), {Position(42,42)}, 2, 4);
 
   genome gen1 = pool.front();
   genome gen2 = pool.back();
+  rob->evaluateActions(gen1.actions);
+  rob->evaluateActions(gen2.actions);
 
   auto size = gen1.actions.size();
   addAction(gen1, ga->angleDistr, ga->distanceDistr, ga->generator);
@@ -320,7 +321,7 @@ TEST_F(DISABLED_GATest, mutationConfigTest){
 }
 
 
-TEST_F(DISABLED_GATest, adaptationTest){
+TEST_F(GATest, adaptationTest){
   Position start, end;
 
   cmap->getPosition(Index(41,41), start);
@@ -360,7 +361,7 @@ TEST_F(DISABLED_GATest, adaptationTest){
 
 
 
-TEST_F(DISABLED_GATest, boundaryMendingTest){
+TEST_F(GATest, boundaryMendingTest){
   Position start, end;
 
   cmap->getPosition(Index(41,41), start);
@@ -407,7 +408,7 @@ TEST_F(DISABLED_GATest, boundaryMendingTest){
 }
 
 
-TEST_F(DISABLED_GATest, basicApplicationTest){
+TEST_F(GATest, basicApplicationTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
@@ -458,10 +459,10 @@ protected:
   void SetUp() override {
 
     Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 60)},
+      // {"addAction", make_pair(addAction, 60)},
       // {"removeAction", make_pair(removeAction, 10)},
-      // {"addAngleOffset", make_pair(addAngleOffset, 90)},
-      // {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
+      {"addAngleOffset", make_pair(addAngleOffset, 50)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
     ga = make_shared<GA>(GA(42, 4, 0.7, 0, 70, muta));
@@ -492,142 +493,6 @@ protected:
   shared_ptr<Robot> rob;
   shared_ptr<GA> ga;
 };
-
-
-TEST_F(GAApplication, algorithmTest){
-  Genpool pool, sel, newPop;
-  Position start, end;
-  Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 100)},
-      // {"removeAction", make_pair(removeAction, 10)},
-      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
-      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
-    };
-  int iter = 10000 ;
-
-  int initPop = 20;
-  int selected = 25;
-  cmap->getPosition(Index(110,110), start);
-  cmap->getPosition(Index(110,110), end);
-  debug("Start");
-  genome best;
-
-  int actionSize = 30;
-
-  ga->populatePool(pool, start, {end}, initPop, actionSize);
-  for(auto gen : pool){
-    EXPECT_EQ(gen.actions.size(), actionSize + 2);
-  }
-  debug("First eval fitness");
-  ga->evalFitness(pool, *rob);
-  for(auto gen : pool){
-    EXPECT_EQ(gen.actions.size(), actionSize + 2);
-  }
-  debug("First Select");
-  ga->selection(pool, sel, selected);
-  for(auto gen : sel){
-    EXPECT_EQ(gen.actions.size(), actionSize + 2);
-  }
-
-  EXPECT_EQ(sel.size(), selected);
-  if (pool.size() > 0) {
-    best = pool.front();
-  }else{
-    best = genome();
-  }
-  // debug("Enter Loop");
-  for(int i=0; i<iter; i++){
-
-    pool.clear();
-    // debug("Cross");
-    // pool.push_back(genome(best));
-    ga->crossover(sel, pool);
-    sel.clear();
-    for(auto gen : pool){
-      EXPECT_EQ(gen.actions.size(), actionSize + 2);
-    }
-
-    // debug("Mut");
-    // addAction(pool.back(), ga->angleDistr, ga->distanceDistr, ga->generator);
-    ga->mutation(pool, muta);
-    // debug("Cla");
-    ga->evalFitness(pool, *rob);
-
-    for (auto gen : pool){
-      EXPECT_GT(gen.fitness, 0);
-    }
-    // debug("Sel");
-    // for (auto gen : pool){
-    //   EXPECT_GT(gen.actions.size(), 50);
-    // }
-    // for(auto it = pool.begin(); it != prev(pool.end(), 1);){
-
-    //   if(it->fitness == next(it, 1)->fitness){
-    // 	it = pool.erase(it);
-    //   }else{
-    // 	it++;
-    //   }
-    // }
-    int size = pool.size();
-    ga->selection(pool, sel, selected);
-    EXPECT_EQ(pool.size(), size - selected);
-
-    EXPECT_EQ(sel.size(), selected);
-    // debug("Done");
-    // info("Population size: ", pool.size());
-    if(pool.back().fitness > best.fitness){
-      best = pool.back().fitness;
-    }
-    int lowest = 1000;
-    int highest = 0;
-    if (true){
-      for (auto &gen : pool){
-	// cout << "Gens: " << gen.fitness << " ";
-	for(auto ac : gen.actions){
-	  EXPECT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
-	  EXPECT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
-	}
-	int a_size = gen.actions.size();
-	if(a_size < lowest){
-	  lowest = a_size;
-	}
-	if(a_size > highest){
-	  highest = a_size;
-	}
-      }
-
-      // for (auto gen : pool){
-      // 	cout << gen.id << "|" << endl;
-      // 	for (auto ac : gen.actions){
-      // 	  cout << ac->pa_id << "|";
-      // 	}
-      // 	cout << endl;
-      // }
-      // cout << endl;
-      info("Best fitness: ", best.fitness,
-	   " Pool best: ", pool.back().fitness,
-	   " Worst fitness: ", pool.front().fitness,
-	   " Max Actions: ", highest,
-	   " Min Actions: ", lowest
-	   );
-      rob->evaluateActions(pool.back().actions);
-      auto img = rob->gridToImg("map");
-      // displayImage(img);
-      cv::imshow("Training", img);
-      cv::waitKey(1);
-      // cv::imwrite("res/it_" + std::to_string(i) + ".jpg", img);
-    }
-
-  }
-  // for (auto gen : pool){
-  //   for (auto ac : gen.actions){
-  //     cout << ac->pa_id << "|";
-  //   }
-  //   cout << endl;
-  //   cout << "-------" << endl;
-  // }
-}
 
 
 
@@ -734,6 +599,55 @@ TEST(SortingTest, sortStuff){
 
 }
 
+
+TEST(SortingTest, sortStuffdeleteGenes){
+
+  struct Action{
+    Action(int blub):blub(blub){};
+    int blub;
+  };
+
+  using PAs = vector<shared_ptr<Action>>;
+
+  struct genomeS{
+    genomeS(){};
+    genomeS(float fitness):fitness(fitness){};
+    genomeS(PAs actions):actions(actions){};
+    genomeS(PAs actions, float fitness):actions(actions), fitness(fitness){};
+    bool operator < (const genomeS& gen) const
+    {
+        return (fitness > gen.fitness);
+    }
+
+    int id = 0;
+    PAs actions;
+    WPs waypoints;
+    float fitness = 0;
+  };
+  deque<genomeS> pool;
+
+  for(int i=0; i<10; i++){
+    PAs actions;
+    for (int j=0; j < 10; j++) {
+
+      actions.push_back(make_shared<Action>(Action(j)));
+    }
+    pool.push_back(genomeS(actions, static_cast<float>(0)));
+  }
+
+  deque<genomeS> keep;
+
+  keep.insert(keep.begin(), pool.begin(), next(pool.begin(), 4));
+
+  pool.clear();
+
+  pool.insert(pool.begin(), keep.begin(), keep.end());
+
+  for(auto &gen : pool){
+    debug("Copied: ", gen.actions.size());
+    ASSERT_GT(gen.actions.size(), 0);
+  }
+}
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   // ros::init(argc, argv, "tester");

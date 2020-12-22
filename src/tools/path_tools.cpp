@@ -110,8 +110,6 @@ bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChange
     // Only adapt the angle if distance is greater 0
     // otherwise we just want to ignore it
     mod_config[PAP::Angle] = angle;
-  } else {
-    debug("Angle calculation failed, dist = ", dist);
   }
 
   // Update Parameter
@@ -294,7 +292,11 @@ bool path::Robot::evaluateActions(PAs &pas){
     }
     incConfParameter(typeCount, (*it)->type, 1);
   }
-  assertm(pas.size() > 3, "TOO few action remain in action!");
+  if (pas.size() < 4){
+    debug("TOO few action remain in sequence: " + to_string(pas.size()));
+    debug("Type: ");
+  }
+  assertm(pas.size() >= 3, "TOO few action remain in sequence");
   return true;
 }
 

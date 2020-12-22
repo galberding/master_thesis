@@ -189,8 +189,8 @@ set(OPTI_ENV
   src/environment/ocm.cpp
   src/optimizer/optimizer.hpp
   src/optimizer/optimizer.cpp
-  src/pool.hpp
-  src/pool.cpp
+  # src/pool.hpp
+  # src/pool.cpp
   src/tools/path_tools.h
   src/tools/path_tools.cpp
   src/optimizer/ga_path_generator.h
@@ -246,7 +246,16 @@ catkin_add_executable_with_gtest(test-opti
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-app
+  test/test_app.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
+
 # if(TARGET test-path-tools)
 target_link_libraries(test-path-tools ${catkin_LIBRARIES})
 target_link_libraries(test-opti ${catkin_LIBRARIES})
+target_link_libraries(test-app ${catkin_LIBRARIES})
 # endif()

@@ -66,6 +66,15 @@ namespace ga{
     std::uniform_real_distribution<float> selectionDist;
     Mutation_conf muta_conf;
 
+    struct executionConfig {
+      int maxIterations = 10000;
+      int initIndividuals = 200;
+      int initActions = 50;
+      int selectIndividuals = 25;
+      int keepBestIndividuals = 10;
+
+    };
+
 
     GA(int seed, float distMu, float distDev, float angleMu, float angleDev, Mutation_conf muta_conf):
       generator(seed),
@@ -75,7 +84,7 @@ namespace ga{
       muta_conf(muta_conf){};
 
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
-    virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals);
+    virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0);
     virtual void crossover(Genpool &currentSelection, Genpool &newPopulation);
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation);
     virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf);
