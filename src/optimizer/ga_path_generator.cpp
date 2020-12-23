@@ -462,12 +462,7 @@ void ga::GA::optimizePath(executionConfig conf, GridMap obstacle) {
   // log all runtime information here provided by the conf
   logging("Hello", conf);
 
-}
 
-void ga::GA::gridSearch() {
-  // Here we want to investigate the effect of different metaparameters
-  // We want to switch to different population sizes and also investigate
-  // what effect different obstacles, start and einpositions hold
 
 
 }

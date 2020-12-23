@@ -88,7 +88,7 @@ TEST_F(RobotTest, executionStartActionTest){
   Position pos;
   cmap->getPosition(Index(11,11), pos);
   shared_ptr<StartAction> sa = make_shared<StartAction>(StartAction(pos));
-  bool res = rob->execute(sa, *cmap);
+  bool res = rob->execute(sa, cmap);
   EXPECT_TRUE(res);
   EXPECT_EQ(rob->get_currentPos(), pos);
   auto conf = rob->get_typeCount();
@@ -107,7 +107,7 @@ TEST_F(RobotTest, mapMoveBasicTest){
   pa->set_wps(vector<Position>({pos0, pos1}));
   int steps;
   WPs path;
-  bool res = rob->mapMove(*cmap, pa, steps, rob->get_currentPos(), path, true);
+  bool res = rob->mapMove(cmap, pa, steps, rob->get_currentPos(), path, true);
 
   EXPECT_GT(steps, 0);
   EXPECT_GT(cmap->get("map").sum(), 0);
@@ -123,8 +123,8 @@ TEST_F(RobotTest, executionAheadActionTest){
   shared_ptr<StartAction> sa = make_shared<StartAction>(StartAction(pos));
   // EndAction ea(WPs({Position(800, 800)}));
   shared_ptr<AheadAction> aa = make_shared<AheadAction>(AheadAction(PAT::CAhead, {{PAP::Angle, 180}, {PAP::Distance, 100}}));
-  bool res = rob->execute(sa, *cmap);
-  res &= rob->execute(aa, *cmap);
+  bool res = rob->execute(sa, cmap);
+  res &= rob->execute(aa, cmap);
 
   EXPECT_GT(cmap->get("map").sum(), 0);
   EXPECT_TRUE(res);
@@ -150,15 +150,15 @@ TEST_F(RobotTest, executionTest){
   auto aa3p = make_shared<AheadAction>(aa3);
   auto aa4p = make_shared<AheadAction>(aa4);
 
-  bool res = rob->execute(sap, *cmap);
+  bool res = rob->execute(sap, cmap);
   EXPECT_TRUE(res);
-  res &= rob->execute(aa1p, *cmap);
+  res &= rob->execute(aa1p, cmap);
   EXPECT_TRUE(res);
-  res &= rob->execute(aa2p, *cmap);
+  res &= rob->execute(aa2p, cmap);
   EXPECT_TRUE(res);
-  res &= rob->execute(aa3p, *cmap);
+  res &= rob->execute(aa3p, cmap);
   EXPECT_TRUE(res);
-  res &= rob->execute(aa4p, *cmap);
+  res &= rob->execute(aa4p, cmap);
 
   // displayGridmap();
   EXPECT_TRUE(res);

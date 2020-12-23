@@ -186,7 +186,7 @@ WPs path::EndAction::generateWPs(Position start){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap), cmap(make_shared<GridMap>(cMap)), opName("map"){
+path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap), pmap(make_shared<GridMap>(cMap)), opName("map"){
      defaultConfig = {
        {RobotProperty::Width_cm, 1},
        {RobotProperty::Height_cm, 1},
@@ -199,7 +199,7 @@ path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(in
 
 path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName)
   :cMap(*gmap),
-   cmap(make_shared<GridMap>(cMap)),
+   pmap(make_shared<GridMap>(cMap)),
    opName(mapOperationName){
   defaultConfig = {
        {RobotProperty::Width_cm, 1},
@@ -208,13 +208,12 @@ path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperatio
        {RobotProperty::Clean_speed_cm_s, 20}};
 
   updateConfig(defaultConfig, conf);
-  cmap->add(opName, 0);
+  pmap->add(opName, 0);
   resetCounter();
 }
 
 
-
-bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map) {
+bool path::Robot::execute(shared_ptr<PathAction> action, shared_ptr<grid_map::GridMap> map) {
 
   int steps = 0;
   bool res = false;
@@ -225,7 +224,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
   case PAT::Start:{
     resetCounter();
     // map.clear("map");
-    map.add("map", 0.0);
+    map->add(opName, 0.0);
     // get start position for all following actions
     currentPos = action->generateWPs(currentPos)[0];
     // debug("Startpoint: ", currentPos);
@@ -268,7 +267,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, grid_map::GridMap &map)
     // action->modified = true;
     // action->generateWPs(action->wps.front());
     action->applyModifications();
-    assertm(map.isInside(action->wps.back()), "Generated point outside the map");
+    assertm(map->isInside(action->wps.back()), "Generated point outside the map");
   }
 
   // When initializing we do not want to modify the next action
@@ -293,7 +292,7 @@ bool path::Robot::evaluateActions(PAs &pas){
       (*it)->generateWPs((*prev(it, 1))->wps.back());
     }
 
-    success = execute(*it, cMap);
+    success = execute(*it, pmap);
     // debug("Success: ", success);
     // do not propagate changes when actions are initialized
     if(!(success || init)){
@@ -335,7 +334,7 @@ WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
   return b;
 }
 
-bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean) {
+bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
 
   WPs waypoints = action->generateWPs(currentPos);
@@ -350,12 +349,12 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   // Check if start and endpoint are contained
   assertm(waypoints.size() >= 2, "Map move failed, not enough points given by action");
   Position start =  waypoints.front();
-  assertm(cmap.getClosestPositionInMap(start) == currentPos, "Positions do not match!");
+  assertm(cmap->getClosestPositionInMap(start) == currentPos, "Positions do not match!");
   Position lastPos = waypoints.back();
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
   // Check if points are in range
-  assertm(cmap.isInside(start), "Start-point is not in map range!");
+  assertm(cmap->isInside(start), "Start-point is not in map range!");
   if(action->mod_config[PAP::Distance] == 0){
     // Action is not doing anything, delete it!!
     // warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());
@@ -364,10 +363,10 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
   }
 
   Index lastIdx;
-  for(grid_map::LineIterator lit(cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
+  for(grid_map::LineIterator lit(*cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
     // Check if start or endpoint collidates with obstacle
-    float obstacle = cmap.at("obstacle", *lit);
+    float obstacle = cmap->at("obstacle", *lit);
     // std::cout << "Cell" << "\n";
 
     if(obstacle > 0){
@@ -375,6 +374,8 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
       // debug("Collision detected!");
       if(action->c_config[Counter::StepCount] == 0){
 	warn("Fail in first round!!");
+	// TODO: This is a problem because the position seems to be outside
+	//  so some control mechanism allows for point creation in obstacles!
 	return false;
       }else{
 	res = false;
@@ -384,13 +385,13 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
       // Update last position
       lastIdx = *lit;
       if (clean){
-	float mapVal = cmap.at("map", *lit);
+	float mapVal = cmap->at(opName, *lit);
 	// debug("Map Val: ", mapVal);
 	if (mapVal > 0){
 	  action->c_config[Counter::CrossCount] +=  1;
 	}
 	action->c_config[Counter::StepCount] +=  1;
-	cmap.at("map", *lit) = 1;
+	cmap->at(opName, *lit) += 1;
 	// debug("Mark map");
       }
       steps++;
@@ -399,7 +400,7 @@ bool path::Robot::mapMove(GridMap &cmap, shared_ptr<PathAction> action, int &ste
 
   // Update last valid robot position (before possible collision)
   // debug("Track Current Pos: ", currentPos[0], "|", currentPos[1]);
-  if (!cmap.getPosition(lastIdx, currentPos)) {
+  if (!cmap->getPosition(lastIdx, currentPos)) {
     debug("Track Current Pos: ", currentPos[0], "|", currentPos[1]);
     debug("Last index: ", lastIdx);
     warn("Point Transition faulty!");

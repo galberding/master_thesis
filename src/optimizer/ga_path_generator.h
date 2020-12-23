@@ -55,10 +55,21 @@ namespace ga{
 
   struct executionConfig {
 
-    executionConfig(string dir, string name):logDir(dir), logName(name){}
+    executionConfig(string dir, string name, shared_ptr<GridMap> gmap):logDir(dir), logName(name), gmap(gmap){}
     // Logger
     string logDir = "";
     string logName = "";
+
+        // Robot Config
+    string obstacleName = "map";
+    rob_config rob_conf = {
+      {RobotProperty::Width_cm, 1},
+      {RobotProperty::Height_cm, 1},
+      {RobotProperty::Drive_speed_cm_s, 50},
+      {RobotProperty::Clean_speed_cm_s, 20}};
+
+    // Map
+    shared_ptr<GridMap> gmap;
 
     // GA
     int maxIterations = 10000;
@@ -68,13 +79,6 @@ namespace ga{
     int selectIndividuals = 25;
     int selectKeepBest = 10;
 
-    // Robot Config
-    string obstacleName = "map";
-    rob_config rob_conf = {
-      {RobotProperty::Width_cm, 1},
-      {RobotProperty::Height_cm, 1},
-      {RobotProperty::Drive_speed_cm_s, 50},
-      {RobotProperty::Clean_speed_cm_s, 20}};
 
 
     // Mutation
@@ -140,7 +144,7 @@ namespace ga{
       angleDistr{angleMu, angleDev},
       selectionDist{0,1},
       muta_conf(muta_conf){};
-    GA(int seed, executionConfig conf):
+    GA(int seed, executionConfig conf);
 
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0);

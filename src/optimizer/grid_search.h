@@ -1,0 +1,24 @@
+#ifndef GRID_SEARCH_H
+#define GRID_SEARCH_H
+
+#include "ga_path_generator.h"
+
+
+namespace gsearch {
+
+
+  struct Searcher{
+    // The searcher will get a hardcoded definition in which range it should
+    // perform the metaparamter search
+
+    // Will create grid map, robot and GA instance
+    // search and log the progress
+    shared_ptr<GridMap> generateMapType(int with, int height, float res, int type);
+    void search(ga::executionConfig config);
+    // Wrapper to call search in multiple threads
+    /* void threadded_search(ga::executionConfig config); */
+  };
+
+}
+
+#endif /* GRID_SEARCH_H */
