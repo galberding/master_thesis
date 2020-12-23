@@ -195,8 +195,11 @@ set(OPTI_ENV
   src/tools/path_tools.cpp
   src/optimizer/ga_path_generator.h
   src/optimizer/ga_path_generator.cpp
+  src/optimizer/grid_search.h
+  src/optimizer/grid_search.cpp
   src/tools/debug.h
   src/tools/debug.cpp
+
 )
 
 # include_directories(  )

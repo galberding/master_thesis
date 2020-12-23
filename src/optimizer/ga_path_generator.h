@@ -11,6 +11,7 @@
 // #endif
 
 using namespace path;
+using namespace logging;
 
 namespace ga{
 
@@ -54,11 +55,20 @@ namespace ga{
 
 
   struct executionConfig {
-
-    executionConfig(string dir, string name, shared_ptr<GridMap> gmap):logDir(dir), logName(name), gmap(gmap){}
+    executionConfig(){} // default constructor
+    executionConfig(string dir, string name, shared_ptr<GridMap> gmap, Position start, vector<Position> ends)
+      :logDir(dir),
+       logName(name),
+       gmap(gmap),
+       start(start),
+       ends(ends){}
     // Logger
     string logDir = "";
+    string logFitness = "";
     string logName = "";
+
+    // If parameter is set we want to store it under this filename
+    string fitnessName = "";
 
         // Robot Config
     string obstacleName = "map";
@@ -73,8 +83,12 @@ namespace ga{
 
     // GA
     int maxIterations = 10000;
+    int currentIter = 0;
     int initIndividuals = 200;
     int initActions = 50;
+    Position start;
+    vector<Position> ends;
+
     // Selection
     int selectIndividuals = 25;
     int selectKeepBest = 10;
@@ -82,7 +96,15 @@ namespace ga{
 
 
     // Mutation
-    vector<string> mutaFunctions = {"addAction", "removeAction"};
+    vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
+    vector<int> probas = {10, 10};
+    Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 10)},
+      {"removeAction", make_pair(removeAction, 10)},
+      {"addAngleOffset", make_pair(addAngleOffset, 70)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
+    };
     float distMu = 4;
     float distDev = 0.9;
     float angleMu = 0;
@@ -134,6 +156,7 @@ namespace ga{
     std::normal_distribution<float> distanceDistr, angleDistr;
     std::uniform_real_distribution<float> selectionDist;
     Mutation_conf muta_conf;
+    executionConfig eConf;
 
 
 
@@ -144,7 +167,13 @@ namespace ga{
       angleDistr{angleMu, angleDev},
       selectionDist{0,1},
       muta_conf(muta_conf){};
-    GA(int seed, executionConfig conf);
+
+    GA(int seed, executionConfig conf)
+      :generator(seed),
+       distanceDistr{conf.distMu, conf.distDev},
+       angleDistr{conf.angleMu, conf.angleDev},
+       selectionDist{0,1},
+       muta_conf(conf.muta){}
 
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0);
@@ -158,7 +187,7 @@ namespace ga{
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace);
-    void optimizePath(executionConfig conf, GridMap obstacle);
+    void optimizePath(shared_ptr<GridMap> oMap);
     void gridSearch();
 
 

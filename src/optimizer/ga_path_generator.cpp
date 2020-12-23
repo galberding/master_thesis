@@ -340,6 +340,7 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
       mating(par1, par2, newPopulation);
     }
   }
+  currentSelection.clear();
   // debug("Cross done!");
 }
 
@@ -455,12 +456,69 @@ float ga::GA::calFitness(float cdist,
   return ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
 
 }
-#define logging(msg, config) logging::Logger(msg, config.logDir, config.logName)
+#define logg(msg, config) logging::Logger(msg, config.logDir, config.logName)
 
-void ga::GA::optimizePath(executionConfig conf, GridMap obstacle) {
+void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
+
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
-  logging("Hello", conf);
+  logg("------Start-Training------", eConf);
+  if(!eConf.logName.empty()){
+    Logger("Iteration,Best_fit,Worst_fit,Max_len,Min_len", eConf.logDir, eConf.logName);
+    }
+  // Robot
+  Robot rob(eConf.rob_conf, oMap, "map");
+
+  Genpool pool ,selected;
+
+  // Populate pool
+  populatePool(pool, eConf.start, eConf.ends, eConf.initIndividuals, eConf.initActions);
+  // Get initial fitness calculation
+  evalFitness(pool, rob);
+
+  // First selection
+  selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
+
+  // Main loop
+  int lowest = 1000;
+  int highest = 0;
+  for (int i = 0; i < eConf.maxIterations; ++i) {
+    eConf.currentIter = i;
+
+    crossover(selected, pool);
+    // TODO: Either create config here or provide it through eConf
+    // [x] provide it through eConf
+    mutation(pool, eConf.muta);
+    evalFitness(pool, rob);
+    selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
+
+    for (auto &gen : pool){
+	// cout << "Gens: " << gen.fitness << " ";
+	int a_size = gen.actions.size();
+	if(a_size < lowest){
+	  lowest = a_size;
+	}
+	if(a_size > highest){
+	  highest = a_size;
+	}
+      }
+    // How to log the overall fitness values??
+    // Log all to individual files and use iteration to merge all components
+
+    if(!eConf.logName.empty()){
+      string msg =to_string(eConf.currentIter)+","
+	+ to_string(pool.back().fitness) + ","
+	+ to_string(pool.front().fitness) + ","
+	+ to_string(highest) + ","
+	+ to_string(lowest) + "\n";
+    Logger(msg, eConf.logDir, eConf.logName);
+    }
+
+
+  }
+  logg("------End-Training------", eConf);
+
+
 
 
 
