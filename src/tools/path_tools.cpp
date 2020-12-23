@@ -186,7 +186,7 @@ WPs path::EndAction::generateWPs(Position start){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap){
+path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap), cmap(make_shared<GridMap>(cMap)), opName("map"){
      defaultConfig = {
        {RobotProperty::Width_cm, 1},
        {RobotProperty::Height_cm, 1},
@@ -196,6 +196,21 @@ path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(in
      updateConfig(defaultConfig, conf);
      resetCounter();
     }
+
+path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName)
+  :cMap(*gmap),
+   cmap(make_shared<GridMap>(cMap)),
+   opName(mapOperationName){
+  defaultConfig = {
+       {RobotProperty::Width_cm, 1},
+       {RobotProperty::Height_cm, 1},
+       {RobotProperty::Drive_speed_cm_s, 50},
+       {RobotProperty::Clean_speed_cm_s, 20}};
+
+  updateConfig(defaultConfig, conf);
+  cmap->add(opName, 0);
+  resetCounter();
+}
 
 
 

@@ -4,6 +4,11 @@
 #include <iostream>
 #include <cstdio>
 #include <cassert>
+#include <cstring>
+#include <iostream>
+#include <fstream>
+#include <cstdio>
+#include <filesystem>
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
@@ -55,6 +60,24 @@ void warn(Args... args)
   (std::cout << ... << args) << "\n";
 #endif
 }
+
+namespace logging{
+
+  // The log config should be created to hold information about the current run
+  // What kind of information do we need?
+
+  // There are three kinds of information:
+  // - Start comnfiguration
+  // - Runtime information
+  // - Completion information (can also be represented by the runtime information)
+
+  // lets go with just the name for now!
+
+  inline std::string getCurrentDateTime( std::string s );
+  void Logger(std::string logMsg, std::string dir, std::string name);
+}
+
+
 
 
 

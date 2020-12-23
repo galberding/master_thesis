@@ -53,6 +53,71 @@ namespace ga{
 
 
 
+  struct executionConfig {
+
+    executionConfig(string dir, string name):logDir(dir), logName(name){}
+    // Logger
+    string logDir = "";
+    string logName = "";
+
+    // GA
+    int maxIterations = 10000;
+    int initIndividuals = 200;
+    int initActions = 50;
+    // Selection
+    int selectIndividuals = 25;
+    int selectKeepBest = 10;
+
+    // Robot Config
+    string obstacleName = "map";
+    rob_config rob_conf = {
+      {RobotProperty::Width_cm, 1},
+      {RobotProperty::Height_cm, 1},
+      {RobotProperty::Drive_speed_cm_s, 50},
+      {RobotProperty::Clean_speed_cm_s, 20}};
+
+
+    // Mutation
+    vector<string> mutaFunctions = {"addAction", "removeAction"};
+    float distMu = 4;
+    float distDev = 0.9;
+    float angleMu = 0;
+    float angleDev = 40;
+
+    string config_to_string(){
+      string str;
+      str.append("name,");
+      str.append("maxIterations,");
+      str.append("initIndividuals,");
+      str.append("initIndividuals,");
+      str.append("initActions,");
+      str.append("selectIndividuals,");
+      str.append("selectKeepBest,");
+      for (auto &mut : mutaFunctions){
+	str.append(mut+" ");
+      }
+      str.append(",");
+      str.append("distMu,");
+      str.append("distDev,");
+      str.append("angleMu,");
+      str.append("angleDev,");
+      str.append("obstacleName\n");
+      str.append(logDir+ "/" + logName+",");
+      str.append(to_string(maxIterations)+",");
+      str.append(to_string(initIndividuals)+",");
+      str.append(to_string(initIndividuals)+",");
+      str.append(to_string(initActions)+",");
+      str.append(to_string(selectIndividuals)+",");
+      str.append(to_string(selectKeepBest)+",");
+      str.append(to_string(distMu)+",");
+      str.append(to_string(distDev)+",");
+      str.append(to_string(angleMu)+",");
+      str.append(to_string(angleDev)+",");
+      str.append(obstacleName+"\n");
+      return str;
+    }
+
+  };
 
 
 
@@ -66,14 +131,7 @@ namespace ga{
     std::uniform_real_distribution<float> selectionDist;
     Mutation_conf muta_conf;
 
-    struct executionConfig {
-      int maxIterations = 10000;
-      int initIndividuals = 200;
-      int initActions = 50;
-      int selectIndividuals = 25;
-      int keepBestIndividuals = 10;
 
-    };
 
 
     GA(int seed, float distMu, float distDev, float angleMu, float angleDev, Mutation_conf muta_conf):
@@ -82,6 +140,7 @@ namespace ga{
       angleDistr{angleMu, angleDev},
       selectionDist{0,1},
       muta_conf(muta_conf){};
+    GA(int seed, executionConfig conf):
 
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0);
@@ -95,6 +154,8 @@ namespace ga{
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace);
+    void optimizePath(executionConfig conf, GridMap obstacle);
+    void gridSearch();
 
 
   };

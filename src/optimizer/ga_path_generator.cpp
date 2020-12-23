@@ -322,6 +322,14 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
 void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation) {
   // Single point Crossover
   assertm(currentSelection.size() >= 2, "Not enough individuals for crossover in pool!");
+
+  // TODO: Switch to iterator
+  // auto par2 = next(currentSelection.begin(), 1);
+  // for(auto par1 = currentSelection.begin(); par1 != prev(currentSelection.end(), 2); par1++){
+  //   while(par2 != )
+  // }
+
+
   for(int i=0; i<currentSelection.size(); i++){
     genome par1 = currentSelection.back();
     currentSelection.pop_back();
@@ -445,5 +453,21 @@ float ga::GA::calFitness(float cdist,
   // debug("Space relation: ", current_occ / freeSpace);
   float weight = 0.5;
   return ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
+
+}
+#define logging(msg, config) logging::Logger(msg, config.logDir, config.logName)
+
+void ga::GA::optimizePath(executionConfig conf, GridMap obstacle) {
+  // Use configuration and obstacle map to create robot and optimize the path
+  // log all runtime information here provided by the conf
+  logging("Hello", conf);
+
+}
+
+void ga::GA::gridSearch() {
+  // Here we want to investigate the effect of different metaparameters
+  // We want to switch to different population sizes and also investigate
+  // what effect different obstacles, start and einpositions hold
+
 
 }

@@ -213,6 +213,7 @@ For now we will just return the start point because the robot object should find
     Position& get_currentPos() { return currentPos; }
 
     Robot(float initAngle, rob_config conf, GridMap &gMap);
+    Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName);
 
     /*
       Execute an action on the given grid map.
@@ -243,6 +244,8 @@ For now we will just return the start point because the robot object should find
     int getFreeArea();
   private:
     grid_map::GridMap cMap;
+    shared_ptr<GridMap> pmap;
+    string opName;
     map<PathActionType, int> typeCount;
     rob_config defaultConfig;
     distance_cm traveledDist = 0;

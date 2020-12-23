@@ -254,8 +254,17 @@ catkin_add_executable_with_gtest(test-app
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-io
+  test/test_io_tools.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
+
 # if(TARGET test-path-tools)
 target_link_libraries(test-path-tools ${catkin_LIBRARIES})
 target_link_libraries(test-opti ${catkin_LIBRARIES})
 target_link_libraries(test-app ${catkin_LIBRARIES})
+target_link_libraries(test-io ${catkin_LIBRARIES})
 # endif()
