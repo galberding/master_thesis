@@ -150,7 +150,8 @@ namespace ga{
        distanceDistr{conf.distMu, conf.distDev},
        angleDistr{conf.angleMu, conf.angleDev},
        selectionDist{0,1},
-       muta_conf(conf.muta){}
+       muta_conf(conf.muta),
+       eConf(conf){}
 
     virtual void populatePool(Genpool &currentPopuation, Position start, WPs endpoints, int individuals, int initialActions);
     virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0);

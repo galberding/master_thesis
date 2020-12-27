@@ -199,7 +199,7 @@ WPs path::EndAction::generateWPs(Position start){
 
 path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName)
   :cMap(*gmap),
-   pmap(make_shared<GridMap>(cMap)),
+   pmap(gmap),
    opName(mapOperationName){
   defaultConfig = {
        {RobotProperty::Width_cm, 1},

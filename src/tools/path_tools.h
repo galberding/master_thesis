@@ -13,6 +13,7 @@
 #include <exception>
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
+#include <cstring>
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"      /* Red */

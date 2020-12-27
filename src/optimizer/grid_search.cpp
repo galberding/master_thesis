@@ -59,7 +59,7 @@ shared_ptr<GridMap> gsearch::Searcher::generateMapType(int width, int height, fl
     break;
   }
   case 1:{ // bounds
-    map.add("obstacle", 255);
+    map.add("obstacle", 1);
     int h_offset = static_cast<int>(map.getSize()(0)*0.1);
     int w_offset = static_cast<int>(map.getSize()(1)*0.1);
 

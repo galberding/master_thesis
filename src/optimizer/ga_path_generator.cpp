@@ -213,7 +213,7 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 
 
 void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals, int keepBest) {
-  debug("Selected!!!");
+  // debug("Selected!!!");
   Genpool keep;
   if(keepBest > 0){
     assertm(keepBest < currentPopuation.size(), "Cannot keep more individuals than in the pool");

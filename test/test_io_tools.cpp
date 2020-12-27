@@ -36,31 +36,32 @@ TEST(Try, argsToString){
   cout << argsToCsv(1, 3, 4.6);
 }
 
-// TEST(GridSearch, createConfigs){
+TEST(GridSearch, createConfigs){
 
-//   gsearch::Searcher se;
-//   auto confs = se.generateConfigs();
-//   for(auto conf : confs){
-//     cout << conf.config_to_string() <<endl;
-//   }
-//   debug("Totally generated: ", confs.size(), " configs.");
-
-// }
-
-
-// TEST(GridSearch, search){
-//   gsearch::Searcher se;
-//   se.tSearch();
-// }
-
-
-TEST(Optimizer, standardConfig){
   gsearch::Searcher se;
   auto confs = se.generateConfigs();
-
-  GA ga(42, confs.front());
+  for(auto conf : confs){
+    cout << conf.config_to_string() <<endl;
+  }
+  debug("Totally generated: ", confs.size(), " configs.");
 
 }
+
+
+TEST(GridSearch, search){
+  gsearch::Searcher se;
+  se.tSearch();
+}
+
+
+// TEST(Optimizer, standardConfig){
+//   gsearch::Searcher se;
+//   auto confs = se.generateConfigs();
+
+//   GA ga(42, confs.front());
+//   ga.optimizePath();
+
+// }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
