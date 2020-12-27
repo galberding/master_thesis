@@ -458,7 +458,7 @@ float ga::GA::calFitness(float cdist,
   float fitness = ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
   if(!eConf.fitnessName.empty()){
     Logger(
-	   argsToCsv(cdist, dist, crossed, freeSpace, actual_time, optimal_time, final_time, current_occ, optimal_occ, final_occ, ac, fitness),
+	   argsToCsv(eConf.currentIter,cdist, dist, crossed, freeSpace, actual_time, optimal_time, final_time, current_occ, optimal_occ, final_occ, ac, fitness),
 	   eConf.logDir,
 	   eConf.fitnessName);
   }
@@ -479,7 +479,7 @@ void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
 
   if(!eConf.fitnessName.empty()){
     Logger(
-	   argsToCsv("cdist", "dist", "crossed", "freeSpace", "actual_time", "optimal_time", "final_time", "current_occ", "optimal_occ", "final_occ", "ac", "fitness"),
+	   argsToCsv("CurrentIter","cdist", "dist", "crossed", "freeSpace", "actual_time", "optimal_time", "final_time", "current_occ", "optimal_occ", "final_occ", "ac", "fitness"),
 	   eConf.logDir,
 	   eConf.fitnessName);
   }

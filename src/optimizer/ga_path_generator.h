@@ -64,7 +64,7 @@ namespace ga{
        ends(ends){}
     // Logger
     string logDir = "";
-    string logFitness = "";
+    // string logFitness = "";
     string logName = "";
 
     // If parameter is set we want to store it under this filename
@@ -83,9 +83,9 @@ namespace ga{
     shared_ptr<GridMap> gmap;
 
     // GA
-    int maxIterations = 10000;
+    int maxIterations = 1000;
     int currentIter = 0;
-    int initIndividuals = 200;
+    int initIndividuals = 1000;
     int initActions = 50;
     Position start;
     vector<Position> ends;

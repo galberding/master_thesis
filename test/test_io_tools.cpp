@@ -25,14 +25,25 @@ void displayGridmap(shared_ptr<GridMap> cmap){
 
 TEST(Map, generation){
   gsearch::Searcher se;
-  auto mapptr = se.generateMapType(100, 50, 0.2, 1);
+  Position start;
+  auto mapptr = se.generateMapType(100, 50, 0.2, 1, start);
 
   // displayGridmap(mapptr);
 }
 
 TEST(Try, argsToString){
   debug("Test string generation: ");
-  cout << argsToStr(1, 3, 4.6);
+  cout << argsToCsv(1, 3, 4.6);
+}
+
+TEST(GridSearch, createConfigs){
+
+  gsearch::Searcher se;
+  auto confs = se.generateConfigs();
+  for(auto conf : confs){
+    cout << conf.config_to_string() <<endl;
+  }
+
 }
 
 int main(int argc, char **argv) {
