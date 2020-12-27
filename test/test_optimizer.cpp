@@ -30,7 +30,7 @@ protected:
 
 
     cmap = make_shared<GridMap>(map);
-    rob = make_shared<Robot>(Robot(42, {}, map));
+    rob = make_shared<Robot>(Robot({}, cmap, "map"));
   }
 
 
@@ -132,9 +132,11 @@ TEST_F(GATest, crossoverMatingTest){
   // show the and their children
   Genpool pool, newPop;
   Genpool selection_pool;
-  Position pos, end1, end2, start;
-  cmap->getPosition(Index(100,110),start);
-  cmap->getPosition(Index(100,110),end1);
+  Position pos, end1, end2, start(11,11);
+
+  debug("Map Size x: ", cmap->getSize()(0), " y: ", cmap->getSize()(1));
+  ASSERT_TRUE(cmap->getPosition(Index(100,110),pos));
+  // cmap->getPosition(Index(100,110),end1);
 
   debug("Generated start pos: ", pos);
   cmap->getPosition(Index(30,22),end1);
@@ -477,8 +479,8 @@ protected:
     }
 
     cmap = make_shared<GridMap>(map);
-    rob = make_shared<Robot>(Robot(42, {}, map));
-
+    // rob = make_shared<Robot>(Robot(42, {}, map));
+    rob = make_shared<Robot>(Robot({}, cmap, "map"));
     // displayImage(rob->gridToImg("obstacle"));
   }
 

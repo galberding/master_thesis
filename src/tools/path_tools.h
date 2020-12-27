@@ -212,7 +212,7 @@ For now we will just return the start point because the robot object should find
 
     Position& get_currentPos() { return currentPos; }
 
-    Robot(float initAngle, rob_config conf, GridMap &gMap);
+    // Robot(float initAngle, rob_config conf, GridMap &gMap);
     Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName);
 
     /*

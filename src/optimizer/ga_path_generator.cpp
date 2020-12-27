@@ -406,6 +406,7 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
 			       rob.getConfig()[RP::Clean_speed_cm_s] / 100,
 			       rob.getConfig()[RP::Drive_speed_cm_s] / 100,
 			       rob.getFreeArea());
+
       it++;
     }else{
       warn("Erase Gen!");
@@ -452,8 +453,17 @@ float ga::GA::calFitness(float cdist,
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
-  float weight = 0.5;
-  return ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
+
+  float weight = eConf.fitnessWeight;
+  float fitness = ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
+  if(!eConf.fitnessName.empty()){
+    Logger(
+	   argsToCsv(cdist, dist, crossed, freeSpace, actual_time, optimal_time, final_time, current_occ, optimal_occ, final_occ, ac, fitness),
+	   eConf.logDir,
+	   eConf.fitnessName);
+  }
+
+  return fitness;
 
 }
 #define logg(msg, config) logging::Logger(msg, config.logDir, config.logName)
@@ -462,10 +472,17 @@ void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
 
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
-  logg("------Start-Training------", eConf);
+  // logg("------Start-Training------", eConf);
   if(!eConf.logName.empty()){
     Logger("Iteration,Best_fit,Worst_fit,Max_len,Min_len", eConf.logDir, eConf.logName);
-    }
+  }
+
+  if(!eConf.fitnessName.empty()){
+    Logger(
+	   argsToCsv("cdist", "dist", "crossed", "freeSpace", "actual_time", "optimal_time", "final_time", "current_occ", "optimal_occ", "final_occ", "ac", "fitness"),
+	   eConf.logDir,
+	   eConf.fitnessName);
+  }
   // Robot
   Robot rob(eConf.rob_conf, oMap, "map");
 
@@ -516,7 +533,7 @@ void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
 
 
   }
-  logg("------End-Training------", eConf);
+  // logg("------End-Training------", eConf);
 
 
 

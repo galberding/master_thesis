@@ -30,8 +30,8 @@ protected:
     }
 
     cmap = make_shared<GridMap>(map);
-    rob = make_shared<Robot>(Robot(42, {}, map));
-
+    // rob = make_shared<Robot>(Robot(42, {}, map));
+    rob = make_shared<Robot>(Robot({}, cmap, "map"));
     // displayImage(rob->gridToImg("obstacle"));
   }
 

@@ -186,16 +186,16 @@ WPs path::EndAction::generateWPs(Position start){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap), pmap(make_shared<GridMap>(cMap)), opName("map"){
-     defaultConfig = {
-       {RobotProperty::Width_cm, 1},
-       {RobotProperty::Height_cm, 1},
-       {RobotProperty::Drive_speed_cm_s, 50},
-       {RobotProperty::Clean_speed_cm_s, 20}};
+// path::Robot::Robot(float initAngle, rob_config conf, GridMap &gMap):lastAngle(initAngle), cMap(gMap), pmap(make_shared<GridMap>(cMap)), opName("map"){
+//      defaultConfig = {
+//        {RobotProperty::Width_cm, 1},
+//        {RobotProperty::Height_cm, 1},
+//        {RobotProperty::Drive_speed_cm_s, 50},
+//        {RobotProperty::Clean_speed_cm_s, 20}};
 
-     updateConfig(defaultConfig, conf);
-     resetCounter();
-    }
+//      updateConfig(defaultConfig, conf);
+//      resetCounter();
+//     }
 
 path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperationName)
   :cMap(*gmap),
@@ -349,7 +349,10 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
   // Check if start and endpoint are contained
   assertm(waypoints.size() >= 2, "Map move failed, not enough points given by action");
   Position start =  waypoints.front();
-  assertm(cmap->getClosestPositionInMap(start) == currentPos, "Positions do not match!");
+  if(cmap->getClosestPositionInMap(start) != currentPos){
+    warn("Start: ", start, " Closest to start: ", cmap->getClosestPositionInMap(start), " Current: ", currentPos);
+    assertm(cmap->getClosestPositionInMap(start) == currentPos, "Positions do not match!");
+  }
   Position lastPos = waypoints.back();
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
@@ -363,6 +366,9 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
   }
 
   Index lastIdx;
+  // TODO: setting values directly in the matrix is faster!
+  Matrix& moveMap = (*cmap)[opName];
+  Matrix& obstacleMap = (*cmap)["obstacle"];
   for(grid_map::LineIterator lit(*cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
     // Check if start or endpoint collidates with obstacle

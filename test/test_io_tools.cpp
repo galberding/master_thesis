@@ -27,9 +27,13 @@ TEST(Map, generation){
   gsearch::Searcher se;
   auto mapptr = se.generateMapType(100, 50, 0.2, 1);
 
-  displayGridmap(mapptr);
+  // displayGridmap(mapptr);
 }
 
+TEST(Try, argsToString){
+  debug("Test string generation: ");
+  cout << argsToStr(1, 3, 4.6);
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

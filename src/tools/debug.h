@@ -8,7 +8,10 @@
 #include <iostream>
 #include <fstream>
 #include <cstdio>
+#include <cstring>
 #include <filesystem>
+#include <vector>
+#include <any>
 
 #define assertm(exp, msg) assert(((void)msg, exp))
 
@@ -21,6 +24,7 @@
 #define GREEN   "\033[32m"      /* Green */
 #define YELLOW  "\033[33m"      /* Yellow */
 #define CYAN    "\033[36m"
+
 
 
 template<class... Args>
@@ -60,6 +64,29 @@ void warn(Args... args)
   (std::cout << ... << args) << "\n";
 #endif
 }
+
+
+template<class... Args>
+std::string argsToCsv(Args... args)
+{
+  std::ostringstream msg;
+  ((msg << args << ","), ...);
+  return msg.str().substr(0, msg.str().size() - 1) + "\n";
+}
+
+
+// template<class... Args>
+// std::string argsToCsv(Args... args)
+// {
+//   std::vector<std::any> vec = {args...};
+//   std::stringstream msg;
+
+//   for(auto it = vec.begin(); it != vec.end();){
+//     msg << (*it).
+
+//   }
+// }
+
 
 namespace logging{
 

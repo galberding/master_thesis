@@ -69,6 +69,7 @@ namespace ga{
 
     // If parameter is set we want to store it under this filename
     string fitnessName = "";
+    float fitnessWeight = 0.5;
 
         // Robot Config
     string obstacleName = "map";

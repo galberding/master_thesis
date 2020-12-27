@@ -8,6 +8,8 @@
 
 namespace fs = std::filesystem;
 
+
+
 inline std::string logging::getCurrentDateTime( std::string s ){
     time_t now = time(0);
     struct tm  tstruct;
