@@ -164,7 +164,7 @@ namespace ga{
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace);
-    void optimizePath(shared_ptr<GridMap> oMap);
+    void optimizePath();
     void gridSearch();
 
 

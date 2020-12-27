@@ -468,7 +468,7 @@ float ga::GA::calFitness(float cdist,
 }
 #define logg(msg, config) logging::Logger(msg, config.logDir, config.logName)
 
-void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
+void ga::GA::optimizePath() {
 
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
@@ -484,7 +484,8 @@ void ga::GA::optimizePath(shared_ptr<GridMap> oMap) {
 	   eConf.fitnessName);
   }
   // Robot
-  Robot rob(eConf.rob_conf, oMap, "map");
+
+  Robot rob(eConf.rob_conf, eConf.gmap, "map");
 
   Genpool pool ,selected;
 

@@ -2,16 +2,48 @@
 
 using namespace ga;
 
+void gsearch::Searcher::tSearch(){
+  int pool_size = 4;
+  std::future<int> t_pool[pool_size];
+  vector<ga::executionConfig> confs = generateConfigs();
+  int done = 0;
+  int all = confs.size();
 
-void gsearch::Searcher::search(ga::executionConfig config) {
+  // init the pool
+  auto it = confs.begin();
+  for(int i=0; i<pool_size; i++){
+
+    t_pool[i] = std::async([this, it]{
+      search(GA(42, *it));
+      return 0;
+    });
+    it = next(it, 1);
+  }
+  std::future_status status;
+  while(it != confs.end()){
+    for (int i = 0; i < pool_size; i++) {
+      status = t_pool[i].wait_for(std::chrono::seconds(1));
+      if (status == std::future_status::deferred) {
+	std::cout << "deferred\n";
+      } else if (status == std::future_status::timeout) {
+	std::cout << "timeout\n";
+      } else if (status == std::future_status::ready) {
+	done++;
+	t_pool[i] = std::async([this, it]{
+	  GA ga(42, *it);
+	  ga.optimizePath();
+	  return 0;
+	});
+	it = next(it, 1);
+      }
+      cout << done << "/" << all << " done" << endl;
+    }
+  }
+}
+
+void gsearch::Searcher::search(GA ga) {
   // What should search do
   // Search in range of different population sizes at First
-
-
-
-
-  GA(42, config);
-
 
 
 }
