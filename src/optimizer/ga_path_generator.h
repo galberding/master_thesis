@@ -112,35 +112,11 @@ namespace ga{
     float angleDev = 40;
 
     string config_to_string(){
+
       string str;
-      str.append("name,");
-      str.append("maxIterations,");
-      str.append("initIndividuals,");
-      str.append("initIndividuals,");
-      str.append("initActions,");
-      str.append("selectIndividuals,");
-      str.append("selectKeepBest,");
-      for (auto &mut : mutaFunctions){
-	str.append(mut+" ");
-      }
-      str.append(",");
-      str.append("distMu,");
-      str.append("distDev,");
-      str.append("angleMu,");
-      str.append("angleDev,");
-      str.append("obstacleName\n");
-      str.append(logDir+ "/" + logName+",");
-      str.append(to_string(maxIterations)+",");
-      str.append(to_string(initIndividuals)+",");
-      str.append(to_string(initIndividuals)+",");
-      str.append(to_string(initActions)+",");
-      str.append(to_string(selectIndividuals)+",");
-      str.append(to_string(selectKeepBest)+",");
-      str.append(to_string(distMu)+",");
-      str.append(to_string(distDev)+",");
-      str.append(to_string(angleMu)+",");
-      str.append(to_string(angleDev)+",");
-      str.append(obstacleName+"\n");
+      str += argsToCsv("maxIterations", "initIndividuals", "selectIndividuals", "selectKeepBest", "fitnessWeight");
+      str += argsToCsv(maxIterations, initIndividuals, selectIndividuals, selectKeepBest, fitnessWeight);
+
       return str;
     }
 
