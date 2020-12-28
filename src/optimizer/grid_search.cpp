@@ -28,8 +28,9 @@ void gsearch::Searcher::tSearch(){
       if (status == std::future_status::deferred) {
 	std::cout << "deferred\n";
       } else if (status == std::future_status::timeout) {
-	std::cout << "timeout\n";
+	std::cout << ".";
       } else if (status == std::future_status::ready) {
+	std::cout << endl;
 	done++;
 	t_pool[i] = std::async([this, it]{
 	  GA ga(42, *it);
