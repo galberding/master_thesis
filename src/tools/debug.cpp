@@ -33,7 +33,7 @@ void logging::Logger(std::string logMsg, std::string dir, std::string name){
   // std::string endMsg = ((logMsg[logMsg.size() - 1] != '\n') ? '\n' : "");
 
   // ofs << now << ',' << logMsg;
-  ofs << ',' << logMsg;
+  ofs << logMsg;
   if(logMsg[logMsg.size() - 1] != '\n'){
     ofs << std::endl;
   }
