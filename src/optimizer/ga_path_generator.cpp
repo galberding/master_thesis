@@ -457,10 +457,19 @@ float ga::GA::calFitness(float cdist,
   float weight = eConf.fitnessWeight;
   float fitness = ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
   if(!eConf.fitnessName.empty()){
-    Logger(
-	   argsToCsv(eConf.currentIter,cdist, dist, crossed, freeSpace, actual_time, optimal_time, final_time, current_occ, optimal_occ, final_occ, ac, fitness),
-	   eConf.logDir,
-	   eConf.fitnessName);
+    (*eConf.fitnessStr) << argsToCsv(eConf.currentIter,
+				  cdist,
+				  dist,
+				  crossed,
+				  freeSpace,
+				  actual_time,
+				  optimal_time,
+				  final_time,
+				  current_occ,
+				  optimal_occ,
+				  final_occ,
+				  ac,
+				  fitness);
   }
 
   return fitness;
@@ -479,7 +488,19 @@ void ga::GA::optimizePath() {
 
   if(!eConf.fitnessName.empty()){
     Logger(
-	   argsToCsv("CurrentIter","cdist", "dist", "crossed", "freeSpace", "actual_time", "optimal_time", "final_time", "current_occ", "optimal_occ", "final_occ", "ac", "fitness"),
+	   argsToCsv("CurrentIter",
+		     "cdist",
+		     "dist",
+		     "crossed",
+		     "freeSpace",
+		     "actual_time",
+		     "optimal_time",
+		     "final_time",
+		     "current_occ",
+		     "optimal_occ",
+		     "final_occ",
+		     "ac",
+		     "fitness"),
 	   eConf.logDir,
 	   eConf.fitnessName);
   }
@@ -524,21 +545,18 @@ void ga::GA::optimizePath() {
     // Log all to individual files and use iteration to merge all components
 
     if(!eConf.logName.empty()){
-      string msg =to_string(eConf.currentIter)+","
+      *(eConf.logStr)  << to_string(eConf.currentIter)+","
 	+ to_string(pool.back().fitness) + ","
 	+ to_string(pool.front().fitness) + ","
 	+ to_string(highest) + ","
 	+ to_string(lowest) + "\n";
-    Logger(msg, eConf.logDir, eConf.logName);
     }
 
 
   }
+
+  Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
   // logg("------End-Training------", eConf);
-
-
-
-
-
 
 }

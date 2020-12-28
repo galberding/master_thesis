@@ -61,7 +61,10 @@ namespace ga{
        logName(name),
        gmap(gmap),
        start(start),
-       ends(ends){}
+       ends(ends){
+      fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
+      logStr = make_shared<std::ostringstream>(std::ostringstream());
+    }
     // Logger
     string logDir = "";
     // string logFitness = "";
@@ -70,6 +73,11 @@ namespace ga{
     // If parameter is set we want to store it under this filename
     string fitnessName = "";
     float fitnessWeight = 0.5;
+    // string fitnessStr;
+    // std::ostringstream logStr;
+
+    shared_ptr<std::ostringstream> fitnessStr;
+    shared_ptr<std::ostringstream> logStr;
 
         // Robot Config
     string obstacleName = "map";
@@ -145,7 +153,7 @@ namespace ga{
       selectionDist{0,1},
       muta_conf(muta_conf){};
 
-    GA(int seed, executionConfig conf)
+    GA(int seed, executionConfig& conf)
       :generator(seed),
        distanceDistr{conf.distMu, conf.distDev},
        angleDistr{conf.angleMu, conf.angleDev},

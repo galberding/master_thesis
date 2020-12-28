@@ -14,9 +14,11 @@ void gsearch::Searcher::tSearch(){
   for(int i=0; i<pool_size; i++){
 
     t_pool[i] = std::async([this, it]{
-      search(GA(42, *it));
+      GA ga(42, *it);
+      ga.optimizePath();
       return 0;
     });
+    done++;
     it = next(it, 1);
   }
   std::future_status status;
