@@ -242,7 +242,7 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
 }
 
-
+// TODO: Preserve IDs
 void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
   for(begin; begin != end; begin++){
     // debug("Type: ", (int) (*begin)->type);
@@ -558,5 +558,68 @@ void ga::GA::optimizePath() {
   Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
   Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
   // logg("------End-Training------", eConf);
+
+}
+///////////////////////////////////////////////////////////////////////////////
+//                            Dual Point Crossover                           //
+///////////////////////////////////////////////////////////////////////////////
+
+void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newPopulation){
+  // mate two parents
+  // estimate the individual Length
+  PAs parent1, parent2, child1, child2;
+  int len1 = static_cast<int>((par1.actions.size() - 2) * eConf.crossLength);
+  int len2 = static_cast<int>((par2.actions.size() - 2) * eConf.crossLength);
+  assertm(len1 > 0, "Cross length is too small!");
+  assertm(len2 > 0, "Cross length is too small!");
+
+  // Ensure that the generated index in still in range
+  uniform_int_distribution<int> dist1(1,par1.actions.size() - len1);
+  uniform_int_distribution<int> dist2(1,par2.actions.size() - len2);
+  // calculate the start Index
+  int sIdx1 = dist1(generator);
+  int sIdx2= dist2(generator);
+
+  // Cut out the part
+  parent1 = par1.actions;
+  parent2 = par2.actions;
+
+  // Copy first part of parent 1
+  copyActions(parent1.begin(), next(parent1.begin(), sIdx1), child1);
+  // Insert cross over part from parent 2
+  copyActions(next(parent2.begin(), sIdx2), next(parent2.begin(), (sIdx2+len2)), child1);
+  // Copy what remains of parent 1
+  copyActions(next(parent1.begin(), sIdx1 +len1), parent1.end(), child1);
+
+
+    // Copy first part of parent 2 to child 2
+  copyActions(parent2.begin(), next(parent2.begin(), sIdx2), child2);
+  // Insert cross over part from parent 1
+  copyActions(next(parent1.begin(), sIdx1), next(parent1.begin(), (sIdx1+len1)), child2);
+  // Copy what remains of parent 1
+  copyActions(next(parent2.begin(), sIdx2 +len2), parent2.end(), child2);
+
+  assertm(child1.size() == (parent1.size() - len1 + len2), "Child length after crossover operation does not match!");
+  assertm(child1.size() == (parent2.size() + len1 - len2), "Child length after crossover operation does not match!");
+
+  // Mark crossings as modified
+  (*next(child1.begin(), sIdx1-1))->modified = true;
+  (*next(child1.begin(), sIdx1+len1-1))->modified = true;
+  (*next(child2.begin(), sIdx2-1))->modified = true;
+  (*next(child2.begin(), sIdx2+len2-1))->modified = true;
+
+  // Insert children in pool
+  genome child_gen1(child1);
+  genome child_gen2(child2);
+
+
+
+  // Calidate the gens
+  validateGen(child_gen1);
+  validateGen(child_gen2);
+
+  // Insert to new Population
+  newPopulation.push_back(child_gen1);
+  newPopulation.push_back(child_gen2);
 
 }

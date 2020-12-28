@@ -102,7 +102,9 @@ namespace ga{
     int selectIndividuals = 25;
     int selectKeepBest = 10;
 
-
+    // crossover
+    // Length of the segment that will be transferred to the other gen
+    float crossLength = 0.4;
 
     // Mutation
     vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
@@ -177,6 +179,29 @@ namespace ga{
     void gridSearch();
 
 
+
+
   };
+
+  /////////////////////////////////////////////////////////////////////////////
+  //                           Dual Point Crossover                          //
+  /////////////////////////////////////////////////////////////////////////////
+
+  struct _Dual_Point_Crossover : GA{
+    // Use constructor of GA
+    using GA::GA;
+    virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;
+
+  };
+
+
+  /////////////////////////////////////////////////////////////////////////////
+  //                                  GA V2                                   //
+  /////////////////////////////////////////////////////////////////////////////
+
+  struct GA_V2 : _Dual_Point_Crossover{
+    using _Dual_Point_Crossover::GA;
+  };
+
 }
 #endif /* GA_PATH_GENERATOR_H */
