@@ -3,7 +3,7 @@
 using namespace ga;
 
 void gsearch::Searcher::tSearch(){
-  int pool_size = 4;
+  int pool_size = 24;
   std::future<int> t_pool[pool_size];
   vector<ga::executionConfig> confs = generateConfigs();
   int done = 0;
@@ -37,8 +37,9 @@ void gsearch::Searcher::tSearch(){
 	  return 0;
 	});
 	it = next(it, 1);
+	cout << done << "/" << (all - pool_size) << " done" << endl;
       }
-      cout << done << "/" << all << " done" << endl;
+
     }
   }
 }
