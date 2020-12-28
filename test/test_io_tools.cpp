@@ -50,7 +50,7 @@ TEST(Try, argsToString){
 
 TEST(GridSearch, search){
   gsearch::Searcher se;
-  se.tSearch();
+  se.tSearchV2();
 }
 
 

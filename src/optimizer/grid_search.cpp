@@ -5,7 +5,7 @@ using namespace ga;
 void gsearch::Searcher::tSearch(){
   int pool_size = 24;
   std::future<int> t_pool[pool_size];
-  vector<ga::executionConfig> confs = generateConfigs();
+  vector<ga::executionConfig> confs = generateConfigs("testrunV1");
   int done = 0;
   int all = confs.size();
 
@@ -44,6 +44,50 @@ void gsearch::Searcher::tSearch(){
     }
   }
 }
+
+void gsearch::Searcher::tSearchV2(){
+  int pool_size = 24;
+  std::future<int> t_pool[pool_size];
+  vector<ga::executionConfig> confs = generateConfigs("testrunV2");
+  int done = 0;
+  int all = confs.size();
+
+  // init the pool
+  auto it = confs.begin();
+  for(int i=0; i<pool_size; i++){
+
+    t_pool[i] = std::async([this, it]{
+      GA_V2 ga(42, *it);
+      ga.optimizePath();
+      return 0;
+    });
+    done++;
+    it = next(it, 1);
+  }
+  std::future_status status;
+  while(it != confs.end()){
+    for (int i = 0; i < pool_size; i++) {
+      status = t_pool[i].wait_for(std::chrono::seconds(1));
+      if (status == std::future_status::deferred) {
+	std::cout << "deferred\n";
+      } else if (status == std::future_status::timeout) {
+	std::cout << ".";
+      } else if (status == std::future_status::ready) {
+	std::cout << endl;
+	done++;
+	t_pool[i] = std::async([this, it]{
+	  GA_V2 ga(42, *it);
+	  ga.optimizePath();
+	  return 0;
+	});
+	it = next(it, 1);
+	cout << done << "/" << (all - pool_size) << " done" << endl;
+      }
+
+    }
+  }
+}
+
 
 void gsearch::Searcher::search(GA ga) {
   // What should search do
@@ -98,7 +142,7 @@ shared_ptr<GridMap> gsearch::Searcher::generateMapType(int width, int height, fl
   return make_shared<GridMap>(map);
 }
 
-vector<ga::executionConfig> gsearch::Searcher::generateConfigs() {
+vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   vector<ga::executionConfig> configs;
   // For now we hardcode all configs that we want to generate as well as the tests
   int runId = 0;
@@ -118,7 +162,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs() {
 	for(float fWeight = 0.1; fWeight <= 1.0; fWeight += 0.1){
 	  Position startpos;
 	  shared_ptr<GridMap> mapptr = generateMapType(50, 50, 0.3, 1, startpos);
-	  ga::executionConfig conf("testrun/"+to_string(runId), "configuration", mapptr, startpos, {Position(42,42)});
+	  ga::executionConfig conf(dirname + "/" +to_string(runId), "configuration", mapptr, startpos, {Position(42,42)});
 	  conf.fitnessName = "fitness_record";
 	  conf.initActions = initActions;
 	  conf.selectIndividuals = selIndividuals;
