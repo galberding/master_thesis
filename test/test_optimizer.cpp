@@ -650,6 +650,109 @@ TEST(SortingTest, sortStuffdeleteGenes){
     ASSERT_GT(gen.actions.size(), 0);
   }
 }
+
+
+class GAV2_Test : public ::testing::Test{
+protected:
+  void SetUp() override {
+
+    Mutation_conf muta = {
+      {"addAction", make_pair(addAction, 10)},
+      {"removeAction", make_pair(removeAction, 10)},
+      {"addAngleOffset", make_pair(addAngleOffset, 90)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
+      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
+    };
+
+    ga = make_shared<GA_V2>(GA_V2(42, 4, 0.5, 0, 50, muta));
+    grid_map::GridMap map({"obstacle", "map"});
+    map.setGeometry(Length(100,100), 0.30);
+    map.add("obstacle", 1.0);
+    map.add("map", 0.0);
+
+    for (SubmapIterator sm(map, Index(10, 10), Size(map.getSize().x() - 10, map.getSize().y() - 30)); !sm.isPastEnd();
+	 ++sm) {
+      map.at("obstacle", *sm) = 0.0;
+    }
+
+
+    cmap = make_shared<GridMap>(map);
+    rob = make_shared<Robot>(Robot({}, cmap, "map"));
+  }
+
+
+  void displayImage(cv::Mat img){
+    cv::imshow("Grid Map Map", img);
+    cv::waitKey();
+  }
+
+  void displayGridmap(){
+    cv::Mat obstacle, rob_map;
+
+    GridMapCvConverter::toImage<unsigned char, 1>(*cmap, "obstacle", CV_8U, 0.0, 255, obstacle);
+    GridMapCvConverter::toImage<unsigned char, 1>(*cmap, "map", CV_8U, 0.0, 1, rob_map);
+
+    // cv::imshow("Grid Map Obstacle", obstacle);
+    cv::imshow("Grid Map Map", rob_map);
+    // cv::moveWindow("Grid Map Map", 1000, 0);
+    cv::waitKey();
+  }
+
+  // PAs actions;
+  shared_ptr<GridMap> cmap;
+  shared_ptr<Robot> rob;
+  shared_ptr<GA_V2> ga;
+};
+
+TEST_F(GAV2_Test, crossoverMatingTest){
+  // Create two gens that are obviously different
+  // mate them
+  // show the and their children
+  Genpool pool, newPop;
+  Genpool selection_pool;
+  Position pos, end1, end2, start(11,11);
+
+  debug("Map Size x: ", cmap->getSize()(0), " y: ", cmap->getSize()(1));
+  ASSERT_TRUE(cmap->getPosition(Index(100,110),pos));
+  // cmap->getPosition(Index(100,110),end1);
+
+  debug("Generated start pos: ", pos);
+  cmap->getPosition(Index(30,22),end1);
+  cmap->getPosition(Index(40,22),end2);
+  int childs = 2;
+  ga->populatePool(pool, pos, WPs{end1, end2}, childs, 20);
+
+  rob->evaluateActions(pool.front().actions);
+  cv::Mat gen1 = rob->gridToImg("map");
+  rob->evaluateActions(pool.back().actions);
+  cv::Mat gen2 = rob->gridToImg("map");
+
+  EXPECT_EQ(pool.size(), childs);
+  // EXPECT_NE(&pool.front(), &pool.back());
+
+  ga->mating(pool.front(), pool.back(), newPop);
+  EXPECT_EQ(newPop.size(), 2);
+
+  rob->evaluateActions(newPop.front().actions);
+  cv::Mat child1 = rob->gridToImg("map");
+  rob->evaluateActions(newPop.back().actions);
+  cv::Mat child2 = rob->gridToImg("map");
+  // ga->mating(pool.front(), pool.back(), newPop);
+
+  cv::imshow("gen1", gen1);
+  cv::imshow("gen2", gen2);
+  cv::imshow("child1", child1);
+  cv::imshow("child2", child2);
+  cv::moveWindow("gen1", 0, 0);
+  cv::moveWindow("gen2", 500, 0);
+  cv::moveWindow("child2", 500, 500);
+  cv::moveWindow("child1", 0, 500);
+
+  cv::waitKey();
+
+}
+
+
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   // ros::init(argc, argv, "tester");

@@ -568,17 +568,21 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
   // mate two parents
   // estimate the individual Length
   PAs parent1, parent2, child1, child2;
-  int len1 = static_cast<int>((par1.actions.size() - 2) * eConf.crossLength);
-  int len2 = static_cast<int>((par2.actions.size() - 2) * eConf.crossLength);
+  int len1 = static_cast<int>((par1.actions.size() - 3) * eConf.crossLength);
+  int len2 = static_cast<int>((par2.actions.size() - 3) * eConf.crossLength);
   assertm(len1 > 0, "Cross length is too small!");
   assertm(len2 > 0, "Cross length is too small!");
 
   // Ensure that the generated index in still in range
-  uniform_int_distribution<int> dist1(1,par1.actions.size() - len1);
-  uniform_int_distribution<int> dist2(1,par2.actions.size() - len2);
+  uniform_int_distribution<int> dist1(2,par1.actions.size() - len1);
+  uniform_int_distribution<int> dist2(2,par2.actions.size() - len2);
+  debug("Dist1 bound: ", par1.actions.size() - len1);
+  debug("Dist2 bound: ", par2.actions.size() - len2);
   // calculate the start Index
   int sIdx1 = dist1(generator);
   int sIdx2= dist2(generator);
+  debug("Index1: ", sIdx1, " len: ", len1);
+  debug("Index2: ", sIdx2, " len: ", len2);
 
   // Cut out the part
   parent1 = par1.actions;

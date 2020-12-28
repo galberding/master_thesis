@@ -200,7 +200,7 @@ namespace ga{
   /////////////////////////////////////////////////////////////////////////////
 
   struct GA_V2 : _Dual_Point_Crossover{
-    using _Dual_Point_Crossover::GA;
+    using _Dual_Point_Crossover::_Dual_Point_Crossover;
   };
 
 }
