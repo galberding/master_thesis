@@ -110,10 +110,10 @@ namespace ga{
     vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
     vector<int> probas = {10, 10};
     Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 10)},
-      {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+      // {"addAction", make_pair(addAction, 10)},
+      // {"removeAction", make_pair(removeAction, 10)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
     float distMu = 4;

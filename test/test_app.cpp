@@ -18,7 +18,7 @@ protected:
       {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-    ga = make_shared<GA>(GA(42, 4, 0.9, 0, 40, muta));
+    ga = make_shared<GA_V2>(GA_V2(42, 4, 0.9, 0, 40, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
     map.add("obstacle", 1.0);
@@ -51,10 +51,10 @@ TEST_F(GAApplication, algorithmTest){
   Genpool pool, sel, newPop;
   Position start, end;
   Mutation_conf muta = {
-      {"addAction", make_pair(addAction, 10)},
-      {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+      // {"addAction", make_pair(addAction, 10)},
+      // {"removeAction", make_pair(removeAction, 10)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 10000 ;

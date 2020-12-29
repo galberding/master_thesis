@@ -50,7 +50,13 @@ TEST(Try, argsToString){
 
 TEST(GridSearch, search){
   gsearch::Searcher se;
-  se.tSearchV2();
+  auto confs = se.generateConfigs("blub");
+  // se.tSearchV2();
+  auto co = confs.front();
+  co.initActions = 20;
+  GA_V2 ga(42, co);
+  ga.optimizePath();
+
 }
 
 
