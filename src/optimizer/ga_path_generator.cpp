@@ -339,8 +339,8 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
   for(int i=0; i<currentSelection.size(); i++){
     genome par1 = currentSelection.back();
     currentSelection.pop_back();
-    for (auto par2 : currentSelection){
-      // debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
+    for (auto &par2 : currentSelection){
+      debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
       assertm(par1.actions.size() > 3, "Parent1 has not enough actions for mating!");
       assertm(par2.actions.size() > 3, "Parent2 has not enough actions for mating!");
       mating(par1, par2, newPopulation);
@@ -477,6 +477,9 @@ float ga::GA::calFitness(float cdist,
   // Area coverage
   float final_coverage = current_occ / freeSpace;
   assertm(freeSpace >= current_occ , "No space to cover");
+  assertm(!isnan(final_time), "Time in nan");
+  assert(!isnan(final_occ));
+  assert(!isnan(final_coverage));
 
   // debug("Actual time: ", actual_time);
   // debug("Optimal time: ", optimal_time);

@@ -3,7 +3,7 @@
 using namespace ga;
 
 void gsearch::Searcher::tSearch(){
-  int pool_size = 24;
+  int pool_size = 1;
   std::future<int> t_pool[pool_size];
   vector<ga::executionConfig> confs = generateConfigs("testrunV1");
   int done = 0;
@@ -46,7 +46,7 @@ void gsearch::Searcher::tSearch(){
 }
 
 void gsearch::Searcher::tSearchV2(){
-  int pool_size = 24;
+  int pool_size = 1;
   std::future<int> t_pool[pool_size];
   vector<ga::executionConfig> confs = generateConfigs("testrunV2");
   int done = 0;
@@ -161,7 +161,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   int stepsInitActions = 100;
   int stepsSelIndividuals = 10;
   int stepsKeepBest = 100;
-  for(int initActions=10; initActions<=2*stepsInitActions; initActions += stepsInitActions){
+  for(int initActions=20; initActions<=2*stepsInitActions; initActions += stepsInitActions){
     // selected individuals
     for(int selIndividuals=10; selIndividuals <= 4*stepsSelIndividuals; selIndividuals += stepsSelIndividuals){
       // keep best
@@ -176,6 +176,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
 	  conf.fitnessWeights = wConf;
+	  conf.maxIterations = 100;
 
 	  configs.push_back(conf);
 	  runId++;
