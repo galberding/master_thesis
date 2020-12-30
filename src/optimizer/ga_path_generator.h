@@ -70,9 +70,22 @@ namespace ga{
     // string logFitness = "";
     string logName = "";
 
+    float actionLenMin = 0;
+    float actionLenMax = 0;
+    float actionLenAvg = 0;
+
     // If parameter is set we want to store it under this filename
     string fitnessName = "";
     float fitnessWeight = 0.5;
+    // Those values will be updated after each iteration
+    float fitnessMax = 0;
+    float fitnessMin = 0;
+    float fitnessAvg = 0;
+    float fitnessAvgTime = 0;
+    float fitnessAvgOcc = 0;
+    float fitnessAvgCoverage = 0;
+    // time occ coverage
+    vector<float> fitnessWeights = {0.3, 0.05, 0.65};
     // string fitnessStr;
     // std::ostringstream logStr;
 

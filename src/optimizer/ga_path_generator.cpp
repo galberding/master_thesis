@@ -87,7 +87,7 @@ void ga::validateGen(genome &gen){
     // We do not want to override any changes here!
     auto it_current = it;
     auto it_next = next(it, 1);
-    debug("Type: ", int((*it_next)->type));
+    // debug("Type: ", int((*it_next)->type));
     while(!(*it_next)->mendConfig(*it_current)){
       assertm(!((*it_current)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
       assertm(!((*it_next)->modified && ((*it)->type == PAT::End)), "Not allowed!, End points cannot be modified!");
@@ -236,7 +236,7 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
     }
   }
 
-
+  currentPopuation.clear();
 
   // assertm()
 
@@ -378,9 +378,18 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
   // Sum multiple covered regions
   // Sum traveled Distance
 
+  eConf.fitnessAvg = 0;
+  eConf.fitnessMax = 0;
+  eConf.fitnessMin = 1;
+  eConf.fitnessAvgTime = 0;
+  eConf.fitnessAvgOcc = 0;
+  eConf.fitnessAvgCoverage = 0;
+  eConf.actionLenMax = 0;
+  eConf.actionLenMin = 100000;
+  eConf.actionLenAvg = 0;
   for(Genpool::iterator it = currentPopulation.begin(); it != currentPopulation.end();){
-    if(rob.evaluateActions(it->actions)){
 
+    if(rob.evaluateActions(it->actions)){
       float Cdistance = 0; // Cleand distance
       float distance = 0; // uncleand distance
       float occ = 0;
@@ -405,13 +414,23 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
       // debug("Crossed: ", crossed, " dist: ", Cdistance);
       assertm(crossed <= Cdistance, "CrossCount is bigger than traveled distance!");
       // crossed = crossed / it->actions.size();
-      it->fitness = calFitness(
+      float fitness = calFitness(
 			       Cdistance,
 			       distance,
 			       crossed,
 			       rob.getConfig()[RP::Clean_speed_cm_s] / 100,
 			       rob.getConfig()[RP::Drive_speed_cm_s] / 100,
 			       rob.getFreeArea());
+      it->fitness = fitness;
+
+      // Logging of fittnessvalues
+      if(fitness > eConf.fitnessMax) eConf.fitnessMax = fitness;
+      if(fitness < eConf.fitnessMin) eConf.fitnessMin = fitness;
+      auto size = it->actions.size();
+      if(size > eConf.actionLenMax) eConf.actionLenMax = size;
+      if(size < eConf.actionLenMin) eConf.actionLenMin = size;
+      eConf.fitnessAvg += fitness;
+      eConf.actionLenAvg += it->actions.size();
 
       it++;
     }else{
@@ -420,6 +439,11 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
       it = currentPopulation.erase(it);
     }
   }
+  eConf.fitnessAvg /= currentPopulation.size();
+  eConf.fitnessAvgTime /= currentPopulation.size();
+  eConf.fitnessAvgOcc /= currentPopulation.size();
+  eConf.fitnessAvgCoverage /= currentPopulation.size();
+  eConf.actionLenAvg /= currentPopulation.size();
 }
 
 
@@ -434,7 +458,7 @@ float ga::GA::calFitness(float cdist,
   // debug("cdist ", cdist);
   // debug("speed", cSpeed_m_s);
 
-  assertm(cdist >= crossed, "");
+  assert(cdist >= crossed);
 
   float actual_time = cdist + dist;
   float optimal_time = (cdist - crossed);
@@ -451,7 +475,7 @@ float ga::GA::calFitness(float cdist,
   float final_occ = current_occ / optimal_occ ;
 
   // Area coverage
-  float ac = current_occ / freeSpace;
+  float final_coverage = current_occ / freeSpace;
   assertm(freeSpace >= current_occ , "No space to cover");
 
   // debug("Actual time: ", actual_time);
@@ -461,22 +485,25 @@ float ga::GA::calFitness(float cdist,
   // debug("Space relation: ", current_occ / freeSpace);
 
   float weight = eConf.fitnessWeight;
-  float fitness = ((1-weight)*(final_time + final_occ) + weight*ac) / 3;
-  if(!eConf.fitnessName.empty()){
-    (*eConf.fitnessStr) << argsToCsv(eConf.currentIter,
-				  cdist,
-				  dist,
-				  crossed,
-				  freeSpace,
-				  actual_time,
-				  optimal_time,
-				  final_time,
-				  current_occ,
-				  optimal_occ,
-				  final_occ,
-				  ac,
-				  fitness);
-  }
+  // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
+  float fitness = eConf.fitnessWeights[0]*final_time
+    + eConf.fitnessWeights[1]*final_occ
+    + eConf.fitnessWeights[2]*final_coverage;
+  // if(!eConf.fitnessName.empty()){
+  //   (*eConf.fitnessStr) << argsToCsv(eConf.currentIter,
+  // 				  cdist,
+  // 				  dist,
+  // 				  crossed,
+  // 				  freeSpace,
+  // 				  actual_time,
+  // 				  optimal_time,
+  // 				  final_time,
+  // 				  current_occ,
+  // 				  optimal_occ,
+  // 				  final_occ,
+  // 				  final_coverage,
+  // 				  fitness);
+  // }
 
   return fitness;
 
@@ -489,28 +516,8 @@ void ga::GA::optimizePath() {
   // log all runtime information here provided by the conf
   // logg("------Start-Training------", eConf);
   if(!eConf.logName.empty()){
-    Logger("Iteration,Best_fit,Worst_fit,Max_len,Min_len", eConf.logDir, eConf.logName);
+    Logger("Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin", eConf.logDir, eConf.logName);
   }
-
-  if(!eConf.fitnessName.empty()){
-    Logger(
-	   argsToCsv("CurrentIter",
-		     "cdist",
-		     "dist",
-		     "crossed",
-		     "freeSpace",
-		     "actual_time",
-		     "optimal_time",
-		     "final_time",
-		     "current_occ",
-		     "optimal_occ",
-		     "final_occ",
-		     "ac",
-		     "fitness"),
-	   eConf.logDir,
-	   eConf.fitnessName);
-  }
-  // Robot
 
   Robot rob(eConf.rob_conf, eConf.gmap, "map");
 
@@ -554,11 +561,18 @@ void ga::GA::optimizePath() {
     // Log all to individual files and use iteration to merge all components
 
     if(!eConf.logName.empty()){
-      *(eConf.logStr)  << to_string(eConf.currentIter)+","
-	+ to_string(pool.back().fitness) + ","
-	+ to_string(pool.front().fitness) + ","
-	+ to_string(highest) + ","
-	+ to_string(lowest) + "\n";
+      *(eConf.logStr)  << argsToCsv(
+				    eConf.currentIter,
+				    eConf.fitnessAvg,
+				    eConf.fitnessMax,
+				    eConf.fitnessMin,
+				    eConf.fitnessAvgTime,
+				    eConf.fitnessAvgOcc,
+				    eConf.fitnessAvgCoverage,
+				    eConf.actionLenAvg,
+				    eConf.actionLenMax,
+				    eConf.actionLenMin
+				    );
     }
     pool.clear();
 
@@ -650,6 +664,6 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
   // Insert to new Population
   newPopulation.push_back(child_gen1);
   newPopulation.push_back(child_gen2);
-  debug("Sizes: Par1: ", par1.actions.size(), " Par2: ", par2.actions.size(), " Ch1: ", child1.size(), " Ch2: ", child2.size());
+  // debug("Sizes: Par1: ", par1.actions.size(), " Par2: ", par2.actions.size(), " Ch1: ", child1.size(), " Ch2: ", child2.size());
 
 }

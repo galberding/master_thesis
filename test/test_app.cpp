@@ -18,7 +18,7 @@ protected:
       {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
-    ga = make_shared<GA_V2>(GA_V2(42, 4, 0.9, 0, 40, muta));
+    ga = make_shared<GA_V2>(GA_V2(42, 40, 5, 90, 20, muta));
     grid_map::GridMap map({"obstacle", "map"});
     map.setGeometry(Length(100,100), 0.30);
     map.add("obstacle", 1.0);
@@ -53,20 +53,21 @@ TEST_F(GAApplication, algorithmTest){
   Mutation_conf muta = {
       // {"addAction", make_pair(addAction, 10)},
       // {"removeAction", make_pair(removeAction, 10)},
-      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+      {"addAngleOffset", make_pair(addAngleOffset, 10)},
+      {"addDistanceOffset", make_pair(addDistanceOffset, 10)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 10000 ;
 
-  int initPop = 200;
-  int selected = 25;
+  int initPop = 2000;
+  int selected = 20;
   cmap->getPosition(Index(110,110), start);
   cmap->getPosition(Index(110,110), end);
   debug("Start");
   genome best;
+  ga->eConf.fitnessWeight = 0.9;
 
-  int actionSize = 60;
+  int actionSize = 20;
 
   ga->populatePool(pool, start, {end}, initPop, actionSize);
   for(auto gen : pool){
@@ -78,7 +79,7 @@ TEST_F(GAApplication, algorithmTest){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
   }
   debug("First Select");
-  ga->selection(pool, sel, selected);
+  ga->selection(pool, sel, selected, 20);
   for(auto gen : sel){
     EXPECT_EQ(gen.actions.size(), actionSize + 2);
   }
@@ -99,9 +100,6 @@ TEST_F(GAApplication, algorithmTest){
     ga->evalFitness(pool, *rob);
 
     int size = pool.size();
-    ga->selection(pool, sel, selected, 10);
-    EXPECT_EQ(pool.size(), size - selected);
-    EXPECT_EQ(sel.size(), selected);
 
     if(pool.back().fitness > best.fitness){
       best = pool.back().fitness;
@@ -110,11 +108,6 @@ TEST_F(GAApplication, algorithmTest){
     int highest = 0;
     if (true){
       for (auto &gen : pool){
-	// cout << "Gens: " << gen.fitness << " ";
-	for(auto ac : gen.actions){
-	  EXPECT_TRUE(!isnan(ac->mod_config[PAP::Angle]));
-	  EXPECT_TRUE(!isnan(ac->mod_config[PAP::Distance]));
-	}
 	int a_size = gen.actions.size();
 	if(a_size < lowest){
 	  lowest = a_size;
@@ -131,6 +124,8 @@ TEST_F(GAApplication, algorithmTest){
 	   " Max Actions: ", highest,
 	   " Min Actions: ", lowest
 	   );
+      ga->selection(pool, sel, selected, 20);
+
       rob->evaluateActions(pool.back().actions);
       auto img = rob->gridToImg("map");
       // displayImage(img);
