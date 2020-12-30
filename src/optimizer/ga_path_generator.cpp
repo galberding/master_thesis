@@ -483,6 +483,10 @@ float ga::GA::calFitness(float cdist,
   // debug("Final time: ", final_time);
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
+  eConf.fitnessAvgTime += final_time;
+  eConf.fitnessAvgOcc = final_occ;
+  eConf.fitnessAvgCoverage = final_coverage;
+
 
   float weight = eConf.fitnessWeight;
   // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
@@ -515,6 +519,8 @@ void ga::GA::optimizePath() {
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
   // logg("------Start-Training------", eConf);
+  Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+
   if(!eConf.logName.empty()){
     Logger("Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin", eConf.logDir, eConf.logName);
   }
@@ -538,28 +544,12 @@ void ga::GA::optimizePath() {
     eConf.currentIter = i;
 
     crossover(selected, pool);
-    debug("Poolsize: ", pool.size());
+    // debug("Poolsize: ", pool.size());
     // TODO: Either create config here or provide it through eConf
     // [x] provide it through eConf
     mutation(pool, eConf.muta);
-    debug("Poolsize Mut: ", pool.size());
+    // debug("Poolsize Mut: ", pool.size());
     evalFitness(pool, rob);
-    debug("Poolsize fit: ", pool.size());
-    selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
-
-    for (auto &gen : pool){
-	// cout << "Gens: " << gen.fitness << " ";
-	int a_size = gen.actions.size();
-	if(a_size < lowest){
-	  lowest = a_size;
-	}
-	if(a_size > highest){
-	  highest = a_size;
-	}
-      }
-    // How to log the overall fitness values??
-    // Log all to individual files and use iteration to merge all components
-
     if(!eConf.logName.empty()){
       *(eConf.logStr)  << argsToCsv(
 				    eConf.currentIter,
@@ -574,7 +564,8 @@ void ga::GA::optimizePath() {
 				    eConf.actionLenMin
 				    );
     }
-    pool.clear();
+    selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
+    // pool.clear();
 
   }
 

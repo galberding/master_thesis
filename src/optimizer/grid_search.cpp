@@ -146,28 +146,36 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   vector<ga::executionConfig> configs;
   // For now we hardcode all configs that we want to generate as well as the tests
   int runId = 0;
+  vector<vector<float>> weightConfs = {
+    {0.1, 0.3, 0.6},
+    {0.3, 0.1, 0.6},
+    {0.6, 0.3, 0.1},
+    {0.3, 0.6, 0.1},
+    {0.1, 0.6, 0.3},
+    {0.6, 0.1, 0.3}
+  };
 
   // initial population
   int initialPop = 1000;
   // initial actions
   int stepsInitActions = 100;
   int stepsSelIndividuals = 10;
-  int stepsKeepBest = 10;
-  for(int initActions=stepsInitActions; initActions<=3*stepsInitActions; initActions += stepsInitActions){
+  int stepsKeepBest = 100;
+  for(int initActions=10; initActions<=2*stepsInitActions; initActions += stepsInitActions){
     // selected individuals
-    for(int selIndividuals=5; selIndividuals <= 10*stepsSelIndividuals; selIndividuals += stepsSelIndividuals){
+    for(int selIndividuals=10; selIndividuals <= 4*stepsSelIndividuals; selIndividuals += stepsSelIndividuals){
       // keep best
-      for(int keepBest = 0; keepBest <= 10*stepsKeepBest; keepBest += stepsKeepBest){
+      for(int keepBest = 0; keepBest <= 5*stepsKeepBest; keepBest += stepsKeepBest){
 	// Fitness weight
-	for(float fWeight = 0.1; fWeight <= 1.0; fWeight += 0.1){
+	for(auto &wConf : weightConfs){
 	  Position startpos;
 	  shared_ptr<GridMap> mapptr = generateMapType(50, 50, 0.3, 1, startpos);
-	  ga::executionConfig conf(dirname + "/" +to_string(runId), "configuration", mapptr, startpos, {Position(42,42)});
-	  conf.fitnessName = "fitness_record";
+	  ga::executionConfig conf(dirname, to_string(runId)+ "_" + "log", mapptr, startpos, {Position(42,42)});
+	  // conf.fitnessName = "fitness_record";
 	  conf.initActions = initActions;
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
-	  conf.fitnessWeight = fWeight;
+	  conf.fitnessWeights = wConf;
 
 	  configs.push_back(conf);
 	  runId++;

@@ -137,8 +137,8 @@ namespace ga{
     string config_to_string(){
 
       string str;
-      str += argsToCsv("maxIterations", "initIndividuals", "selectIndividuals", "selectKeepBest", "fitnessWeight");
-      str += argsToCsv(maxIterations, initIndividuals, selectIndividuals, selectKeepBest, fitnessWeight);
+      str += argsToCsv("maxIterations", "initIndividuals", "selectIndividuals", "selectKeepBest", "time,occ,coverage");
+      str += argsToCsv(maxIterations, initIndividuals, selectIndividuals, selectKeepBest, fitnessWeights[0], fitnessWeights[1], fitnessWeights[2]);
 
       return str;
     }
