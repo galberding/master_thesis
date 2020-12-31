@@ -227,13 +227,17 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
   sort(currentPopuation.begin(), currentPopuation.end());
 
   // Perform turnament selection:
-  for(int i=0; i<individuals; i++){
-    if(currentPopuation.size() > 0)
-      selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
-    else{
-      warn("Not enough individuals left in the pool for mation ...");
-      break;
-    }
+  // for(int i=0; i<individuals; i++){
+  //   if(currentPopuation.size() > 0)
+  //     selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
+  //   else{
+  //     warn("Not enough individuals left in the pool for mation ...");
+  //     break;
+  //   }
+  // }
+
+  for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
+    selectionPool.push_back(*it);
   }
 
   currentPopuation.clear();
@@ -344,9 +348,15 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
       assertm(par1.actions.size() > 3, "Parent1 has not enough actions for mating!");
       assertm(par2.actions.size() > 3, "Parent2 has not enough actions for mating!");
       mating(par1, par2, newPopulation);
+     //  for(auto &gen : newPopulation){
+     // 	assertm(gen.actions.size() > 3, "Gen after mating has not enough actions!");
+     // }
     }
   }
   currentSelection.clear();
+  for(auto &gen : newPopulation){
+	assertm(gen.actions.size() > 3, "Gen after mating has not enough actions!");
+     }
   // debug("Cross done!");
 }
 
@@ -388,8 +398,9 @@ void ga::GA::evalFitness(Genpool &currentPopulation, path::Robot &rob){
   eConf.actionLenMin = 100000;
   eConf.actionLenAvg = 0;
   for(Genpool::iterator it = currentPopulation.begin(); it != currentPopulation.end();){
-
+    assertm(it->actions.size() > 0, "Not enough actions");
     if(rob.evaluateActions(it->actions)){
+      assertm(it->actions.size() > 0, "Not enough actions");
       float Cdistance = 0; // Cleand distance
       float distance = 0; // uncleand distance
       float occ = 0;
@@ -477,9 +488,13 @@ float ga::GA::calFitness(float cdist,
   // Area coverage
   float final_coverage = current_occ / freeSpace;
   assertm(freeSpace >= current_occ , "No space to cover");
-  assertm(!isnan(final_time), "Time in nan");
-  assert(!isnan(final_occ));
-  assert(!isnan(final_coverage));
+  // assertm(!isnan(final_time), "Time in nan");
+  // assert(!isnan(final_occ));
+  // assert(!isnan(final_coverage));
+
+  // Ensure that the gen is not selected for crossover by setting the fitness to -1
+  if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return -1;
+
 
   // debug("Actual time: ", actual_time);
   // debug("Optimal time: ", optimal_time);
@@ -547,6 +562,8 @@ void ga::GA::optimizePath() {
     eConf.currentIter = i;
 
     crossover(selected, pool);
+
+
     // debug("Poolsize: ", pool.size());
     // TODO: Either create config here or provide it through eConf
     // [x] provide it through eConf

@@ -358,6 +358,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 
   // Check if points are in range
   assertm(cmap->isInside(start), "Start-point is not in map range!");
+  assertm(cmap->atPosition("obstacle", start) == 0, "Start Position is inside obstacle!!");
   if(action->mod_config[PAP::Distance] == 0){
     // Action is not doing anything, delete it!!
     // warn("Delete action ", action->pa_id, ", distance between start and endpoint == ", (waypoints.back()-waypoints.front()).norm());

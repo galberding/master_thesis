@@ -14,8 +14,8 @@ protected:
     Mutation_conf muta = {
       // {"addAction", make_pair(addAction, 60)},
       // {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 50)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 50)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 50)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
     ga = make_shared<GA_V2>(GA_V2(42, 40, 5, 90, 20, muta));
@@ -53,8 +53,8 @@ TEST_F(GAApplication, algorithmTest){
   Mutation_conf muta = {
       // {"addAction", make_pair(addAction, 10)},
       // {"removeAction", make_pair(removeAction, 10)},
-      {"addAngleOffset", make_pair(addAngleOffset, 10)},
-      {"addDistanceOffset", make_pair(addDistanceOffset, 10)},
+      // {"addAngleOffset", make_pair(addAngleOffset, 10)},
+      // {"addDistanceOffset", make_pair(addDistanceOffset, 10)},
       // {"swapRandomAction", make_pair(swapRandomAction, 10)},
     };
   int iter = 10000 ;
@@ -65,7 +65,7 @@ TEST_F(GAApplication, algorithmTest){
   cmap->getPosition(Index(110,110), end);
   debug("Start");
   genome best;
-  ga->eConf.fitnessWeight = 0.9;
+  // ga->eConf.fitnessWeight = 0.9;
 
   int actionSize = 20;
 
