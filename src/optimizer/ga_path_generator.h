@@ -176,7 +176,7 @@ namespace ga{
     std::uniform_real_distribution<float> selectionDist;
     Mutation_conf muta_conf;
     executionConfig eConf;
-
+    genome secretBest;
 
 
 
@@ -219,7 +219,7 @@ namespace ga{
   //                           Dual Point Crossover                          //
   /////////////////////////////////////////////////////////////////////////////
 
-  struct _Dual_Point_Crossover : GA{
+  struct _Dual_Point_Crossover : virtual GA{
     // Use constructor of GA
     using GA::GA;
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;
@@ -228,11 +228,24 @@ namespace ga{
 
 
   /////////////////////////////////////////////////////////////////////////////
+  //                            Mutation Version 2                           //
+  /////////////////////////////////////////////////////////////////////////////
+
+  struct _Mutation : virtual _Dual_Point_Crossover {
+    // using GA::GA;
+    using _Dual_Point_Crossover::_Dual_Point_Crossover;
+    virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) override;
+  };
+
+  /////////////////////////////////////////////////////////////////////////////
   //                                  GA V2                                   //
   /////////////////////////////////////////////////////////////////////////////
 
-  struct GA_V2 : _Dual_Point_Crossover{
-    using _Dual_Point_Crossover::_Dual_Point_Crossover;
+  struct GA_V2 : _Mutation{
+    // using _::GA;
+    // using _Dual_Point_Crossover::GA;
+    using _Mutation::_Mutation;
+    // GA_V2(int seed, executionConfig& conf):GA(seed, conf){}
   };
 
 }

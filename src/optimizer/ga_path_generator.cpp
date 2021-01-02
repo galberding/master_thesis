@@ -298,12 +298,14 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals, int keepBest) {
   // debug("Selected!!!");
   Genpool keep;
+
+  sort(currentPopuation.begin(), currentPopuation.end());
+  secretBest = currentPopuation.back();
   if(keepBest > 0){
     assertm(keepBest < currentPopuation.size(), "Cannot keep more individuals than in the pool");
     keep.insert(keep.begin(), prev(currentPopuation.end(), keepBest), currentPopuation.end());
   }
 
-  sort(currentPopuation.begin(), currentPopuation.end());
 
   // Perform turnament selection:
   // for(int i=0; i<individuals; i++){
@@ -634,7 +636,11 @@ void ga::GA::optimizePath() {
 
   // First selection
   selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
-
+  if(secretBest.id > 0){
+    rob.evaluateActions(secretBest.actions);
+    cv::imshow("Current Run", rob.gridToImg("map"));
+    cv::waitKey(1);
+  }
   // Main loop
   int lowest = 1000;
   int highest = 0;
@@ -780,4 +786,18 @@ void ga::_Dual_Point_Crossover::crossover(ga::Genpool& currentSelection, ga::Gen
     }
   }
   currentSelection.clear();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                             Mutation Procedure                            //
+///////////////////////////////////////////////////////////////////////////////
+
+void ga::_Mutation::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf){
+  for (auto &gen : currentPopulation) {
+    addOrthogonalAngleOffset(gen, eConf, generator);
+    addRandomAngleOffset(gen, eConf, generator);
+    addPositiveDistanceOffset(gen, eConf, generator);
+    addNegativeDistanceOffset(gen, eConf, generator);
+  }
 }
