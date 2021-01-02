@@ -10,6 +10,8 @@
 
 using namespace ga;
 
+int ga::genome::gen_id = 0;
+
 bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
   return genA.fitness < genB.fitness;
 }
@@ -171,7 +173,8 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, 
 //TODO:
 void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
   int idx = randRange(1, gen.actions.size()-1);
-  float offset = distanceDist(generator);
+  // uniform_int_distribution<int> distDist(0,distanceDist.max());
+  float offset = angleDist(generator);
   auto it = next(gen.actions.begin(), idx);
   // We do not want to modify a already modified actions!
   if((*it)->modified) return;
@@ -182,6 +185,22 @@ void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDis
   (*it)->mod_config[PAP::DistanceOffset] += offset;
   (*it)->modified = true;
 }
+
+// void ga::addDistanceOffsetPositive(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+//   int idx = randRange(1, gen.actions.size()-1);
+//   uniform_int_distribution<int> distDist(0,distanceDist.max());
+//   float offset = distDist(generator);
+//   auto it = next(gen.actions.begin(), idx);
+//   // We do not want to modify a already modified actions!
+//   if((*it)->modified) return;
+//   assertm((*it)->wps.size() >= 2, "Actions has no waypoints -- muation while initialization not allowed!");
+//   // debug(("Type: ", (int) next(gen.actions.begin(), idx)->type));
+//   // debug("Angle offset: ", offset);
+//   (*it)->mod_config[PAP::Distance] += offset;
+//   (*it)->mod_config[PAP::DistanceOffset] += offset;
+//   (*it)->modified = true;
+// }
+
 
 //TODO: or remove
 void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
@@ -677,4 +696,27 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
   newPopulation.push_back(child_gen2);
   // debug("Sizes: Par1: ", par1.actions.size(), " Par2: ", par2.actions.size(), " Ch1: ", child1.size(), " Ch2: ", child2.size());
 
+}
+
+
+void ga::_Dual_Point_Crossover::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation) {
+  // Single point Crossover
+  assertm(currentSelection.size() >= 2, "Not enough individuals for crossover in pool!");
+
+  // TODO: Switch to iterator
+  for(auto par1 = currentSelection.begin(); par1 != currentSelection.end(); par1++){
+    for(auto par2 = next(par1, 1); par2 != currentSelection.end(); par2++){
+      ;
+      if(selectionDist(generator) > eConf.crossoverProba){
+	// Crossover will be not performed
+	if(std::find(newPopulation.begin(), newPopulation.end(), *par1) != newPopulation.end()) newPopulation.push_back(*par1);
+	if(std::find(newPopulation.begin(), newPopulation.end(), *par2) != newPopulation.end()) newPopulation.push_back(*par2);
+	continue;
+      }
+      assertm(par1->actions.size() > 3, "Parent1 has not enough actions for mating!");
+      assertm(par2->actions.size() > 3, "Parent2 has not enough actions for mating!");
+      mating(*par1, *par2, newPopulation);
+    }
+  }
+  currentSelection.clear();
 }

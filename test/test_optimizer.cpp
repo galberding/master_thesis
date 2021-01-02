@@ -752,6 +752,20 @@ TEST_F(GAV2_Test, crossoverMatingTest){
 
 }
 
+TEST(Genome, eqOperatorTest){
+  genome g1, g2, g3, g4, g5;
+
+  ASSERT_TRUE(!(g1 == g2));
+  g2.id = g1.id;
+  ASSERT_EQ(g1, g2);
+
+  vector<genome> gens = {g1, g3,g4};
+  auto iter = find(gens.begin(), gens.end(), g2);
+  ASSERT_TRUE(iter != gens.end());
+  iter = find(gens.begin(), gens.end(), g5);
+  ASSERT_TRUE(iter == gens.end());
+}
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

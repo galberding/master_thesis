@@ -16,12 +16,16 @@ using namespace logging;
 namespace ga{
 
   struct genome{
-    genome(){};
-    genome(float fitness):fitness(fitness){};
-    genome(PAs actions):actions(actions){};
+    static int gen_id;
+    genome():id(gen_id){gen_id++;};
+    genome(float fitness):fitness(fitness),id(gen_id){gen_id++;};
+    genome(PAs actions):actions(actions),id(gen_id){gen_id++;};
     bool operator < (const genome& gen) const
     {
         return (fitness < gen.fitness);
+    }
+    bool operator==(const genome& gen)const {
+      return gen.id == id;
     }
 
     int id = 0;
@@ -118,6 +122,7 @@ namespace ga{
     // crossover
     // Length of the segment that will be transferred to the other gen
     float crossLength = 0.4;
+    float crossoverProba = 0.8;
 
     // Mutation
     vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
@@ -204,7 +209,7 @@ namespace ga{
     // Use constructor of GA
     using GA::GA;
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;
-
+    virtual void crossover(Genpool &currentSelection, Genpool &newPopulation) override;
   };
 
 
