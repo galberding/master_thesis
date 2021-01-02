@@ -45,17 +45,6 @@ namespace ga{
 
   int randRange(int lower, int upper);
   void validateGen(genome &gen);
-///////////////////////////////////////////////////////////////////////////////
-//                             Mutation Functions                            //
-///////////////////////////////////////////////////////////////////////////////
-
-  void addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
-  void removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
-  void addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
-  void addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
-  void swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
-  // void swapRandomActionRegion(genome &gen);
-
 
 
   struct executionConfig {
@@ -139,6 +128,12 @@ namespace ga{
     float angleMu = 0;
     float angleDev = 40;
 
+    float mutaOrtoAngle = 0.1;
+    float mutaRandAngle = 0.1;
+    float mutaPosDist = 0.1;
+    float mutaNegDist = 0.01;
+    float mutaPosDistMax = 50;
+
     string config_to_string(){
 
       string str;
@@ -149,6 +144,25 @@ namespace ga{
     }
 
   };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                             Mutation Functions                            //
+///////////////////////////////////////////////////////////////////////////////
+
+  void addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
+  void removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
+  void addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
+  void addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
+  void swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator);
+  // void swapRandomActionRegion(genome &gen);
+
+  void addOrthogonalAngleOffset(genome& gen, executionConfig &eConf, std::mt19937& generator);
+  void addRandomAngleOffset(genome& gen, executionConfig &eConf, std::mt19937& generator);
+  void addPositiveDistanceOffset(genome& gen, executionConfig &eConf, std::mt19937& generator);
+  void addNegativeDistanceOffset(genome& gen, executionConfig &eConf, std::mt19937& generator);
+
+
 
 
 

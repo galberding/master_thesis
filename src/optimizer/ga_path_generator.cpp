@@ -214,6 +214,66 @@ void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist
 
 }
 
+void ga::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
+  // Add orthogonal angle {-90, 90}
+
+  uniform_real_distribution<float> probaDist(0,1);
+  if(eConf.mutaOrtoAngle < probaDist(generator)) return;
+
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_int_distribution<int> changeDistro(0,1);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(generator));
+  (*action)->mod_config[PAP::Angle] += changeDistro(generator) ? 90 : -90;
+  (*action)->modified = true;
+}
+
+void ga::addRandomAngleOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
+  uniform_real_distribution<float> probaDist(0,1);
+  if(eConf.mutaRandAngle < probaDist(generator)) return;
+
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_int_distribution<int> changeDistro(0,360);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(generator));
+  (*action)->mod_config[PAP::Angle] += changeDistro(generator);
+  (*action)->modified = true;
+}
+
+void ga::addPositiveDistanceOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
+
+  uniform_real_distribution<float> probaDist(0,1);
+  if(eConf.mutaPosDist < probaDist(generator)) return;
+
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(generator));
+  (*action)->mod_config[PAP::Distance] += changeDistro(generator);
+  (*action)->modified = true;
+}
+
+void ga::addNegativeDistanceOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
+
+
+  uniform_real_distribution<float> probaDist(0,1);
+  if(eConf.mutaPosDist < probaDist(generator)) return;
+
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(generator));
+  float offset = changeDistro(generator);
+  if((*action)->mod_config[PAP::Distance] > offset){
+    (*action)->mod_config[PAP::Distance] -= offset;
+    (*action)->modified = true;
+  }
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                     GA                                    //
