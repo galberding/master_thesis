@@ -614,7 +614,7 @@ float ga::GA::calFitness(float cdist,
 }
 #define logg(msg, config) logging::Logger(msg, config.logDir, config.logName)
 
-void ga::GA::optimizePath() {
+void ga::GA::optimizePath(bool display) {
 
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
@@ -636,11 +636,7 @@ void ga::GA::optimizePath() {
 
   // First selection
   selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
-  if(secretBest.id > 0){
-    rob.evaluateActions(secretBest.actions);
-    cv::imshow("Current Run", rob.gridToImg("map"));
-    cv::waitKey(1);
-  }
+
   // Main loop
   int lowest = 1000;
   int highest = 0;
@@ -671,6 +667,12 @@ void ga::GA::optimizePath() {
 				    );
     }
     selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
+    if(secretBest.id > 0 && display){
+      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness);
+      rob.evaluateActions(secretBest.actions);
+      cv::imshow("Current Run", rob.gridToImg("map"));
+      cv::waitKey(1);
+    }
     // pool.clear();
 
   }

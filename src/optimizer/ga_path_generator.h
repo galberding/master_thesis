@@ -68,7 +68,7 @@ namespace ga{
     float actionLenAvg = 0;
 
     // If parameter is set we want to store it under this filename
-    string fitnessName = "";
+    string fitnessName = "vv";
     float fitnessWeight = 0.5;
     // Those values will be updated after each iteration
     float fitnessMax = 0;
@@ -207,7 +207,7 @@ namespace ga{
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace);
-    void optimizePath();
+    void optimizePath(bool display = false);
     void gridSearch();
 
 
@@ -219,7 +219,7 @@ namespace ga{
   //                           Dual Point Crossover                          //
   /////////////////////////////////////////////////////////////////////////////
 
-  struct _Dual_Point_Crossover : virtual GA{
+  struct _Dual_Point_Crossover : GA{
     // Use constructor of GA
     using GA::GA;
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;

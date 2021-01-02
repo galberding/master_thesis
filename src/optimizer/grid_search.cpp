@@ -176,7 +176,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
 	  conf.fitnessWeights = wConf;
-	  conf.maxIterations = 100;
+	  // conf.maxIterations = 100;
 
 	  configs.push_back(conf);
 	  runId++;

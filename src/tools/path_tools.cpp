@@ -94,7 +94,7 @@ bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChange
 
 
   if(modified && overrideChanges){
-    debug("Propagate changes");
+    // debug("Propagate changes");
     generateWPs(pa->wps.back());
     return false;
   }
@@ -299,7 +299,7 @@ bool path::Robot::evaluateActions(PAs &pas){
       auto it_next = next(it, 1);
       auto it_prev = it;
       while(!((*it_next)->mendConfig(*it_prev, overrideChanges) && it_next != pas.end())){
-	debug("Propagate change ...");
+	// debug("Propagate change ...");
 	it_prev = it_next;
 	it_next++;
       }
@@ -308,7 +308,7 @@ bool path::Robot::evaluateActions(PAs &pas){
   }
   if (pas.size() < 4){
     debug("TOO few action remain in sequence: " + to_string(pas.size()));
-    debug("Type: ");
+    // debug("Type: ");
   }
   assertm(pas.size() >= 3, "TOO few action remain in sequence");
   return true;

@@ -55,7 +55,7 @@ TEST(GridSearch, search){
   auto co = *next(confs.begin(), 4);
   // co.initActions = 20;
   GA_V2 ga(42, co);
-  ga.optimizePath();
+  ga.optimizePath(true);
 }
 
 
