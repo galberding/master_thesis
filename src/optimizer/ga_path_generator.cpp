@@ -270,7 +270,7 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 }
 
 // TODO: Preserve IDs
-void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
+void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child, bool modify=false){
   for(begin; begin != end; begin++){
     // debug("Type: ", (int) (*begin)->type);
     switch((*begin)->type){
@@ -282,6 +282,7 @@ void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child){
     case PAT::Ahead: case PAT::CAhead:{
       AheadAction aa((*begin)->type, (*begin)->mod_config);
       aa.generateWPs((*begin)->wps.front());
+      aa.modified = modify;
       child.push_back(make_shared<AheadAction>(aa));
       break;
     }
@@ -650,7 +651,7 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
   // Copy first part of parent 1
   copyActions(par1.actions.begin(), next(par1.actions.begin(), sIdx1), child1);
   // Insert cross over part from parent 2
-  copyActions(next(par2.actions.begin(), sIdx2), next(par2.actions.begin(), (sIdx2+len2)), child1);
+  copyActions(next(par2.actions.begin(), sIdx2), next(par2.actions.begin(), (sIdx2+len2)), child1, true);
   // Copy what remains of parent 1
   copyActions(next(par1.actions.begin(), sIdx1 +len1), par1.actions.end(), child1);
 
@@ -658,7 +659,7 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
     // Copy first part of parent 2 to child 2
   copyActions(par2.actions.begin(), next(par2.actions.begin(), sIdx2), child2);
   // Insert cross over part from parent 1
-  copyActions(next(par1.actions.begin(), sIdx1), next(par1.actions.begin(), (sIdx1+len1)), child2);
+  copyActions(next(par1.actions.begin(), sIdx1), next(par1.actions.begin(), (sIdx1+len1)), child2, true);
   // Copy what remains of parent 1
   copyActions(next(par2.actions.begin(), sIdx2 +len2), par2.actions.end(), child2);
 
