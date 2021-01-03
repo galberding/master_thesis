@@ -46,9 +46,9 @@ void gsearch::Searcher::tSearch(){
 }
 
 void gsearch::Searcher::tSearchV2(){
-  int pool_size = 1;
+  int pool_size = 24;
   std::future<int> t_pool[pool_size];
-  vector<ga::executionConfig> confs = generateConfigs("testrunV2");
+  vector<ga::executionConfig> confs = generateConfigs("testrunV2_mutation");
   int done = 0;
   int all = confs.size();
 
@@ -88,10 +88,20 @@ void gsearch::Searcher::tSearchV2(){
   }
 }
 
-
-void gsearch::Searcher::search(GA ga) {
+void gsearch::Searcher::search() {
   // What should search do
   // Search in range of different population sizes at First
+
+  auto confs = generateConfigs("blub2");
+  // se.tSearchV2();
+  // auto co = *next(confs.begin(), 4);
+  for (auto &conf : confs){
+    // co.initActions = 20;
+    conf.maxIterations = 100;
+    debug(conf.config_to_string());
+    GA_V2 ga(42, conf);
+    ga.optimizePath(true);
+  }
 
 
 }
@@ -176,7 +186,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
 	  conf.fitnessWeights = wConf;
-	  // conf.maxIterations = 100;
+	  conf.maxIterations = 100;
 
 	  configs.push_back(conf);
 	  runId++;

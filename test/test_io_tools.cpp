@@ -48,14 +48,20 @@ TEST(Try, argsToString){
 // }
 
 
+// TEST(GridSearch, search){
+//   gsearch::Searcher se;
+//   auto confs = se.generateConfigs("blub2");
+//   // se.tSearchV2();
+//   auto co = *next(confs.begin(), 4);
+
+//   // co.initActions = 20;
+//   GA_V2 ga(42, co);
+//   ga.optimizePath(true);
+// }
+
 TEST(GridSearch, search){
   gsearch::Searcher se;
-  auto confs = se.generateConfigs("blub2");
-  // se.tSearchV2();
-  auto co = *next(confs.begin(), 4);
-  // co.initActions = 20;
-  GA_V2 ga(42, co);
-  ga.optimizePath(true);
+  se.tSearchV2();
 }
 
 

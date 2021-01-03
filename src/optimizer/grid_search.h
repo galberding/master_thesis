@@ -17,7 +17,7 @@ namespace gsearch {
     // Will create grid map, robot and GA instance
     // search and log the progress
     shared_ptr<GridMap> generateMapType(int with, int height, float res, int type, Position& start);
-    void search(ga::GA ga);
+    void search();
     vector<ga::executionConfig> generateConfigs(string dirname);
     // Wrapper to call search in multiple threads
     /* void threadded_search(ga::executionConfig config); */
