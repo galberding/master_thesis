@@ -575,7 +575,7 @@ float ga::GA::calFitness(float cdist,
   // assert(!isnan(final_coverage));
 
   // Ensure that the gen is not selected for crossover by setting the fitness to -1
-  if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return -1;
+  if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
 
 
   // debug("Actual time: ", actual_time);
