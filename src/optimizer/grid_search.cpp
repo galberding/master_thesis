@@ -39,6 +39,8 @@ void gsearch::Searcher::tSearch(){
 	});
 	it = next(it, 1);
 	cout << done << "/" << (all - pool_size) << " done" << endl;
+	// Ensure to break the loop for checking if end is reached
+	break;
       }
 
     }
@@ -82,9 +84,16 @@ void gsearch::Searcher::tSearchV2(){
 	});
 	it = next(it, 1);
 	cout << done << "/" << (all - pool_size) << " done" << endl;
+	// Ensure to break the loop for checking if end is reached
+	break;
       }
 
     }
+  }
+  debug("Wait for all threads to get ready");
+  for (int i = 0; i < pool_size; i++) {
+    t_pool[i].wait();
+    cout << done << "/" << (all - pool_size) << " done" << endl;
   }
 }
 
@@ -159,10 +168,10 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   vector<vector<float>> weightConfs = {
     {0.2, 0.3, 0.5},
     {0.3, 0.2, 0.5},
-    {0.5, 0.3, 0.2},
-    {0.3, 0.5, 0.2},
-    {0.2, 0.5, 0.3},
-    {0.5, 0.2, 0.3}
+    {0.25, 0.3, 0.45},
+    {0.3, 0.25, 0.45},
+    {0.1, 0.5, 0.4},
+    {0.5, 0.1, 0.4}
   };
 
   // initial population
