@@ -61,9 +61,9 @@ void gsearch::Searcher::tSearchV2(){
     t_pool[i] = std::async([this, it]{
       GA_V2 ga(42, *it);
       ga.optimizePath();
-      return 0;
+      return 1;
     });
-    done++;
+    // done++;
     it = next(it, 1);
   }
   std::future_status status;
