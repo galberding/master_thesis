@@ -38,9 +38,9 @@ ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::unifor
     offset += it->fitness / totalFitness;
 
     if(rand < offset){
-      // gen = genome(*it);
-      gen.fitness = it->fitness;
-      gen.actions = it->actions;
+      gen = genome(*it);
+      // gen.fitness = it->fitness;
+      // gen.actions = it->actions;
       // debug("THE SELECTED ONE: ", gen.actions.size());
       currentPopulation.erase(it);
       break;
@@ -308,18 +308,25 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
 
   // Perform turnament selection:
-  // for(int i=0; i<individuals; i++){
-  //   if(currentPopuation.size() > 0)
-  //     selectionPool.push_back(roulettWheelSelection(currentPopuation, selectionDist, generator));
-  //   else{
-  //     warn("Not enough individuals left in the pool for mation ...");
-  //     break;
-  //   }
-  // }
-
-  for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
-    selectionPool.push_back(*it);
+  for(int i=0; i<individuals; i++){
+    if(currentPopuation.size() > 0){
+      genome gen = roulettWheelSelection(currentPopuation, selectionDist, generator);
+      if(gen.fitness == 0){
+	warn("Selected gen with fitness 0, it will be skipped!");
+	continue;
+      }
+      selectionPool.push_back(gen);
+    }
+    else{
+      warn("Not enough individuals left in the pool for mation ...");
+      break;
+    }
   }
+
+  // Select best individuals from pool
+  // for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
+  //   selectionPool.push_back(*it);
+  // }
 
   currentPopuation.clear();
 

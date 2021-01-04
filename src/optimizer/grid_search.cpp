@@ -169,20 +169,20 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   int initialPop = 1000;
   // initial actions
   int stepsInitActions = 100;
-  int stepsSelIndividuals = 10;
-  int stepsKeepBest = 100;
-  for(int initActions=20; initActions<=2*stepsInitActions; initActions += stepsInitActions){
+  int stepsSelIndividuals = 5;
+  int stepsKeepBest = 10;
+  // for(int initActions=20; initActions<=2*stepsInitActions; initActions += stepsInitActions){
     // selected individuals
-    for(int selIndividuals=10; selIndividuals <= 4*stepsSelIndividuals; selIndividuals += stepsSelIndividuals){
+    for(int selIndividuals=5; selIndividuals <= 4*stepsSelIndividuals; selIndividuals += stepsSelIndividuals){
       // keep best
-      for(int keepBest = 0; keepBest <= 5*stepsKeepBest; keepBest += stepsKeepBest){
+      for(int keepBest = 0; keepBest <= 2*stepsKeepBest; keepBest += stepsKeepBest){
 	// Fitness weight
 	for(auto &wConf : weightConfs){
 	  Position startpos;
 	  shared_ptr<GridMap> mapptr = generateMapType(50, 50, 0.3, 1, startpos);
 	  ga::executionConfig conf(dirname, to_string(runId)+ "_" + "log", mapptr, startpos, {Position(42,42)});
 	  // conf.fitnessName = "fitness_record";
-	  conf.initActions = initActions;
+	  conf.initActions = 20;
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
 	  conf.fitnessWeights = wConf;
@@ -193,7 +193,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	}
       }
     }
-  }
+  // }
 
 
   return configs;
