@@ -157,12 +157,12 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
   // For now we hardcode all configs that we want to generate as well as the tests
   int runId = 0;
   vector<vector<float>> weightConfs = {
-    {0.1, 0.3, 0.6},
-    {0.3, 0.1, 0.6},
-    {0.6, 0.3, 0.1},
-    {0.3, 0.6, 0.1},
-    {0.1, 0.6, 0.3},
-    {0.6, 0.1, 0.3}
+    {0.2, 0.3, 0.5},
+    {0.3, 0.2, 0.5},
+    {0.5, 0.3, 0.2},
+    {0.3, 0.5, 0.2},
+    {0.2, 0.5, 0.3},
+    {0.5, 0.2, 0.3}
   };
 
   // initial population
