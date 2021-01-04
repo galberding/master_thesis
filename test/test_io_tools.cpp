@@ -61,7 +61,7 @@ TEST(Try, argsToString){
 
 TEST(GridSearch, search){
   gsearch::Searcher se;
-  se.tSearchV2();
+  se.tSearchV2("v2_mutation_roulett_timeWeightedByCoverage");
   // se.search();
 }
 

@@ -604,6 +604,7 @@ float ga::GA::calFitness(float cdist,
   // Fitness calculation -> coverage directly influences Time
   // if coverage improves time gets more important and reverse
 
+  //
   float fitness = (final_coverage)*(eConf.fitnessWeights[0]*final_time)
     + eConf.fitnessWeights[1]*final_occ
     + (1-final_coverage)*(eConf.fitnessWeights[2]*final_coverage);

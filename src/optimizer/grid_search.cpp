@@ -47,10 +47,11 @@ void gsearch::Searcher::tSearch(){
   }
 }
 
-void gsearch::Searcher::tSearchV2(){
+void gsearch::Searcher::tSearchV2(string dirName){
   int pool_size = 24;
   std::future<int> t_pool[pool_size];
-  vector<ga::executionConfig> confs = generateConfigs("v2_mutation_roulett");
+  // "v2_mutation_roulett"
+  vector<ga::executionConfig> confs = generateConfigs(dirName);
   int done = 0;
   int all = confs.size();
 

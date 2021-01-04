@@ -13,7 +13,7 @@ namespace gsearch {
     // perform the metaparamter search
 
     void tSearch();
-    void tSearchV2();
+    void tSearchV2(string dirName);
     // Will create grid map, robot and GA instance
     // search and log the progress
     shared_ptr<GridMap> generateMapType(int with, int height, float res, int type, Position& start);
