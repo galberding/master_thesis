@@ -597,9 +597,17 @@ float ga::GA::calFitness(float cdist,
 
   float weight = eConf.fitnessWeight;
   // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
-  float fitness = eConf.fitnessWeights[0]*final_time
+  // float fitness = eConf.fitnessWeights[0]*final_time
+  //   + eConf.fitnessWeights[1]*final_occ
+  //   + eConf.fitnessWeights[2]*final_coverage;
+
+  // Fitness calculation -> coverage directly influences Time
+  // if coverage improves time gets more important and reverse
+
+  float fitness = (final_coverage)*(eConf.fitnessWeights[0]*final_time)
     + eConf.fitnessWeights[1]*final_occ
-    + eConf.fitnessWeights[2]*final_coverage;
+    + (1-final_coverage)*(eConf.fitnessWeights[2]*final_coverage);
+
   // if(!eConf.fitnessName.empty()){
   //   (*eConf.fitnessStr) << argsToCsv(eConf.currentIter,
   // 				  cdist,
