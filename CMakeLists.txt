@@ -169,6 +169,13 @@ catkin_package(
 
 find_package(Eigen3 REQUIRED)
 find_package( OpenCV 3.3.1 REQUIRED )
+find_package(yaml-cpp REQUIRED)
+# include_directories(HEADERS_EXECUTABLE
+#     ${YAML_INCLUDE_DIRS}
+# )
+# target_link_libraries(${CMAKE_PROJECT_NAME}
+#     yaml-cpp
+# )
 
 
 ## Specify additional locations of header files
@@ -178,6 +185,7 @@ include_directories(
 ${catkin_INCLUDE_DIRS}
 ${EIGEN3_INCLUDE_DIR}
 ${OpenCV_INCLUDE_DIRS}
+${YAML_INCLUDE_DIRS}
 # ${Eigen_INCLUDE_DIRS}
 )
 
@@ -212,7 +220,7 @@ add_executable(opti
   ${OPTI_ENV}
   )
 
-target_link_libraries(opti ${catkin_LIBRARIES})
+target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
 
 
 #############
@@ -269,5 +277,5 @@ catkin_add_executable_with_gtest(test-io
 # target_link_libraries(test-path-tools ${catkin_LIBRARIES})
 # target_link_libraries(test-opti ${catkin_LIBRARIES})
 # target_link_libraries(test-app ${catkin_LIBRARIES})
-target_link_libraries(test-io ${catkin_LIBRARIES})
+target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
 # endif()

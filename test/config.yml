@@ -1,0 +1,4 @@
+weights:
+  time: 0.1
+  occ: 0.3
+  coverage: 0.6

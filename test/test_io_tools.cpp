@@ -3,6 +3,7 @@
 #include "../src/tools/debug.h"
 #include <opencv2/opencv.hpp>
 #include "../src/optimizer/grid_search.h"
+#include <yaml-cpp/yaml.h>
 
 
 using namespace ga;
@@ -65,23 +66,38 @@ TEST(Try, argsToString){
 //   se.search("test1");
 // }
 
+void loadYaml(string path, executionConfig &config){
 
-TEST(Optimizer, standardConfig){
+  YAML::Node conf = YAML::LoadFile(path);
+  if(conf["weights"]){
+    cout << conf["weights"] << endl;
+  }
+}
+
+TEST(YML, loadCong){
   gsearch::Searcher se;
   auto confs = se.generateConfigs("io_test");
-
   auto co = confs.front();
-  co.maxIterations = 1000;
-  // Time, occ, coverage
-  co.fitnessWeights = {0.35, 0.15, 5};
-  co.selectKeepBest = 10;
-  co.selectIndividuals = 10;
-  co.mutaRandAngle = 0;
-
-  GA_V2 ga(42, co);
-  ga.optimizePath(true);
-
+  loadYaml("/root/catkin_ws/src/ros_optimizer/test/config.yml", co);
 }
+
+// TEST(Optimizer, standardConfig){
+//   gsearch::Searcher se;
+//   auto confs = se.generateConfigs("io_test");
+
+//   auto co = confs.front();
+//   co.maxIterations = 1000;
+//   // Time, occ, coverage
+//   co.fitnessWeights = {0.05, 0.35, 0.6};
+//   co.selectKeepBest = 10;
+//   co.selectIndividuals = 20;
+
+//   co.mutaRandAngle = 0;
+
+//   GA_V2 ga(42, co);
+//   ga.optimizePath(true);
+
+// }
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

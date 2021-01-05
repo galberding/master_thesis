@@ -189,14 +189,14 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	// Fitness weight
 	for(auto &wConf : weightConfs){
 	  Position startpos;
-	  shared_ptr<GridMap> mapptr = generateMapType(50, 50, 0.3, 1, startpos);
+	  shared_ptr<GridMap> mapptr = generateMapType(10, 10, 0.3, 1, startpos);
 	  ga::executionConfig conf(dirname, to_string(runId)+ "_" + "log", mapptr, startpos, {Position(42,42)});
 	  // conf.fitnessName = "fitness_record";
 	  conf.initActions = 20;
 	  conf.selectIndividuals = selIndividuals;
 	  conf.selectKeepBest = keepBest;
 	  conf.fitnessWeights = wConf;
-	  conf.maxIterations = 100;
+	  conf.maxIterations = 1000;
 
 	  configs.push_back(conf);
 	  runId++;

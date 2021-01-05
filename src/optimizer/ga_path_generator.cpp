@@ -566,6 +566,7 @@ float ga::GA::calFitness(float cdist,
 
 
   // Calculate the final occ based on the
+  // TODO: rename fitness parameter, sth like crossFactor or overlapping
   float current_occ = cdist - crossed;
   // if (current_occ < 0){
   //   current_occ = crossed;
@@ -597,17 +598,17 @@ float ga::GA::calFitness(float cdist,
 
   float weight = eConf.fitnessWeight;
   // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
-  // float fitness = eConf.fitnessWeights[0]*final_time
-  //   + eConf.fitnessWeights[1]*final_occ
-  //   + eConf.fitnessWeights[2]*final_coverage;
+  float fitness = eConf.fitnessWeights[0]*final_time
+    + eConf.fitnessWeights[1]*final_occ
+    + eConf.fitnessWeights[2]*final_coverage;
 
   // Fitness calculation -> coverage directly influences Time
   // if coverage improves time gets more important and reverse
 
   //
-  float fitness = (final_coverage)*(eConf.fitnessWeights[0]*final_time)
-    + eConf.fitnessWeights[1]*final_occ
-    + (1-final_coverage)*(eConf.fitnessWeights[2]*final_coverage);
+  // float fitness = (final_coverage)*(eConf.fitnessWeights[0]*final_time)
+  //   + eConf.fitnessWeights[1]*final_occ
+  //   + (1-final_coverage)*(eConf.fitnessWeights[2]*final_coverage);
 
   // if(!eConf.fitnessName.empty()){
   //   (*eConf.fitnessStr) << argsToCsv(eConf.currentIter,
@@ -816,8 +817,8 @@ void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Mutation_co
   // debug("Mutate");
   for (auto &gen : currentPopulation) {
     addOrthogonalAngleOffset(gen, eConf, generator);
-    addRandomAngleOffset(gen, eConf, generator);
+    // addRandomAngleOffset(gen, eConf, generator);
     addPositiveDistanceOffset(gen, eConf, generator);
-    addNegativeDistanceOffset(gen, eConf, generator);
+    // addNegativeDistanceOffset(gen, eConf, generator);
   }
 }
