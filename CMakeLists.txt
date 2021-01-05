@@ -233,29 +233,29 @@ target_link_libraries(opti ${catkin_LIBRARIES})
 ## Add gtest based cpp test target and link libraries
 
 # catkin_add_gtest(opti-test test/test_ros_opti.cpp)
-catkin_add_executable_with_gtest(test-path-tools
-  test/test_ros_opti.cpp
-  ${OPTI_ENV}
-  # src/tools/path_tools.h
-  # src/tools/path_tools.cpp
-  # ${catkin_LIBRARIES}
-  )
+# catkin_add_executable_with_gtest(test-path-tools
+#   test/test_ros_opti.cpp
+#   ${OPTI_ENV}
+#   # src/tools/path_tools.h
+#   # src/tools/path_tools.cpp
+#   # ${catkin_LIBRARIES}
+#   )
 
-catkin_add_executable_with_gtest(test-opti
-  test/test_optimizer.cpp
-  ${OPTI_ENV}
-  # src/tools/path_tools.h
-  # src/tools/path_tools.cpp
-  # ${catkin_LIBRARIES}
-  )
+# catkin_add_executable_with_gtest(test-opti
+#   test/test_optimizer.cpp
+#   ${OPTI_ENV}
+#   # src/tools/path_tools.h
+#   # src/tools/path_tools.cpp
+#   # ${catkin_LIBRARIES}
+#   )
 
-catkin_add_executable_with_gtest(test-app
-  test/test_app.cpp
-  ${OPTI_ENV}
-  # src/tools/path_tools.h
-  # src/tools/path_tools.cpp
-  # ${catkin_LIBRARIES}
-  )
+# catkin_add_executable_with_gtest(test-app
+#   test/test_app.cpp
+#   ${OPTI_ENV}
+#   # src/tools/path_tools.h
+#   # src/tools/path_tools.cpp
+#   # ${catkin_LIBRARIES}
+#   )
 
 catkin_add_executable_with_gtest(test-io
   test/test_io_tools.cpp
@@ -266,8 +266,8 @@ catkin_add_executable_with_gtest(test-io
   )
 
 # if(TARGET test-path-tools)
-target_link_libraries(test-path-tools ${catkin_LIBRARIES})
-target_link_libraries(test-opti ${catkin_LIBRARIES})
-target_link_libraries(test-app ${catkin_LIBRARIES})
+# target_link_libraries(test-path-tools ${catkin_LIBRARIES})
+# target_link_libraries(test-opti ${catkin_LIBRARIES})
+# target_link_libraries(test-app ${catkin_LIBRARIES})
 target_link_libraries(test-io ${catkin_LIBRARIES})
 # endif()

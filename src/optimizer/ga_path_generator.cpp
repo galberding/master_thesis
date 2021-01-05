@@ -308,25 +308,25 @@ void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool
 
 
   // Perform turnament selection:
-  // for(int i=0; i<individuals; i++){
-  //   if(currentPopuation.size() > 0){
-  //     genome gen = roulettWheelSelection(currentPopuation, selectionDist, generator);
-  //     if(gen.fitness == 0){
-  // 	warn("Selected gen with fitness 0, it will be skipped!");
-  // 	continue;
-  //     }
-  //     selectionPool.push_back(gen);
-  //   }
-  //   else{
-  //     warn("Not enough individuals left in the pool for mation ...");
-  //     break;
-  //   }
-  // }
+  for(int i=0; i<individuals; i++){
+    if(currentPopuation.size() > 0){
+      genome gen = roulettWheelSelection(currentPopuation, selectionDist, generator);
+      if(gen.fitness == 0){
+	warn("Selected gen with fitness 0, it will be skipped!");
+	continue;
+      }
+      selectionPool.push_back(gen);
+    }
+    else{
+      warn("Not enough individuals left in the pool for mation ...");
+      break;
+    }
+  }
 
   // Select best individuals from pool
-  for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
-    selectionPool.push_back(*it);
-  }
+  // for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
+  //   selectionPool.push_back(*it);
+  // }
 
   currentPopuation.clear();
 
@@ -433,7 +433,7 @@ void ga::GA::crossover(ga::Genpool& currentSelection, ga::Genpool& newPopulation
     genome par1 = currentSelection.back();
     currentSelection.pop_back();
     for (auto &par2 : currentSelection){
-      debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
+      // debug("Parent size1: ", par1.actions.size(), " Parent size2: ", par2.actions.size());
       assertm(par1.actions.size() > 3, "Parent1 has not enough actions for mating!");
       assertm(par2.actions.size() > 3, "Parent2 has not enough actions for mating!");
       mating(par1, par2, newPopulation);
@@ -591,8 +591,8 @@ float ga::GA::calFitness(float cdist,
   // debug("final_occ: ", final_occ);
   // debug("Space relation: ", current_occ / freeSpace);
   eConf.fitnessAvgTime += final_time;
-  eConf.fitnessAvgOcc = final_occ;
-  eConf.fitnessAvgCoverage = final_coverage;
+  eConf.fitnessAvgOcc += final_occ;
+  eConf.fitnessAvgCoverage += final_coverage;
 
 
   float weight = eConf.fitnessWeight;
@@ -684,9 +684,9 @@ void ga::GA::optimizePath(bool display) {
     }
     selection(pool, selected, eConf.selectIndividuals, eConf.selectKeepBest);
     if(secretBest.id > 0 && display){
-      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness);
+      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness," : ", argsToCsv(eConf.fitnessAvgTime, eConf.fitnessAvgOcc, eConf.fitnessAvgCoverage));
       rob.evaluateActions(secretBest.actions);
-      cv::imshow("Current Run", rob.gridToImg("map"));
+      cv::imshow("Current Run ", rob.gridToImg("map"));
       cv::waitKey(1);
     }
     // pool.clear();
@@ -789,6 +789,7 @@ void ga::_Dual_Point_Crossover::crossover(ga::Genpool& currentSelection, ga::Gen
   assertm(currentSelection.size() >= 2, "Not enough individuals for crossover in pool!");
 
   // TODO: Switch to iterator
+  // debug("Crossover");
   for(auto par1 = currentSelection.begin(); par1 != currentSelection.end(); par1++){
     for(auto par2 = next(par1, 1); par2 != currentSelection.end(); par2++){
       ;
@@ -811,7 +812,8 @@ void ga::_Dual_Point_Crossover::crossover(ga::Genpool& currentSelection, ga::Gen
 //                             Mutation Procedure                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-void ga::_Mutation::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf){
+void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf){
+  // debug("Mutate");
   for (auto &gen : currentPopulation) {
     addOrthogonalAngleOffset(gen, eConf, generator);
     addRandomAngleOffset(gen, eConf, generator);

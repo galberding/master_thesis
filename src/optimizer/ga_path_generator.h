@@ -105,8 +105,8 @@ namespace ga{
     vector<Position> ends;
 
     // Selection
-    int selectIndividuals = 25;
-    int selectKeepBest = 10;
+    int selectIndividuals = 10;
+    int selectKeepBest = 0;
 
     // crossover
     // Length of the segment that will be transferred to the other gen
@@ -224,27 +224,19 @@ namespace ga{
     using GA::GA;
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;
     virtual void crossover(Genpool &currentSelection, Genpool &newPopulation) override;
-  };
-
-
-  /////////////////////////////////////////////////////////////////////////////
-  //                            Mutation Version 2                           //
-  /////////////////////////////////////////////////////////////////////////////
-
-  struct _Mutation : virtual _Dual_Point_Crossover {
-    // using GA::GA;
-    using _Dual_Point_Crossover::_Dual_Point_Crossover;
     virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) override;
   };
+
+
 
   /////////////////////////////////////////////////////////////////////////////
   //                                  GA V2                                   //
   /////////////////////////////////////////////////////////////////////////////
 
-  struct GA_V2 : _Mutation{
+  struct GA_V2 : _Dual_Point_Crossover{
     // using _::GA;
-    // using _Dual_Point_Crossover::GA;
-    using _Mutation::_Mutation;
+    using _Dual_Point_Crossover::_Dual_Point_Crossover;
+    // using _Mutation::_Mutation;
     // GA_V2(int seed, executionConfig& conf):GA(seed, conf){}
   };
 

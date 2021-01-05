@@ -59,21 +59,29 @@ TEST(Try, argsToString){
 //   ga.optimizePath(true);
 // }
 
-TEST(GridSearch, search){
-  gsearch::Searcher se;
-  se.tSearchV2("v2_mutation_selectBest_timeWeightedByCoverage");
-  // se.search();
-}
-
-
-// TEST(Optimizer, standardConfig){
+// TEST(GridSearch, search){
 //   gsearch::Searcher se;
-//   auto confs = se.generateConfigs();
-
-//   GA ga(42, confs.front());
-//   ga.optimizePath();
-
+//   // se.tSearchV2("v2_mutation_selectBest_timeWeightedByCoverage");
+//   se.search("test1");
 // }
+
+
+TEST(Optimizer, standardConfig){
+  gsearch::Searcher se;
+  auto confs = se.generateConfigs("io_test");
+
+  auto co = confs.front();
+  co.maxIterations = 1000;
+  // Time, occ, coverage
+  co.fitnessWeights = {0.35, 0.15, 5};
+  co.selectKeepBest = 10;
+  co.selectIndividuals = 10;
+  co.mutaRandAngle = 0;
+
+  GA_V2 ga(42, co);
+  ga.optimizePath(true);
+
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

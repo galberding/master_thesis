@@ -98,11 +98,11 @@ void gsearch::Searcher::tSearchV2(string dirName){
   }
 }
 
-void gsearch::Searcher::search() {
+void gsearch::Searcher::search(string dirName) {
   // What should search do
   // Search in range of different population sizes at First
 
-  auto confs = generateConfigs("blub2");
+  auto confs = generateConfigs(dirName);
   // se.tSearchV2();
   // auto co = *next(confs.begin(), 4);
   for (auto &conf : confs){
