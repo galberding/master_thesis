@@ -89,8 +89,8 @@ TEST(Optimizer, standardConfig){
   co.maxIterations = 10000;
   // Time, occ, coverage
   co.fitnessWeights = {0.05, 0.35, 0.6};
-  co.selectKeepBest = 10;
-  co.selectIndividuals = 500;
+  co.selectKeepBest = 100;
+  co.selectIndividuals = 5000;
 
   co.mutaRandAngleProba = 0;
 
