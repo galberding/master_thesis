@@ -28,6 +28,14 @@ namespace ga{
       return gen.id == id;
     }
 
+    float getPathLen(){
+      float len = 0;
+      for(auto it = actions.begin(); it != actions.end(); it++){
+	len += (*it)->mod_config[PAP::Distance];
+      }
+      return len / actions.size();
+    }
+
     int id = 0;
     PAs actions;
     WPs waypoints;
@@ -41,7 +49,7 @@ namespace ga{
 
 
   bool compareFitness(const struct genome &genA, const struct genome &genB);
-  genome roulettWheelSelection(Genpool &currentPopulation, std::uniform_real_distribution<float> selDistr, std::mt19937 generator);
+  genome roulettWheelSelection(ga::Genpool &currentPopulation, float totalFitness, std::mt19937 generator,  bool erase = true);
 
   int randRange(int lower, int upper);
   void validateGen(genome &gen);
@@ -77,15 +85,11 @@ namespace ga{
     float fitnessAvgTime = 0;
     float fitnessAvgOcc = 0;
     float fitnessAvgCoverage = 0;
-    // time occ coverage
-    vector<float> fitnessWeights = {0.3, 0.05, 0.65};
-    // string fitnessStr;
-    // std::ostringstream logStr;
 
     shared_ptr<std::ostringstream> fitnessStr;
     shared_ptr<std::ostringstream> logStr;
 
-        // Robot Config
+    // Robot Config
     string obstacleName = "map";
     rob_config rob_conf = {
       {RobotProperty::Width_cm, 1},
@@ -96,17 +100,22 @@ namespace ga{
     // Map
     shared_ptr<GridMap> gmap;
 
+    int currentIter = 0;
     // GA
     int maxIterations = 1000;
-    int currentIter = 0;
     int initIndividuals = 1000;
     int initActions = 50;
     Position start;
     vector<Position> ends;
 
+    // Fitness
+    vector<float> fitnessWeights = {0.3, 0.05, 0.65};
+
     // Selection
     int selectIndividuals = 10;
     int selectKeepBest = 0;
+    // Switch between roulettWheelSelection or best N selection
+    bool toggleRoulettSelectionOn = false;
 
     // crossover
     // Length of the segment that will be transferred to the other gen
@@ -115,6 +124,7 @@ namespace ga{
 
     // Mutation
     vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
+    // TODO: Not used can be removed
     vector<int> probas = {10, 10};
     Mutation_conf muta = {
       // {"addAction", make_pair(addAction, 10)},
@@ -128,10 +138,11 @@ namespace ga{
     float angleMu = 0;
     float angleDev = 40;
 
-    float mutaOrtoAngle = 0.1;
-    float mutaRandAngle = 0.1;
-    float mutaPosDist = 0.1;
-    float mutaNegDist = 0.01;
+    // Mutation functions, configurations
+    float mutaOrtoAngleProba = 0.1;
+    float mutaRandAngleProba = 0.1;
+    float mutaPosDistProba = 0.1;
+    float mutaNegDistProba = 0.01;
     float mutaPosDistMax = 50;
 
     string config_to_string(){
@@ -207,7 +218,7 @@ namespace ga{
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace);
-    void optimizePath(bool display = false);
+    virtual void optimizePath(bool display = false);
     void gridSearch();
 
 
@@ -222,9 +233,11 @@ namespace ga{
   struct _Dual_Point_Crossover : GA{
     // Use constructor of GA
     using GA::GA;
+    virtual void selection(Genpool &currentPopuation, Genpool &selection, int individuals, int keepBest = 0) override;
     virtual void mating(genome &par1, genome &par2, Genpool& newPopulation) override;
     virtual void crossover(Genpool &currentSelection, Genpool &newPopulation) override;
-    virtual void mutation(Genpool& currentPopulation, Mutation_conf& muat_conf) override;
+    virtual void mutation(Genpool& currentPopulation, Genpool& nextPopulation);
+    virtual void optimizePath(bool display=false) override;
   };
 
 

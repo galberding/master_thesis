@@ -78,26 +78,26 @@ TEST(YML, loadCong){
   gsearch::Searcher se;
   auto confs = se.generateConfigs("io_test");
   auto co = confs.front();
-  loadYaml("/root/catkin_ws/src/ros_optimizer/test/config.yml", co);
+  loadYaml("../../../src/ros_optimizer/test/config.yml", co);
 }
 
-// TEST(Optimizer, standardConfig){
-//   gsearch::Searcher se;
-//   auto confs = se.generateConfigs("io_test");
+TEST(Optimizer, standardConfig){
+  gsearch::Searcher se;
+  auto confs = se.generateConfigs("io_test");
 
-//   auto co = confs.front();
-//   co.maxIterations = 1000;
-//   // Time, occ, coverage
-//   co.fitnessWeights = {0.05, 0.35, 0.6};
-//   co.selectKeepBest = 10;
-//   co.selectIndividuals = 20;
+  auto co = confs.front();
+  co.maxIterations = 10000;
+  // Time, occ, coverage
+  co.fitnessWeights = {0.05, 0.35, 0.6};
+  co.selectKeepBest = 10;
+  co.selectIndividuals = 500;
 
-//   co.mutaRandAngle = 0;
+  co.mutaRandAngleProba = 0;
 
-//   GA_V2 ga(42, co);
-//   ga.optimizePath(true);
+  GA_V2 ga(42, co);
+  ga.optimizePath(true);
 
-// }
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);

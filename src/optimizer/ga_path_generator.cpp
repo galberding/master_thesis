@@ -17,47 +17,24 @@ bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
 }
 
 
-ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, std::uniform_real_distribution<float> selDistr, std::mt19937 generator){
+ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, float totalFitness, std::mt19937 generator, bool erase){
   // Calculate Probabilities for all individuals
-  // std::default_random_engine generator;
-  // std::uniform_real_distribution<float> distribution(0.0,1.0);
-
-  float totalFitness = 0;
-  for(auto &gen :currentPopulation){
-    totalFitness += gen.fitness;
-  }
+  std::uniform_real_distribution<float> selDistr(0.0,1);
 
   float rand = selDistr(generator);
   // cout << "Wheel: " << rand << endl;
   float offset = 0.0;
   genome gen;
 
-  // TODO: use Iterater
-
   for(auto it = currentPopulation.begin(); it != currentPopulation.end(); it++){
     offset += it->fitness / totalFitness;
-
     if(rand < offset){
-      gen = genome(*it);
-      // gen.fitness = it->fitness;
-      // gen.actions = it->actions;
-      // debug("THE SELECTED ONE: ", gen.actions.size());
-      currentPopulation.erase(it);
+      gen = *it;
+      if(erase)
+	it = currentPopulation.erase(it);
       break;
     }
-
   }
-
-  // for(int i=0; i < currentPopulation.size(); i++){
-  //   offset += currentPopulation.at(i).fitness / totalFitness;
-
-  //   if(rand < offset){
-  //     gen = currentPopulation.at(i);
-  //     // debug("THE SELECTED ONE: ", gen.actions.size());
-  //     currentPopulation.erase(currentPopulation.begin() + i);
-  //     break;
-  //   }
-  // }
   return gen;
 }
 
@@ -218,7 +195,7 @@ void ga::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf, std::mt19
   // Add orthogonal angle {-90, 90}
 
   uniform_real_distribution<float> probaDist(0,1);
-  if(eConf.mutaOrtoAngle < probaDist(generator)) return;
+  if(eConf.mutaOrtoAngleProba < probaDist(generator)) return;
 
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_int_distribution<int> changeDistro(0,1);
@@ -231,7 +208,7 @@ void ga::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf, std::mt19
 
 void ga::addRandomAngleOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
   uniform_real_distribution<float> probaDist(0,1);
-  if(eConf.mutaRandAngle < probaDist(generator)) return;
+  if(eConf.mutaRandAngleProba < probaDist(generator)) return;
 
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_int_distribution<int> changeDistro(0,360);
@@ -245,7 +222,7 @@ void ga::addRandomAngleOffset(genome& gen, executionConfig& eConf, std::mt19937&
 void ga::addPositiveDistanceOffset(genome& gen, executionConfig& eConf, std::mt19937& generator) {
 
   uniform_real_distribution<float> probaDist(0,1);
-  if(eConf.mutaPosDist < probaDist(generator)) return;
+  if(eConf.mutaPosDistProba < probaDist(generator)) return;
 
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
@@ -260,7 +237,7 @@ void ga::addNegativeDistanceOffset(genome& gen, executionConfig& eConf, std::mt1
 
 
   uniform_real_distribution<float> probaDist(0,1);
-  if(eConf.mutaPosDist < probaDist(generator)) return;
+  if(eConf.mutaPosDistProba < probaDist(generator)) return;
 
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
@@ -295,45 +272,41 @@ void ga::GA::populatePool(Genpool &currentPopuation, Position start, WPs endpoin
 }
 
 
-void ga::GA::selection(ga::Genpool& currentPopuation, ga::Genpool& selectionPool, int individuals, int keepBest) {
+void ga::GA::selection(ga::Genpool& currentPopulation, ga::Genpool& selectionPool, int individuals, int keepBest) {
   // debug("Selected!!!");
   Genpool keep;
 
-  sort(currentPopuation.begin(), currentPopuation.end());
-  secretBest = currentPopuation.back();
+  sort(currentPopulation.begin(), currentPopulation.end());
+  secretBest = currentPopulation.back();
   if(keepBest > 0){
-    assertm(keepBest < currentPopuation.size(), "Cannot keep more individuals than in the pool");
-    keep.insert(keep.begin(), prev(currentPopuation.end(), keepBest), currentPopuation.end());
+    assertm(keepBest < currentPopulation.size(), "Cannot keep more individuals than in the pool");
+    keep.insert(keep.begin(), prev(currentPopulation.end(), keepBest), currentPopulation.end());
   }
 
-
-  // Perform turnament selection:
+  // TODO: Did anything break??
+  // Perform roulettwheel selection:
   for(int i=0; i<individuals; i++){
-    if(currentPopuation.size() > 0){
-      genome gen = roulettWheelSelection(currentPopuation, selectionDist, generator);
+    if(currentPopulation.size() > 0){
+        float totalFitness = 0;
+	for(auto &gen :currentPopulation){
+	  totalFitness += gen.fitness;
+	}
+      genome gen = roulettWheelSelection(currentPopulation, totalFitness, generator);
       if(gen.fitness == 0){
 	warn("Selected gen with fitness 0, it will be skipped!");
 	continue;
       }
       selectionPool.push_back(gen);
-    }
-    else{
-      warn("Not enough individuals left in the pool for mation ...");
+    } else {
+      warn("Not enough individuals left in the pool for mating ...");
       break;
     }
   }
 
-  // Select best individuals from pool
-  // for(auto it = prev(currentPopuation.end(), individuals); it != currentPopuation.end(); it++){
-  //   selectionPool.push_back(*it);
-  // }
-
-  currentPopuation.clear();
-
-  // assertm()
+  currentPopulation.clear();
 
   if(keepBest > 0){
-    currentPopuation.insert(currentPopuation.begin(), keep.begin(), keep.end());
+    currentPopulation.insert(currentPopulation.begin(), keep.begin(), keep.end());
   }
 
 }
@@ -391,12 +364,6 @@ void ga::GA::mating(genome &par1, genome &par2, Genpool& newPopulation){
 
   copyActions(std::next(parent2.begin(), idx2), parent2.end(), child1);
   copyActions(std::next(parent1.begin(), idx1), parent1.end(), child2);
-  // child2.insert(child2.end(), std::next(parent1.begin(), idx), parent1.end());
-  // child1.insert(child1.begin(), parent1.begin(), std::next(parent1.begin(), idx));
-  // child2.insert(child2.begin(), parent2.begin(), std::next(parent2.begin(), idx));
-
-  // child1.insert(child1.end(), std::next(parent2.begin(), idx), parent2.end());
-
 
   // Mark crossing PAs as modufied to connect the two pieces
   (*next(child1.begin(), idx1-1))->modified = true;
@@ -578,19 +545,9 @@ float ga::GA::calFitness(float cdist,
   // Area coverage
   float final_coverage = current_occ / freeSpace;
   assertm(freeSpace >= current_occ , "No space to cover");
-  // assertm(!isnan(final_time), "Time in nan");
-  // assert(!isnan(final_occ));
-  // assert(!isnan(final_coverage));
-
-  // Ensure that the gen is not selected for crossover by setting the fitness to -1
+  // Ensure that the gen is not selected for crossover by setting the fitness to 0
   if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
 
-
-  // debug("Actual time: ", actual_time);
-  // debug("Optimal time: ", optimal_time);
-  // debug("Final time: ", final_time);
-  // debug("final_occ: ", final_occ);
-  // debug("Space relation: ", current_occ / freeSpace);
   eConf.fitnessAvgTime += final_time;
   eConf.fitnessAvgOcc += final_occ;
   eConf.fitnessAvgCoverage += final_coverage;
@@ -661,7 +618,27 @@ void ga::GA::optimizePath(bool display) {
     eConf.currentIter = i;
 
     crossover(selected, pool);
+    cout << "Path Length: ";
+    for (auto it = pool.begin(); it != pool.end(); ++it) {
+      cout << (*it).getPathLen();
+      for (auto it2 = next(it, 1); it2 != pool.end(); ++it2) {
+	if(it->getPathLen() == it2->getPathLen()){
+	  warn("Equal genome length detected ...");
+	  debug("Gen1:");
+	  for (auto ac = it->actions.begin(); ac != it->actions.end(); ++ac) {
+	    cout << (*ac)->mod_config[PAP::Distance] << "|";
+	  }
+	  cout << endl;
+	  debug("gen2");
+	  for (auto ac = it2->actions.begin(); ac != it2->actions.end(); ++ac) {
+	    cout << (*ac)->mod_config[PAP::Distance] << "|";
+	  }
+	  cout << endl;
 
+	  // assert(it->getPathLen() != it2->getPathLen());
+	}
+      }
+    }
 
     // debug("Poolsize: ", pool.size());
     // TODO: Either create config here or provide it through eConf
@@ -702,6 +679,62 @@ void ga::GA::optimizePath(bool display) {
 ///////////////////////////////////////////////////////////////////////////////
 //                            Dual Point Crossover                           //
 ///////////////////////////////////////////////////////////////////////////////
+
+void ga::_Dual_Point_Crossover::selection(Genpool &currentPopulation, Genpool &selectionPool, int individuals, int keepBest){
+  Genpool keep;
+
+
+  selectionPool.clear();
+  sort(currentPopulation.begin(), currentPopulation.end());
+
+  // Keep the best individuals
+  secretBest = currentPopulation.back();
+  if(keepBest > 0){
+    assertm(keepBest < currentPopulation.size(), "Cannot keep more individuals than in the pool");
+    selectionPool.insert(selectionPool.begin(), prev(currentPopulation.end(), keepBest), currentPopulation.end());
+  }
+
+
+  // Perform roulettwheel selection:
+  // Fill the selection Pool with the new Population
+  float totalFitness = 0;
+  for(auto &gen :currentPopulation){
+    totalFitness += gen.fitness;
+  }
+  assert(totalFitness > 0);
+  // Fill selection pool
+  while(selectionPool.size() < (individuals + keepBest)){
+    if(currentPopulation.size() > 0){
+      genome gen1 = roulettWheelSelection(currentPopulation, totalFitness, generator, false);
+      genome gen2 = roulettWheelSelection(currentPopulation, totalFitness, generator, false);
+      if(gen1.fitness == 0 && gen2.fitness == 0){
+	warn("Selected gen with fitness 0, it will be skipped!");
+	continue;
+      }
+
+      // Crossover will be not performed
+      if(selectionDist(generator) > eConf.crossoverProba){
+	if(std::find(selectionPool.begin(), selectionPool.end(), gen1) != selectionPool.end()) selectionPool.push_back(gen1);
+	if(std::find(selectionPool.begin(), selectionPool.end(), gen2) != selectionPool.end()) selectionPool.push_back(gen2);
+	continue;
+      }
+      // Create offset of the selected gens
+      assertm(gen1.actions.size() > 3, "Parent1 has not enough actions for mating!");
+      assertm(gen2.actions.size() > 3, "Parent2 has not enough actions for mating!");
+      mating(gen1, gen2, selectionPool);
+    } else {
+      warn("Not enough individuals left in the pool for mating ...");
+      assertm(false, "No idividuals in population!");
+      break;
+    }
+  }
+
+  if(keepBest > 0){
+    selectionPool.insert(selectionPool.begin(), keep.begin(), keep.end());
+  }
+}
+
+
 
 void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newPopulation){
   // mate two parents
@@ -761,18 +794,9 @@ void ga::_Dual_Point_Crossover::mating(genome &par1, genome &par2, Genpool& newP
   genome child_gen1(child1);
   genome child_gen2(child2);
 
-  // for(auto gen : child_gen1.actions){
-  //   debug("Type: ", static_cast<int>(gen->type), " modified ", gen->modified);
-  // }
-  // debug("next --");
-  // for(auto gen : child_gen2.actions){
-  //   debug("Type: ", static_cast<int>(gen->type), " modified ", gen->modified);
-  // }
-
   assertm(child_gen1.actions.back()->type == PAT::End, "Gen does not end with end action!");
   assertm(child_gen2.actions.back()->type == PAT::End, "Gen does not end with end action!");
 
-  // debug("End ---");
   // Calidate the gens
   validateGen(child_gen1);
   validateGen(child_gen2);
@@ -813,12 +837,112 @@ void ga::_Dual_Point_Crossover::crossover(ga::Genpool& currentSelection, ga::Gen
 //                             Mutation Procedure                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf){
-  // debug("Mutate");
+// void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Mutation_conf& muat_conf){
+//   // debug("Mutate");
+//   for (auto &gen : currentPopulation) {
+//     addOrthogonalAngleOffset(gen, eConf, generator);
+//     // addRandomAngleOffset(gen, eConf, generator);
+//     addPositiveDistanceOffset(gen, eConf, generator);
+//     // addNegativeDistanceOffset(gen, eConf, generator);
+//   }
+
+void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Genpool& nextPopulation){
+  nextPopulation.clear();
   for (auto &gen : currentPopulation) {
     addOrthogonalAngleOffset(gen, eConf, generator);
     // addRandomAngleOffset(gen, eConf, generator);
     addPositiveDistanceOffset(gen, eConf, generator);
     // addNegativeDistanceOffset(gen, eConf, generator);
+    nextPopulation.push_back(gen);
   }
+}
+
+void ga::_Dual_Point_Crossover::optimizePath(bool display) {
+
+  // Use configuration and obstacle map to create robot and optimize the path
+  // log all runtime information here provided by the conf
+  // logg("------Start-Training------", eConf);
+  Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+
+  if(!eConf.logName.empty()){
+    Logger("Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin", eConf.logDir, eConf.logName);
+  }
+
+  Robot rob(eConf.rob_conf, eConf.gmap, "map");
+
+  Genpool currentPool ,selPool;
+
+  // Populate pool
+  populatePool(currentPool, eConf.start, eConf.ends, eConf.initIndividuals, eConf.initActions);
+  // Get initial fitness calculation
+  evalFitness(currentPool, rob);
+
+  // First selection
+  // The population will be in the selPool
+  // Crossover is already performed
+  // selection(currentPool, selPool, eConf.selectIndividuals, eConf.selectKeepBest);
+
+  // Main loop
+  int lowest = 1000;
+  int highest = 0;
+  for (int i = 0; i < eConf.maxIterations; ++i) {
+    eConf.currentIter = i;
+
+    selection(currentPool, selPool, eConf.selectIndividuals, eConf.selectKeepBest);
+    // crossover(selPool, currentPool);
+    // cout << "Path Length: ";
+    // for (auto it = currentPool.begin(); it != currentPool.end(); ++it) {
+    //   cout << (*it).getPathLen();
+    //   for (auto it2 = next(it, 1); it2 != currentPool.end(); ++it2) {
+    // 	if(it->getPathLen() == it2->getPathLen()){
+    // 	  warn("Equal genome length detected ...");
+    // 	  debug("Gen1:");
+    // 	  for (auto ac = it->actions.begin(); ac != it->actions.end(); ++ac) {
+    // 	    cout << (*ac)->mod_config[PAP::Distance] << "|";
+    // 	  }
+    // 	  cout << endl;
+    // 	  debug("gen2");
+    // 	  for (auto ac = it2->actions.begin(); ac != it2->actions.end(); ++ac) {
+    // 	    cout << (*ac)->mod_config[PAP::Distance] << "|";
+    // 	  }
+    // 	  cout << endl;
+
+    // 	  // assert(it->getPathLen() != it2->getPathLen());
+    // 	}
+    //   }
+    // }
+    // Pass the selected and crossed individuals towards the current population
+    // Apply mutations
+    mutation(selPool, currentPool);
+    // debug("Poolsize Mut: ", pool.size());
+    evalFitness(currentPool, rob);
+    if(!eConf.logName.empty()){
+      *(eConf.logStr)  << argsToCsv(
+				    eConf.currentIter,
+				    eConf.fitnessAvg,
+				    eConf.fitnessMax,
+				    eConf.fitnessMin,
+				    eConf.fitnessAvgTime,
+				    eConf.fitnessAvgOcc,
+				    eConf.fitnessAvgCoverage,
+				    eConf.actionLenAvg,
+				    eConf.actionLenMax,
+				    eConf.actionLenMin
+				    );
+    }
+    selection(currentPool, selPool, eConf.selectIndividuals, eConf.selectKeepBest);
+    if(secretBest.id > 0 && display){
+      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness," : ", argsToCsv(eConf.fitnessAvgTime, eConf.fitnessAvgOcc, eConf.fitnessAvgCoverage));
+      rob.evaluateActions(secretBest.actions);
+      cv::imshow("Current Run ", rob.gridToImg("map"));
+      cv::waitKey(1);
+    }
+    // pool.clear();
+
+  }
+
+  Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
+  // logg("------End-Training------", eConf);
+
 }
