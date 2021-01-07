@@ -1,18 +1,18 @@
 logDir: basic
-logName: test2
+logName: test5
 maxIterations: 100
 
 # Initialization
-initActions: 50
+initActions: 60
 initIndividuals: 5000
 
 # Selection
-keep: 50
-select: 500
+keep: 200
+select: 900
 
 # Crossover
 crossoverProba: 0.8
-crossLength: 0.4
+crossLength: 0.45
 
 # Fitness
 weights:
@@ -22,9 +22,9 @@ weights:
 
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.1
-mutaRandAngleProba: 0.01
-mutaPosDistProba: 0.1
-mutaNegDistProba: 0.0
+mutaOrtoAngleProba: 0.2
+mutaRandAngleProba: 0.21
+mutaPosDistProba: 0.01
+mutaNegDistProba: 0.01
 # TODO: obsolete
-mutaPosDistMax: 50
+mutaPosDistMax: 5

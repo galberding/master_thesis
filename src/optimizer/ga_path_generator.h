@@ -67,11 +67,13 @@ namespace ga{
        ends(ends){
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
+      generator.seed(42);
     }
     // Logger
     string logDir = "";
     // string logFitness = "";
     string logName = "";
+    std::mt19937 generator;
 
     float actionLenMin = 0;
     float actionLenMax = 0;

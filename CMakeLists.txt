@@ -195,8 +195,8 @@ set(OPTI_ENV
   src/environment/robot.hpp
   src/environment/ocm.hpp
   src/environment/ocm.cpp
-  src/optimizer/optimizer.hpp
-  src/optimizer/optimizer.cpp
+  # src/optimizer/optimizer.hpp
+  # src/optimizer/optimizer.cpp
   # src/pool.hpp
   # src/pool.cpp
   src/tools/path_tools.h
@@ -205,8 +205,12 @@ set(OPTI_ENV
   src/optimizer/ga_path_generator.cpp
   src/optimizer/grid_search.h
   src/optimizer/grid_search.cpp
+  src/optimizer/optimizer.h
+  src/optimizer/optimizer.cpp
   src/tools/debug.h
   src/tools/debug.cpp
+  src/tools/mapGen.h
+  src/tools/mapGen.cpp
 
 )
 
