@@ -66,19 +66,38 @@ TEST(Try, argsToString){
 //   se.search("test1");
 // }
 
-void loadYaml(string path, executionConfig &config){
+void loadConfigFromYaml(string path, executionConfig &config){
 
   YAML::Node conf = YAML::LoadFile(path);
   if(conf["weights"]){
     cout << conf["weights"] << endl;
   }
+  config.maxIterations = conf["maxIterations"].as<int>();
+  // Time, occ, configverage
+
+  config.logName = conf["logName"].as<string>();
+  config.logDir = conf["logDir"].as<string>();
+  config.fitnessWeights[0] = conf["weights"]["time"].as<float>();
+  config.fitnessWeights[1] = conf["weights"]["occ"].as<float>();
+  config.fitnessWeights[2] = conf["weights"]["coverage"].as<float>();
+  config.initActions = conf["initActions"].as<int>();
+  config.initIndividuals = conf["initIndividuals"].as<float>();
+  config.selectKeepBest = conf["keep"].as<int>();
+  config.selectIndividuals = conf["select"].as<int>();
+  config.crossoverProba = conf["crossoverProba"].as<float>();
+  config.crossLength = conf["crossLength"].as<float>();
+  config.mutaRandAngleProba = conf["mutaRandAngleProba"].as<float>();
+  config.mutaOrtoAngleProba = conf["mutaOrtoAngleProba"].as<float>();
+  config.mutaPosDistProba = conf["mutaPosDistProba"].as<float>();
+  config.mutaNegDistProba = conf["mutaNegDistProba"].as<float>();
+  config.mutaPosDistMax = conf["mutaPosDistMax"].as<float>();
 }
 
 TEST(YML, loadCong){
   gsearch::Searcher se;
   auto confs = se.generateConfigs("io_test");
   auto co = confs.front();
-  loadYaml("../../../src/ros_optimizer/test/config.yml", co);
+  loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
 }
 
 TEST(Optimizer, standardConfig){
@@ -86,17 +105,31 @@ TEST(Optimizer, standardConfig){
   auto confs = se.generateConfigs("io_test");
 
   auto co = confs.front();
-  co.maxIterations = 10000;
-  // Time, occ, coverage
-  co.fitnessWeights = {0.05, 0.35, 0.6};
-  co.selectKeepBest = 100;
-  co.selectIndividuals = 5000;
+  loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
+  // co.maxIterations = 50;
+  // // Time, occ, coverage
+  // co.fitnessWeights = {0.05, 0.35, 0.6};
+  // co.selectKeepBest = 100;
+  // co.selectIndividuals = 1000;
 
-  co.mutaRandAngleProba = 0;
+  // co.mutaRandAngleProba = 0;
+
 
   GA_V2 ga(42, co);
   ga.optimizePath(true);
 
+}
+
+void printState(std::mt19937 &generator){
+  uniform_real_distribution<float> dist(0.0,1);
+  cout << "State: " << dist(generator) << endl;
+}
+
+TEST(Rand, random){
+  std::mt19937 generator;
+  generator.seed(42);
+  for(int i=0;i<10;i++)
+    printState(generator);
 }
 
 int main(int argc, char **argv) {

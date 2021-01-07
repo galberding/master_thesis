@@ -10,14 +10,24 @@
 
 using namespace ga;
 
+
+
 int ga::genome::gen_id = 0;
+
+void testPrint(Genpool pool){
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    float iii = calZeroActionPercent(*it);
+    cout << "Fitness: " << it->fitness << " Zeros: " << iii << endl;
+    cout << "-------" << endl;
+  }
+}
 
 bool ga::compareFitness(const struct genome &genA, const struct genome &genB){
   return genA.fitness < genB.fitness;
 }
 
 
-ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, float totalFitness, std::mt19937 generator, bool erase){
+ga::genome ga::roulettWheelSelection(ga::Genpool &currentPopulation, float totalFitness, std::mt19937 &generator, bool erase){
   // Calculate Probabilities for all individuals
   std::uniform_real_distribution<float> selDistr(0.0,1);
 
@@ -82,12 +92,31 @@ void ga::validateGen(genome &gen){
     }
   }
 }
+float ga::calZeroActionPercent(genome &gen){
+  float res = 0;
+  for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
+    if(it->get()->mod_config[PAP::Distance] == 0){
+      res += 1;
+    }
+  }
+  return res / gen.actions.size();
+}
+
+float ga::calZeroActionPercent(Genpool &pool){
+  float res = 0;
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    if(calZeroActionPercent(*it) == 1){
+      res += 1;
+    }
+  }
+  return res / pool.size();
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                             Mutation Functions                            //
 ///////////////////////////////////////////////////////////////////////////////
 
-void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 &generator){
   // debug("Add Action!");
   // Copy action at Index
   // Add offset to angle and draw distance from distribution
@@ -115,7 +144,7 @@ void ga::addAction(genome &gen, std::normal_distribution<float> angleDist, std::
 }
 
 //TODO:
-void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 &generator){
   if (gen.actions.size() < 4){
     return;
   }
@@ -132,7 +161,7 @@ void ga::removeAction(genome &gen, std::normal_distribution<float> angleDist, st
 // }
 
 //TODO:
-void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 &generator){
   int idx = randRange(1, gen.actions.size()-1);
   float offset = angleDist(generator);
   auto it = next(gen.actions.begin(), idx);
@@ -148,7 +177,7 @@ void ga::addAngleOffset(genome &gen, std::normal_distribution<float> angleDist, 
 }
 
 //TODO:
-void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 &generator){
   int idx = randRange(1, gen.actions.size()-1);
   // uniform_int_distribution<int> distDist(0,distanceDist.max());
   float offset = angleDist(generator);
@@ -180,7 +209,7 @@ void ga::addDistanceOffset(genome &gen, std::normal_distribution<float> angleDis
 
 
 //TODO: or remove
-void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 generator){
+void ga::swapRandomAction(genome &gen, std::normal_distribution<float> angleDist, std::normal_distribution<float> distanceDist, std::mt19937 &generator){
   int idx1 = randRange(1, gen.actions.size()-1);
   int idx2 = randRange(1, gen.actions.size()-1);
 
@@ -593,11 +622,9 @@ void ga::GA::optimizePath(bool display) {
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
   // logg("------Start-Training------", eConf);
-  Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
-
-  if(!eConf.logName.empty()){
-    Logger("Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin", eConf.logDir, eConf.logName);
-  }
+  *eConf.logStr << eConf.config_to_string();
+  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
 
   Robot rob(eConf.rob_conf, eConf.gmap, "map");
 
@@ -672,7 +699,7 @@ void ga::GA::optimizePath(bool display) {
   }
 
   Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
-  Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
+  // Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
   // logg("------End-Training------", eConf);
 
 }
@@ -707,7 +734,7 @@ void ga::_Dual_Point_Crossover::selection(Genpool &currentPopulation, Genpool &s
     if(currentPopulation.size() > 0){
       genome gen1 = roulettWheelSelection(currentPopulation, totalFitness, generator, false);
       genome gen2 = roulettWheelSelection(currentPopulation, totalFitness, generator, false);
-      if(gen1.fitness == 0 && gen2.fitness == 0){
+      if(gen1.fitness == 0 || gen2.fitness == 0){
 	warn("Selected gen with fitness 0, it will be skipped!");
 	continue;
       }
@@ -850,9 +877,9 @@ void ga::_Dual_Point_Crossover::mutation(Genpool& currentPopulation, Genpool& ne
   nextPopulation.clear();
   for (auto &gen : currentPopulation) {
     addOrthogonalAngleOffset(gen, eConf, generator);
-    // addRandomAngleOffset(gen, eConf, generator);
+    addRandomAngleOffset(gen, eConf, generator);
     addPositiveDistanceOffset(gen, eConf, generator);
-    // addNegativeDistanceOffset(gen, eConf, generator);
+    addNegativeDistanceOffset(gen, eConf, generator);
     nextPopulation.push_back(gen);
   }
 }
@@ -862,11 +889,10 @@ void ga::_Dual_Point_Crossover::optimizePath(bool display) {
   // Use configuration and obstacle map to create robot and optimize the path
   // log all runtime information here provided by the conf
   // logg("------Start-Training------", eConf);
-  Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
 
-  if(!eConf.logName.empty()){
-    Logger("Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin", eConf.logDir, eConf.logName);
-  }
+  *eConf.logStr << eConf.config_to_string();
+  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
 
   Robot rob(eConf.rob_conf, eConf.gmap, "map");
 
@@ -916,6 +942,7 @@ void ga::_Dual_Point_Crossover::optimizePath(bool display) {
     mutation(selPool, currentPool);
     // debug("Poolsize Mut: ", pool.size());
     evalFitness(currentPool, rob);
+    float zeroPercent = calZeroActionPercent(currentPool);
     if(!eConf.logName.empty()){
       *(eConf.logStr)  << argsToCsv(
 				    eConf.currentIter,
@@ -927,12 +954,13 @@ void ga::_Dual_Point_Crossover::optimizePath(bool display) {
 				    eConf.fitnessAvgCoverage,
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
-				    eConf.actionLenMin
+				    eConf.actionLenMin,
+				    zeroPercent
 				    );
     }
     selection(currentPool, selPool, eConf.selectIndividuals, eConf.selectKeepBest);
     if(secretBest.id > 0 && display){
-      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness," : ", argsToCsv(eConf.fitnessAvgTime, eConf.fitnessAvgOcc, eConf.fitnessAvgCoverage));
+      debug(eConf.currentIter, ", Fitness: ", secretBest.fitness," : ", argsToCsv(eConf.fitnessAvgTime, eConf.fitnessAvgOcc, eConf.fitnessAvgCoverage, zeroPercent));
       rob.evaluateActions(secretBest.actions);
       cv::imshow("Current Run ", rob.gridToImg("map"));
       cv::waitKey(1);
@@ -942,7 +970,7 @@ void ga::_Dual_Point_Crossover::optimizePath(bool display) {
   }
 
   Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
-  Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
+  // Logger(eConf.fitnessStr->str(), eConf.logDir, eConf.fitnessName);
   // logg("------End-Training------", eConf);
 
 }
