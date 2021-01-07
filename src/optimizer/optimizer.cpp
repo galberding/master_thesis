@@ -67,12 +67,12 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
   currentPool.insert(currentPool.begin(),
 		     keep.begin(),
 		     keep.end());
-  
+
 }
 
 genome op::RouletteWheelSelection::selection(ga::Genpool &currentPopulation, executionConfig &eConf){
   // Calculate the total fitness value
-  
+
   float totalFitness = eConf.fitnessAvg * currentPopulation.size();
   //TODO: Test if the above formula holds true
   float testSum = 0;
@@ -270,6 +270,117 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
     (*action)->mod_config[PAP::Distance] -= offset;
     (*action)->modified = true;
   }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//                              Fitness strategy                         //
+///////////////////////////////////////////////////////////////////////////////
+void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig eConf){
+   eConf.fitnessAvg = 0;
+  eConf.fitnessMax = 0;
+  eConf.fitnessMin = 1;
+  eConf.fitnessAvgTime = 0;
+  eConf.fitnessAvgOcc = 0;
+  eConf.fitnessAvgCoverage = 0;
+  eConf.actionLenMax = 0;
+  eConf.actionLenMin = 100000;
+  eConf.actionLenAvg = 0;
+  for(Genpool::iterator it = currentPool.begin(); it != currentPool.end();){
+    assertm(it->actions.size() > 0, "Not enough actions");
+    if(rob.evaluateActions(it->actions)){
+      assertm(it->actions.size() > 0, "Not enough actions");
+      float Cdistance = 0; // Cleand distance
+      float distance = 0; // uncleand distance
+      float occ = 0;
+      int crossed = 0;
+      // iterate over all actions
+      for(auto &action : it->actions){
+	auto conf = action->c_config;
+	// Check if action did a move
+	if(conf.count(Counter::StepCount) > 0){
+	  if(action->type == PAT::CAhead){
+	    // Add cross count (default is 1)
+	    crossed += conf[Counter::CrossCount];
+	    // crossed += conf[PAP::CrossCount] - 1;
+	    Cdistance += conf[Counter::StepCount];
+ 	  }else{
+	    distance += conf[Counter::StepCount];
+	  }
+	}else{
+	  // assertm(false, "Action did not make a move and is still listed");
+	}
+      }
+      // debug("Crossed: ", crossed, " dist: ", Cdistance);
+      assertm(crossed <= Cdistance, "CrossCount is bigger than traveled distance!");
+      // crossed = crossed / it->actions.size();
+      float fitness = calculation(
+				  Cdistance,
+				  distance,
+				  crossed,
+				  rob.getConfig()[RP::Clean_speed_cm_s] / 100,
+				  rob.getConfig()[RP::Drive_speed_cm_s] / 100,
+				  rob.getFreeArea(),
+				  eConf);
+      it->fitness = fitness;
+
+      // Logging of fittnessvalues
+      if(fitness > eConf.fitnessMax) eConf.fitnessMax = fitness;
+      if(fitness < eConf.fitnessMin) eConf.fitnessMin = fitness;
+      auto size = it->actions.size();
+      if(size > eConf.actionLenMax) eConf.actionLenMax = size;
+      if(size < eConf.actionLenMin) eConf.actionLenMin = size;
+      eConf.fitnessAvg += fitness;
+      eConf.actionLenAvg += it->actions.size();
+
+      it++;
+    }else{
+      warn("Erase Gen!");
+      assertm(false, "Attempt to erase a gen!!");
+      it = currentPool.erase(it);
+    }
+  }
+  eConf.fitnessAvg /= currentPool.size();
+  eConf.fitnessAvgTime /= currentPool.size();
+  eConf.fitnessAvgOcc /= currentPool.size();
+  eConf.fitnessAvgCoverage /= currentPool.size();
+  eConf.actionLenAvg /= currentPool.size();
+}
+
+float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig eConf){
+assert(cdist >= crossed);
+
+  float actual_time = cdist + dist;
+  float optimal_time = (cdist - crossed);
+  float final_time = optimal_time / actual_time;
+
+
+  // Calculate the final occ based on the
+  // TODO: rename fitness parameter, sth like crossFactor or overlapping
+  float current_occ = cdist - crossed;
+  // if (current_occ < 0){
+  //   current_occ = crossed;
+  // }
+  float optimal_occ = cdist + crossed;
+
+  float final_occ = current_occ / optimal_occ ;
+
+  // Area coverage
+  float final_coverage = current_occ / freeSpace;
+  assertm(freeSpace >= current_occ , "No space to cover");
+  // Ensure that the gen is not selected for crossover by setting the fitness to 0
+  if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
+
+  eConf.fitnessAvgTime += final_time;
+  eConf.fitnessAvgOcc += final_occ;
+  eConf.fitnessAvgCoverage += final_coverage;
+
+
+  float weight = eConf.fitnessWeight;
+  // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
+  float fitness = eConf.fitnessWeights[0]*final_time
+    + eConf.fitnessWeights[1]*final_occ
+    + eConf.fitnessWeights[2]*final_coverage;
+  return fitness;
 }
 
 /////////////////////////////////////////////////////////////////////////////

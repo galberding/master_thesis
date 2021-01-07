@@ -64,6 +64,21 @@ namespace op {
 
 
   /////////////////////////////////////////////////////////////////////////////
+  //                             FitnessStrategy                             //
+  /////////////////////////////////////////////////////////////////////////////
+
+  struct FitnessStrategy {
+    virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig eConf);
+    virtual float calculation(float cdist,
+			      float dist,
+			      int crossed,
+			      float cSpeed_m_s,
+			      float speed_m_s,
+			      int freeSpace,
+			      executionConfig eConf);
+  };
+
+  /////////////////////////////////////////////////////////////////////////////
   //                                Optimizer                                 //
   /////////////////////////////////////////////////////////////////////////////
   struct Optimizer {
@@ -73,6 +88,7 @@ namespace op {
 	      shared_ptr<SelectionStrategy> select,
 	      shared_ptr<CrossoverStrategy> cross,
 	      shared_ptr<MutationStrategy> mutate,
+	      shared_ptr<FitnessStrategy> calFitness,
 	      executionConfig eConf
 	      ):eConf(eConf){}
   };
