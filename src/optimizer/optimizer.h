@@ -9,6 +9,9 @@ namespace op {
   // namespace to organize the optimizer strategies
   using SelectionPool = list<pair<genome, genome>>;
 
+
+  bool applyAction(float proba, executionConfig eConf);
+
   /////////////////////////////////////////////////////////////////////////////
   //                               InitStrategy                              //
   /////////////////////////////////////////////////////////////////////////////
@@ -23,7 +26,7 @@ namespace op {
     // Conditions:
     // - current Pool will be cleared here
     // - Selection Pool is supposed to be cleared before it is filled again here
-    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
+    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf) = 0;
   };
 
   struct RouletteWheelSelection : SelectionStrategy{
@@ -37,7 +40,13 @@ namespace op {
     // Conditions:
     // - Selection pools needs to be filled
     // - Next Pool is expected to be already emptied
-    virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf);
+    virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) = 0;
+    void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child, bool modify=false);
+  };
+
+  struct DualPointCrossover : CrossoverStrategy {
+    virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) override;
+    void mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig eConf);
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -49,10 +58,6 @@ namespace op {
     void addRandomAngleOffset(genome& gen, executionConfig& eConf);
     void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
     void addNegativeDistanceOffset(genome& gen, executionConfig& eConf);
-    bool applyMutation(float proba, executionConfig eConf){
-      uniform_real_distribution<float> probaDist(0,1);
-      return proba > probaDist(eConf.generator);
-    }
   };
 
 
