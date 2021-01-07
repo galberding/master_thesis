@@ -37,6 +37,65 @@ void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
 //                             MutationStrategy                            //
 /////////////////////////////////////////////////////////////////////////////
 
+void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eConf){
+  for (auto &gen : currentPool) {
+    addOrthogonalAngleOffset(gen, eConf);
+    addRandomAngleOffset(gen, eConf);
+    addPositiveDistanceOffset(gen, eConf);
+    addNegativeDistanceOffset(gen, eConf);
+  }
+}
+
+void op::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf){
+  if(!applyMutation(eConf.mutaOrtoAngleProba, eConf)) return;
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_int_distribution<int> changeDistro(0,1);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+  (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator) ? 90 : -90;
+  (*action)->modified = true;
+}
+
+void op::MutationStrategy::addRandomAngleOffset(genome& gen, executionConfig& eConf) {
+  if(!applyMutation(eConf.mutaRandAngleProba, eConf)) return;
+
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_int_distribution<int> changeDistro(0,360);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+  (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator);
+  (*action)->modified = true;
+}
+
+void op::MutationStrategy::addPositiveDistanceOffset(genome& gen, executionConfig& eConf) {
+
+  if(!applyMutation(eConf.mutaPosDistProba, eConf)) return;
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+  (*action)->mod_config[PAP::Distance] += changeDistro(eConf.generator);
+  (*action)->modified = true;
+}
+
+void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfig& eConf) {
+
+  if(!applyMutation(eConf.mutaNegDistProba, eConf)) return;
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
+
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+  float offset = changeDistro(eConf.generator);
+  if((*action)->mod_config[PAP::Distance] > offset){
+    (*action)->mod_config[PAP::Distance] -= offset;
+    (*action)->modified = true;
+  }
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //                                Optimizer                                 //
 /////////////////////////////////////////////////////////////////////////////

@@ -26,6 +26,10 @@ namespace op {
     virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
   };
 
+  struct RouletteWheelSelection : SelectionStrategy{
+    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf) override;
+  };
+
   /////////////////////////////////////////////////////////////////////////////
   //                            CrossoverStrategy                             //
   /////////////////////////////////////////////////////////////////////////////
@@ -41,8 +45,16 @@ namespace op {
   /////////////////////////////////////////////////////////////////////////////
   struct MutationStrategy {
     virtual void operator()(Genpool& currentPool, executionConfig& eConf);
-
+    void addOrthogonalAngleOffset(genome& gen, executionConfig& eConf);
+    void addRandomAngleOffset(genome& gen, executionConfig& eConf);
+    void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
+    void addNegativeDistanceOffset(genome& gen, executionConfig& eConf);
+    bool applyMutation(float proba, executionConfig eConf){
+      uniform_real_distribution<float> probaDist(0,1);
+      return proba > probaDist(eConf.generator);
+    }
   };
+
 
   /////////////////////////////////////////////////////////////////////////////
   //                                Optimizer                                 //
