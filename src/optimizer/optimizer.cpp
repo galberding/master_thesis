@@ -32,7 +32,71 @@ void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
 /////////////////////////////////////////////////////////////////////////////
 //                            SelectionStrategy                             //
 /////////////////////////////////////////////////////////////////////////////
+void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf){
+  Genpool keep;
+  selPool.clear();
+  // Ensure population is not empty
+  assert(currentPool.size() > 0);
+  assert(eConf.selectKeepBest < currentPool.size());
+  // Keep the best individuals in the population for the next generation
+  sort(currentPool.begin(), currentPool.end());
+  keep.insert(keep.begin(),
+	      prev(currentPool.end(), eConf.selectKeepBest),
+	      currentPool.end());
 
+  // Start selection process
+  // TODO: Remember select individuals is now the value of the selected pairs!
+  while(selPool.size() < eConf.selectIndividuals){
+    // Draw individuals
+    auto couple = make_pair(selection(currentPool, eConf),
+	      selection(currentPool, eConf));
+    // Check if fitness is high enough
+    // 0 fitness indicates a defect gen
+    if(couple.first.fitness == 0
+       || couple.second.fitness == 0){
+      warn("Selection: skip gen with fitness 0");
+      continue;
+    }
+
+    // Insert into the selection Pool
+    selPool.push_back(couple);
+  }
+
+  currentPool.clear();
+  // Insert preserved gens to the pool
+  currentPool.insert(currentPool.begin(),
+		     keep.begin(),
+		     keep.end());
+  
+}
+
+genome op::RouletteWheelSelection::selection(ga::Genpool &currentPopulation, executionConfig &eConf){
+  // Calculate the total fitness value
+  
+  float totalFitness = eConf.fitnessAvg * currentPopulation.size();
+  //TODO: Test if the above formula holds true
+  float testSum = 0;
+  for (auto it = currentPopulation.begin(); it != currentPopulation.end(); ++it) {
+    testSum += it->fitness;
+  }
+  assert(testSum == totalFitness);
+
+  std::uniform_real_distribution<float> selDistr(0.0,1);
+
+  float rand = selDistr(eConf.generator);
+  // cout << "Wheel: " << rand << endl;
+  float offset = 0.0;
+  genome gen;
+
+  for(auto it = currentPopulation.begin(); it != currentPopulation.end(); it++){
+    offset += it->fitness / totalFitness;
+    if(rand < offset){
+      gen = *it;
+      break;
+    }
+  }
+  return gen;
+}
 /////////////////////////////////////////////////////////////////////////////
 //                            CrossoverStrategy                             //
 /////////////////////////////////////////////////////////////////////////////

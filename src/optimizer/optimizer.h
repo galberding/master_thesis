@@ -26,11 +26,13 @@ namespace op {
     // Conditions:
     // - current Pool will be cleared here
     // - Selection Pool is supposed to be cleared before it is filled again here
-    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf) = 0;
+    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
+    virtual genome selection(ga::Genpool &currentPopulation, executionConfig& eConf) = 0;
+
   };
 
   struct RouletteWheelSelection : SelectionStrategy{
-    virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf) override;
+    virtual genome selection(ga::Genpool &currentPopulation, executionConfig& eConf) override;
   };
 
   /////////////////////////////////////////////////////////////////////////////
