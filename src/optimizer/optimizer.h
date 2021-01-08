@@ -49,7 +49,7 @@ namespace op {
 
   struct DualPointCrossover : CrossoverStrategy {
     virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) override;
-    void mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig eConf);
+    void mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf);
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -69,14 +69,14 @@ namespace op {
   /////////////////////////////////////////////////////////////////////////////
 
   struct FitnessStrategy {
-    virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig eConf);
+    virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
     virtual float calculation(float cdist,
 			      float dist,
 			      int crossed,
 			      float cSpeed_m_s,
 			      float speed_m_s,
 			      int freeSpace,
-			      executionConfig eConf);
+			      executionConfig& eConf);
   };
 
   /////////////////////////////////////////////////////////////////////////////

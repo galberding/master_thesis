@@ -79,7 +79,6 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
   for (auto it = currentPopulation.begin(); it != currentPopulation.end(); ++it) {
     testSum += it->fitness;
   }
-  assert(testSum == totalFitness);
 
   std::uniform_real_distribution<float> selDistr(0.0,1);
 
@@ -142,7 +141,7 @@ void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, 
 }
 
 
-void op::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig eConf){
+void op::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf){
   // mate two parents
   // estimate the individual Length
   // debug("Parent length: ", par1.actions.size(), " ", par2.actions.size());
@@ -275,7 +274,7 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
 ///////////////////////////////////////////////////////////////////////////////
 //                              Fitness strategy                         //
 ///////////////////////////////////////////////////////////////////////////////
-void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig eConf){
+void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
    eConf.fitnessAvg = 0;
   eConf.fitnessMax = 0;
   eConf.fitnessMin = 1;
@@ -346,7 +345,7 @@ void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, exe
   eConf.actionLenAvg /= currentPool.size();
 }
 
-float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig eConf){
+float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig& eConf){
 assert(cdist >= crossed);
 
   float actual_time = cdist + dist;
