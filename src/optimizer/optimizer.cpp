@@ -398,8 +398,6 @@ void op::Optimizer::optimizePath(bool display){
   // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
   *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
 
-
-
   while(eConf.currentIter <= eConf.maxIterations){
 
     (*calFitness)(pool, *rob, eConf);
@@ -419,6 +417,10 @@ void op::Optimizer::optimizePath(bool display){
 				    zeroPercent
 				    );
     }
+    if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
+      debug("Take snapshot to: ", eConf.tSnap);
+      snapshotPopulation(eConf.tSnap);
+    }
     (*select)(pool, sPool, eConf);
     if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
@@ -436,6 +438,7 @@ void op::Optimizer::optimizePath(bool display){
 
     eConf.currentIter++;
   }
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
 }
 
 void op::Optimizer::restorePopulationFromSnapshot(const string path){

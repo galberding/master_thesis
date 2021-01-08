@@ -50,6 +50,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     snapshot = yConf["snapshot"].as<string>();
   if(yConf["takeSnapshot"])
     takeSnapshot = yConf["takeSnapshot"].as<bool>();
+  if(yConf["takeSnapshotEvery"])
+    takeSnapshotEvery = yConf["takeSnapshotEvery"].as<int>();
   if(yConf["tSnap"])
     tSnap = yConf["tSnap"].as<string>();
   // Map

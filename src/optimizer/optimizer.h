@@ -4,7 +4,7 @@
 // #include "ga_path_generator.h"
 #include "../tools/pa_serializer.h"
 #include "../tools/configuration.h"
-
+#include "../tools/debug.h"
 // using namespace ga;
 using namespace conf;
 

@@ -5,8 +5,9 @@ maxIterations: 100
 # Snapshots
 restore: false
 snapshot: name
-takeSnapshot: false
-tSnap: name
+takeSnapshot: true
+takeSnapshotEvery: 1
+tSnap: pop.pas
 
 # Map
 mapType: 1

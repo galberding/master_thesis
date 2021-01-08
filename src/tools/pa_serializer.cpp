@@ -13,6 +13,7 @@ bool pa_serializer::writeActionsToFile(vector<path::PAs> &paths, const fs::path&
   std::ofstream ofs;
   for(auto &apath : paths){
     for (auto it = apath.begin(); it != apath.end(); ++it) {
+      //debug("Action: ", )
       assert((*it)->wps.size() > 0);
       switch(it->get()->type){
       case PAT::Start:{

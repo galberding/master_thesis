@@ -39,8 +39,9 @@ namespace conf {
     // Snapshots
     bool restore = false;
     string snapshot = "";
-    bool takeSnapshot = false;
-    string tSnap = "";
+    bool takeSnapshot = true;
+    int takeSnapshotEvery = 1;
+    string tSnap = "population.pas";
 
     float actionLenMin = 0;
     float actionLenMax = 0;
@@ -85,7 +86,7 @@ namespace conf {
     int initIndividuals = 1000;
     int initActions = 50;
     Position start;
-    vector<Position> ends;
+    vector<Position> ends = {Position()};
 
     // Fitness
     vector<float> fitnessWeights = {0.3, 0.05, 0.65};
