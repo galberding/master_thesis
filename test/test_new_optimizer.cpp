@@ -71,6 +71,9 @@ void loadConfigFromYaml(string path, executionConfig &config){
 TEST(Optimizer, standardConfig){
   // gsearch::Searcher se;
   // auto confs = se.generateConfigs("io_test");
+  executionConfig ec;
+  loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", ec);
+  ec.loadConfFromYaml("../../../src/ros_optimizer/test/config.yml");
 
   // auto co = confs.front();
   // loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
@@ -85,6 +88,18 @@ TEST(Optimizer, standardConfig){
 
   // GA_V2 ga(42, co);
   // ga.optimizePath(true);
+  // executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // executionConfig eConf("/homes/galberding/catkin_ws/src/ros_optimizer/test/config.yml");
+
+  // op::Optimizer opti(
+  // 		     make_shared<op::InitStrategy>(op::InitStrategy()),
+  // 		     make_shared<op::RouletteWheelSelection>(op::RouletteWheelSelection()),
+  // 		     make_shared<op::DualPointCrossover>(op::DualPointCrossover()),
+  // 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
+  // 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
+  // 		     eConf);
+
+
 
 }
 

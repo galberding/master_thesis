@@ -4,15 +4,15 @@ maxIterations: 100
 
 # Snapshots
 restore: false
-snapshot: ""
+snapshot: name
 takeSnapshot: false
-tSnap: ""
+tSnap: name
 
 # Map
 mapType: 1
-mapWidth: 10;
+mapWidth: 10
 mapHeight: 10
-mapResolution: 0.3;
+mapResolution: 0.3
 
 # Initialization
 initActions: 60

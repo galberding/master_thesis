@@ -215,6 +215,8 @@ set(OPTI_ENV
   src/tools/pa_serializer.cpp
   src/tools/genome_tools.h
   src/tools/genome_tools.cpp
+  src/tools/configuration.h
+  src/tools/configuration.cpp
 
 )
 
@@ -291,7 +293,7 @@ catkin_add_executable_with_gtest(test-ga
 
 
 # if(TARGET test-path-tools)
-target_link_libraries(test-path-tools ${catkin_LIBRARIES})
+target_link_libraries(test-path-tools ${catkin_LIBRARIES} yaml-cpp)
 # target_link_libraries(test-opti ${catkin_LIBRARIES})
 # target_link_libraries(test-app ${catkin_LIBRARIES})
 # target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
