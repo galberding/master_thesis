@@ -1,11 +1,13 @@
 #include "grid_search.h"
+#include "../tools/configuration.h"
 
 using namespace ga;
+using namespace conf;
 
 void gsearch::Searcher::tSearch(){
   int pool_size = 1;
   std::future<int> t_pool[pool_size];
-  vector<ga::executionConfig> confs = generateConfigs("testrunV1");
+  vector<executionConfig> confs = generateConfigs("testrunV1");
   int done = 0;
   int all = confs.size();
 
@@ -162,8 +164,8 @@ shared_ptr<GridMap> gsearch::Searcher::generateMapType(int width, int height, fl
   return make_shared<GridMap>(map);
 }
 
-vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
-  vector<ga::executionConfig> configs;
+vector<executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
+  vector<executionConfig> configs;
   // For now we hardcode all configs that we want to generate as well as the tests
   int runId = 0;
   vector<vector<float>> weightConfs = {
@@ -190,7 +192,7 @@ vector<ga::executionConfig> gsearch::Searcher::generateConfigs(string dirname) {
 	for(auto &wConf : weightConfs){
 	  Position startpos;
 	  shared_ptr<GridMap> mapptr = generateMapType(10, 10, 0.3, 1, startpos);
-	  ga::executionConfig conf(dirname, to_string(runId)+ "_" + "log", mapptr, startpos, {Position(42,42)});
+	  executionConfig conf(dirname, to_string(runId)+ "_" + "log", mapptr, startpos, {Position(42,42)});
 	  // conf.fitnessName = "fitness_record";
 	  conf.initActions = 20;
 	  conf.selectIndividuals = selIndividuals;

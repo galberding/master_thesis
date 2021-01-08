@@ -2,6 +2,18 @@ logDir: basic
 logName: test5
 maxIterations: 100
 
+# Snapshots
+restore: false
+snapshot: ""
+takeSnapshot: false
+tSnap: ""
+
+# Map
+mapType: 1
+mapWidth: 10;
+mapHeight: 10
+mapResolution: 0.3;
+
 # Initialization
 initActions: 60
 initIndividuals: 5000

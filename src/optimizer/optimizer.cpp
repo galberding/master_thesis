@@ -388,7 +388,16 @@ assert(cdist >= crossed);
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::optimizePath(){
-
+  if(!eConf.restore){
+    (*init)(pool, eConf);
+  } else {
+    pool.clear();
+    restorePopulationFromSnapshot(eConf.snapshot);
+  }
+  while(eConf.currentIter <= eConf.maxIterations){
+    
+    eConf.currentIter++;
+  }
 }
 
 void op::Optimizer::restorePopulationFromSnapshot(const string path){

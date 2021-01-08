@@ -57,108 +57,114 @@ namespace ga{
   float calZeroActionPercent(Genpool &pool);
 
 
-  struct executionConfig {
-    executionConfig(){} // default constructor
-    executionConfig(string dir, string name, shared_ptr<GridMap> gmap, Position start, vector<Position> ends)
-      :logDir(dir),
-       logName(name),
-       gmap(gmap),
-       start(start),
-       ends(ends){
-      fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
-      logStr = make_shared<std::ostringstream>(std::ostringstream());
-      generator.seed(42);
-    }
-    // Logger
-    string logDir = "";
-    // string logFitness = "";
-    string logName = "";
-    std::mt19937 generator;
+  // struct executionConfig {
+  //   executionConfig(){} // default constructor
+  //   executionConfig(string dir, string name, shared_ptr<GridMap> gmap, Position start, vector<Position> ends)
+  //     :logDir(dir),
+  //      logName(name),
+  //      gmap(gmap),
+  //      start(start),
+  //      ends(ends){
+  //     fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
+  //     logStr = make_shared<std::ostringstream>(std::ostringstream());
+  //     generator.seed(42);
+  //   }
+  //   // Logger
+  //   string logDir = "";
+  //   // string logFitness = "";
+  //   string logName = "";
 
-    float actionLenMin = 0;
-    float actionLenMax = 0;
-    float actionLenAvg = 0;
+  //   // Snapshots
+  //   bool restore = false;
+  //   string snapshot = "";
+  //   bool takeSnapshot = false;
+  //   string tSnap = "";
 
-    // If parameter is set we want to store it under this filename
-    string fitnessName = "vv";
-    float fitnessWeight = 0.5;
-    // Those values will be updated after each iteration
-    float fitnessMax = 0;
-    float fitnessMin = 0;
-    float fitnessAvg = 0;
-    float fitnessAvgTime = 0;
-    float fitnessAvgOcc = 0;
-    float fitnessAvgCoverage = 0;
+  //   float actionLenMin = 0;
+  //   float actionLenMax = 0;
+  //   float actionLenAvg = 0;
 
-    shared_ptr<std::ostringstream> fitnessStr;
-    shared_ptr<std::ostringstream> logStr;
+  //   // If parameter is set we want to store it under this filename
+  //   string fitnessName = "vv";
+  //   float fitnessWeight = 0.5;
+  //   // Those values will be updated after each iteration
+  //   float fitnessMax = 0;
+  //   float fitnessMin = 0;
+  //   float fitnessAvg = 0;
+  //   float fitnessAvgTime = 0;
+  //   float fitnessAvgOcc = 0;
+  //   float fitnessAvgCoverage = 0;
 
-    // Robot Config
-    string obstacleName = "map";
-    rob_config rob_conf = {
-      {RobotProperty::Width_cm, 1},
-      {RobotProperty::Height_cm, 1},
-      {RobotProperty::Drive_speed_cm_s, 50},
-      {RobotProperty::Clean_speed_cm_s, 20}};
+  //   shared_ptr<std::ostringstream> fitnessStr;
+  //   shared_ptr<std::ostringstream> logStr;
 
-    // Map
-    shared_ptr<GridMap> gmap;
+  //   // Robot Config
+  //   string obstacleName = "map";
+  //   rob_config rob_conf = {
+  //     {RobotProperty::Width_cm, 1},
+  //     {RobotProperty::Height_cm, 1},
+  //     {RobotProperty::Drive_speed_cm_s, 50},
+  //     {RobotProperty::Clean_speed_cm_s, 20}};
 
-    int currentIter = 0;
-    // GA
-    int maxIterations = 1000;
-    int initIndividuals = 1000;
-    int initActions = 50;
-    Position start;
-    vector<Position> ends;
+  //   // Map
+  //   std::mt19937 generator;
+  //   shared_ptr<GridMap> gmap;
 
-    // Fitness
-    vector<float> fitnessWeights = {0.3, 0.05, 0.65};
+  //   // GA
+  //   int currentIter = 0;
+  //   int maxIterations = 1000;
+  //   int initIndividuals = 1000;
+  //   int initActions = 50;
+  //   Position start;
+  //   vector<Position> ends;
 
-    // Selection
-    int selectIndividuals = 10;
-    int selectKeepBest = 0;
-    // Switch between roulettWheelSelection or best N selection
-    bool toggleRoulettSelectionOn = false;
+  //   // Fitness
+  //   vector<float> fitnessWeights = {0.3, 0.05, 0.65};
 
-    // crossover
-    // Length of the segment that will be transferred to the other gen
-    float crossLength = 0.4;
-    float crossoverProba = 0.8;
+  //   // Selection
+  //   int selectIndividuals = 10;
+  //   int selectKeepBest = 0;
+  //   // Switch between roulettWheelSelection or best N selection
+  //   bool toggleRoulettSelectionOn = false;
 
-    // Mutation
-    vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
-    // TODO: Not used can be removed
-    vector<int> probas = {10, 10};
-    Mutation_conf muta = {
-      // {"addAction", make_pair(addAction, 10)},
-      // {"removeAction", make_pair(removeAction, 10)},
-      // {"addAngleOffset", make_pair(addAngleOffset, 70)},
-      // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
-      // {"swapRandomAction", make_pair(swapRandomAction, 10)},
-    };
-    float distMu = 4;
-    float distDev = 0.9;
-    float angleMu = 0;
-    float angleDev = 40;
+  //   // crossover
+  //   // Length of the segment that will be transferred to the other gen
+  //   float crossLength = 0.4;
+  //   float crossoverProba = 0.8;
 
-    // Mutation functions, configurations
-    float mutaOrtoAngleProba = 0.1;
-    float mutaRandAngleProba = 0.1;
-    float mutaPosDistProba = 0.1;
-    float mutaNegDistProba = 0.01;
-    float mutaPosDistMax = 50;
+  //   // Mutation
+  //   vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
+  //   // TODO: Not used can be removed
+  //   vector<int> probas = {10, 10};
+  //   Mutation_conf muta = {
+  //     // {"addAction", make_pair(addAction, 10)},
+  //     // {"removeAction", make_pair(removeAction, 10)},
+  //     // {"addAngleOffset", make_pair(addAngleOffset, 70)},
+  //     // {"addDistanceOffset", make_pair(addDistanceOffset, 70)},
+  //     // {"swapRandomAction", make_pair(swapRandomAction, 10)},
+  //   };
+  //   float distMu = 4;
+  //   float distDev = 0.9;
+  //   float angleMu = 0;
+  //   float angleDev = 40;
 
-    string config_to_string(){
+  //   // Mutation functions, configurations
+  //   float mutaOrtoAngleProba = 0.1;
+  //   float mutaRandAngleProba = 0.1;
+  //   float mutaPosDistProba = 0.1;
+  //   float mutaNegDistProba = 0.01;
+  //   float mutaPosDistMax = 50;
 
-      string str;
-      str += argsToCsv("maxIterations", "initIndividuals", "selectIndividuals", "selectKeepBest", "time,occ,coverage");
-      str += argsToCsv(maxIterations, initIndividuals, selectIndividuals, selectKeepBest, fitnessWeights[0], fitnessWeights[1], fitnessWeights[2]);
+  //   string config_to_string(){
 
-      return str;
-    }
+  //     string str;
+  //     str += argsToCsv("maxIterations", "initIndividuals", "selectIndividuals", "selectKeepBest", "time,occ,coverage");
+  //     str += argsToCsv(maxIterations, initIndividuals, selectIndividuals, selectKeepBest, fitnessWeights[0], fitnessWeights[1], fitnessWeights[2]);
 
-  };
+  //     return str;
+  //   }
+
+  // };
 
 
 ///////////////////////////////////////////////////////////////////////////////
