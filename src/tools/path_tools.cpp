@@ -80,6 +80,27 @@ bool path::PathAction::updateConf(PAP param, float val) {
   return true;
 }
 
+void path::PathAction::setConfigByWaypoints(Position start, Position end){
+    // Start the mending process by
+  float angle;
+  Position V = end - start;
+  float dist = V.norm();
+  // ensure that the calculation does not divide by 0
+  if(dist > 0 && dirToAngle(V/dist, angle)){
+    // Only adapt the angle if distance is greater 0
+    // otherwise we just want to ignore it
+    mod_config[PAP::Angle] = angle;
+  }
+
+  // Update Parameter
+  mod_config[PAP::Distance] = dist;
+
+  if(wps.size() == 0){
+    wps.push_back(start);
+    wps.push_back(end);
+  }
+}
+
 
 bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChanges){
 
@@ -99,10 +120,12 @@ bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChange
     return false;
   }
 
+  //TODO: Replace by setConfigByWaypoints
   // Start the mending process by
   float angle;
   Position start = pa->get_wps().back();
   Position end = wps.back();
+
   Position V = end - start;
   float dist = V.norm();
   // ensure that the calculation does not divide by 0

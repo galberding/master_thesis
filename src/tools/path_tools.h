@@ -140,7 +140,7 @@ namespace path {
     // virtual waypoints calEndpoint(grid_map::Index &start);
     // grid_map::Index vecToIdx(direction vec);
     PA_config& getConfig(){return mod_config;}
-
+    void setConfigByWaypoints(Position start, Position end);
 
     /**
        This will adapt the parameter actions to drive from given start point to last one

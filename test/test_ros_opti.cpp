@@ -399,6 +399,13 @@ TEST(Serializer, writePoolToFile){
 
 }
 
+TEST(Serializer, readPoolFromFile){
+  vector<PAs> pps;
+
+  pa_serializer::readActrionsFromFile(pps, "testSerialize");
+  pa_serializer::writeActionsToFile(pps, "testReSer");
+}
+
 
 int main(int argc, char **argv){
   testing::InitGoogleTest(&argc, argv);
