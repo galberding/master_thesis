@@ -40,6 +40,7 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
   assert(eConf.selectKeepBest < currentPool.size());
   // Keep the best individuals in the population for the next generation
   sort(currentPool.begin(), currentPool.end());
+  eConf.best = currentPool.back();
   keep.insert(keep.begin(),
 	      prev(currentPool.end(), eConf.selectKeepBest),
 	      currentPool.end());
@@ -386,17 +387,50 @@ assert(cdist >= crossed);
 //                                Optimizer                                 //
 /////////////////////////////////////////////////////////////////////////////
 
-void op::Optimizer::optimizePath(){
+void op::Optimizer::optimizePath(bool display){
   if(!eConf.restore){
     (*init)(pool, eConf);
   } else {
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
+  *eConf.logStr << eConf.config_to_string();
+  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
+
+
+
   while(eConf.currentIter <= eConf.maxIterations){
 
     (*calFitness)(pool, *rob, eConf);
+    float zeroPercent = calZeroActionPercent(pool);
+    if(!eConf.logName.empty()){
+      *(eConf.logStr)  << argsToCsv(
+				    eConf.currentIter,
+				    eConf.fitnessAvg,
+				    eConf.fitnessMax,
+				    eConf.fitnessMin,
+				    eConf.fitnessAvgTime,
+				    eConf.fitnessAvgOcc,
+				    eConf.fitnessAvgCoverage,
+				    eConf.actionLenAvg,
+				    eConf.actionLenMax,
+				    eConf.actionLenMin,
+				    zeroPercent
+				    );
+    }
     (*select)(pool, sPool, eConf);
+    if(eConf.best.id > 0 && display){
+      debug(eConf.currentIter, ", MaxFitness: ",
+	    eConf.best.fitness," : ",
+	    argsToCsv(eConf.fitnessAvgTime,
+		      eConf.fitnessAvgOcc,
+		      eConf.fitnessAvgCoverage,
+		      zeroPercent));
+      rob->evaluateActions(eConf.best.actions);
+      cv::imshow("Current Run ", rob->gridToImg("map"));
+      cv::waitKey(1);
+    }
     (*cross)(sPool, pool, eConf);
     (*mutate)(pool, eConf);
 

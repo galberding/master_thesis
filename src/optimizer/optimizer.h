@@ -117,7 +117,7 @@ namespace op {
    */
   // private:
   //   Optimizer()
-  void optimizePath();
+  void optimizePath(bool display = false);
   void restorePopulationFromSnapshot(const string path);
   void snapshotPopulation(const string path);
   };

@@ -69,25 +69,7 @@ void loadConfigFromYaml(string path, executionConfig &config){
 // }
 
 TEST(Optimizer, standardConfig){
-  // gsearch::Searcher se;
-  // auto confs = se.generateConfigs("io_test");
-  // executionConfig ec;
-  // loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", ec);
-  // ec.loadConfFromYaml("../../../src/ros_optimizer/test/config.yml");
 
-  // auto co = confs.front();
-  // loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
-  // co.maxIterations = 50;
-  // // Time, occ, coverage
-  // co.fitnessWeights = {0.05, 0.35, 0.6};
-  // co.selectKeepBest = 100;
-  // co.selectIndividuals = 1000;
-
-  // co.mutaRandAngleProba = 0;
-
-
-  // GA_V2 ga(42, co);
-  // ga.optimizePath(true);
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
   // executionConfig eConf("/homes/galberding/catkin_ws/src/ros_optimizer/test/config.yml");
 
@@ -98,7 +80,7 @@ TEST(Optimizer, standardConfig){
 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
 		     eConf);
-  opti.optimizePath();
+  opti.optimizePath(true);
 
 
 }

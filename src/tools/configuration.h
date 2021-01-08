@@ -93,6 +93,7 @@ namespace conf {
     // Selection
     int selectIndividuals = 10;
     int selectKeepBest = 0;
+    genome best;
     // Switch between roulettWheelSelection or best N selection
     bool toggleRoulettSelectionOn = false;
 
