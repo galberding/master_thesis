@@ -2,6 +2,7 @@
 #define __OPTI_ADAPTER__
 
 #include "ga_path_generator.h"
+#include "../tools/pa_serializer.h"
 
 using namespace ga;
 
@@ -99,16 +100,17 @@ namespace op {
 	      shared_ptr<FitnessStrategy> calFitness,
 	      executionConfig eConf
 	      ):calFitness(calFitness),mutate(mutate),cross(cross),select(select),init(init),eConf(eConf){}
-  };
-  /**
+      /**
      Continously optimize the path.
      If the current population is initialized -> size > 0,
      the initialization step will be omitted.
    */
   void optimizePath();
-  void restorePopulationFromSnapshot(string path);
-  void snapshotPopulation(string path);
-  
+  void restorePopulationFromSnapshot(const string path);
+  void snapshotPopulation(const string path);
+  };
+
+
 }
 
 

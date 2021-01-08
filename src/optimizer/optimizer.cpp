@@ -386,3 +386,23 @@ assert(cdist >= crossed);
 /////////////////////////////////////////////////////////////////////////////
 //                                Optimizer                                 //
 /////////////////////////////////////////////////////////////////////////////
+
+void op::Optimizer::optimizePath(){
+
+}
+
+void op::Optimizer::restorePopulationFromSnapshot(const string path){
+  vector<PAs> pp;
+  pa_serializer::readActrionsFromFile(pp, path);
+  for (auto it = pp.begin(); it != pp.end(); ++it) {
+    pool.push_back(genome(*it));
+  }
+}
+
+void op::Optimizer::snapshotPopulation(const string path){
+  vector<PAs> pp;
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+  }
+  pa_serializer::writeActionsToFile(pp, path);
+}
