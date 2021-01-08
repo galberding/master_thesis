@@ -1,15 +1,15 @@
 #ifndef __OPTI_ADAPTER__
 #define __OPTI_ADAPTER__
 
-#include "ga_path_generator.h"
+// #include "ga_path_generator.h"
 #include "../tools/pa_serializer.h"
+#include "../tools/configuration.h"
 
-using namespace ga;
+// using namespace ga;
+using namespace conf;
 
 namespace op {
   // namespace to organize the optimizer strategies
-  using SelectionPool = list<pair<genome, genome>>;
-
 
   bool applyAction(float proba, executionConfig eConf);
 
@@ -28,12 +28,12 @@ namespace op {
     // - current Pool will be cleared here
     // - Selection Pool is supposed to be cleared before it is filled again here
     virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
-    virtual genome selection(ga::Genpool &currentPopulation, executionConfig& eConf) = 0;
+    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) = 0;
 
   };
 
   struct RouletteWheelSelection : SelectionStrategy{
-    virtual genome selection(ga::Genpool &currentPopulation, executionConfig& eConf) override;
+    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) override;
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -91,6 +91,7 @@ namespace op {
     shared_ptr<InitStrategy> init;
     Genpool pool;
     SelectionPool sPool;
+    shared_ptr<Robot> rob;
 
     Optimizer(
 	      shared_ptr<InitStrategy> init,
@@ -99,18 +100,27 @@ namespace op {
 	      shared_ptr<MutationStrategy> mutate,
 	      shared_ptr<FitnessStrategy> calFitness,
 	      executionConfig eConf
-	      ):calFitness(calFitness),mutate(mutate),cross(cross),select(select),init(init),eConf(eConf){}
+	      ):init(init),
+		select(select),
+		cross(cross),
+		mutate(mutate),
+		calFitness(calFitness),
+		eConf(eConf){
+      rob = make_shared<Robot>(Robot(eConf.rob_conf,
+				     eConf.gmap,
+				     eConf.obstacleName));
+    }
       /**
      Continously optimize the path.
      If the current population is initialized -> size > 0,
      the initialization step will be omitted.
    */
+  // private:
+  //   Optimizer()
   void optimizePath();
   void restorePopulationFromSnapshot(const string path);
   void snapshotPopulation(const string path);
   };
-
-
 }
 
 

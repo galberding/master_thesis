@@ -92,6 +92,7 @@ void ga::validateGen(genome &gen){
     }
   }
 }
+
 float ga::calZeroActionPercent(genome &gen){
   float res = 0;
   for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {

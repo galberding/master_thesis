@@ -1,6 +1,7 @@
 #include "configuration.h"
 #include <yaml-cpp/yaml.h>
 
+
 bool conf::executionConfig::loadConfFromYaml(const string path){
   YAML::Node yConf = YAML::LoadFile(path);
   // if(yConf["weights"]){

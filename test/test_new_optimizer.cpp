@@ -1,13 +1,13 @@
 #include <gtest/gtest.h>
-#include "../src/optimizer/ga_path_generator.h"
+// #include "../src/optimizer/ga_path_generator.h"
 #include "../src/tools/debug.h"
 #include <opencv2/opencv.hpp>
-#include "../src/optimizer/grid_search.h"
+// #include "../src/optimizer/grid_search.h"
 #include "../src/optimizer/optimizer.h"
 #include <yaml-cpp/yaml.h>
 
 
-using namespace ga;
+// using namespace ga;
 using namespace path;
 namespace fs = std::filesystem;
 // using namespace gsearch;
@@ -25,13 +25,13 @@ void displayGridmap(shared_ptr<GridMap> cmap){
     cv::waitKey();
   }
 
-TEST(Map, generation){
-  gsearch::Searcher se;
-  Position start;
-  auto mapptr = se.generateMapType(100, 50, 0.2, 1, start);
+// TEST(Map, generation){
+//   gsearch::Searcher se;
+//   Position start;
+//   auto mapptr = se.generateMapType(100, 50, 0.2, 1, start);
 
-  // displayGridmap(mapptr);
-}
+//   // displayGridmap(mapptr);
+// }
 
 
 void loadConfigFromYaml(string path, executionConfig &config){
@@ -61,19 +61,19 @@ void loadConfigFromYaml(string path, executionConfig &config){
   config.mutaPosDistMax = conf["mutaPosDistMax"].as<float>();
 }
 
-TEST(YML, loadCong){
-  gsearch::Searcher se;
-  auto confs = se.generateConfigs("io_test");
-  auto co = confs.front();
-  loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
-}
+// TEST(YML, loadCong){
+//   gsearch::Searcher se;
+//   auto confs = se.generateConfigs("io_test");
+//   auto co = confs.front();
+//   loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
+// }
 
 TEST(Optimizer, standardConfig){
-  gsearch::Searcher se;
-  auto confs = se.generateConfigs("io_test");
+  // gsearch::Searcher se;
+  // auto confs = se.generateConfigs("io_test");
 
-  auto co = confs.front();
-  loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
+  // auto co = confs.front();
+  // loadConfigFromYaml("../../../src/ros_optimizer/test/config.yml", co);
   // co.maxIterations = 50;
   // // Time, occ, coverage
   // co.fitnessWeights = {0.05, 0.35, 0.6};
@@ -83,8 +83,8 @@ TEST(Optimizer, standardConfig){
   // co.mutaRandAngleProba = 0;
 
 
-  GA_V2 ga(42, co);
-  ga.optimizePath(true);
+  // GA_V2 ga(42, co);
+  // ga.optimizePath(true);
 
 }
 

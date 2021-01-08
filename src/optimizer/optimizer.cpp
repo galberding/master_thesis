@@ -70,7 +70,7 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
 
 }
 
-genome op::RouletteWheelSelection::selection(ga::Genpool &currentPopulation, executionConfig &eConf){
+genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executionConfig &eConf){
   // Calculate the total fitness value
 
   float totalFitness = eConf.fitnessAvg * currentPopulation.size();
@@ -395,7 +395,12 @@ void op::Optimizer::optimizePath(){
     restorePopulationFromSnapshot(eConf.snapshot);
   }
   while(eConf.currentIter <= eConf.maxIterations){
-    
+
+    (*calFitness)(pool, *rob, eConf);
+    (*select)(pool, sPool, eConf);
+    (*cross)(sPool, pool, eConf);
+    (*mutate)(pool, eConf);
+
     eConf.currentIter++;
   }
 }

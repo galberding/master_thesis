@@ -2,12 +2,14 @@
 #define __TOOLS_CONFIG__
 
 #include "path_tools.h"
+#include "genome_tools.h"
+#include "mapGen.h"
 
-using namespace std;
-using namespace grid_map;
-using namespace path;
+using namespace genome_tools;
 
 namespace conf {
+
+
   struct executionConfig {
     executionConfig(){} // default constructor
     executionConfig(string dir, string name, shared_ptr<GridMap> gmap, Position start, vector<Position> ends)
@@ -20,8 +22,12 @@ namespace conf {
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
     }
-    executionConfig(string loadPath){
-
+    executionConfig(const string loadPath){
+      loadConfFromYaml(loadPath);
+      gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, mapType, start);
+      fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
+      logStr = make_shared<std::ostringstream>(std::ostringstream());
+      generator.seed(42);
     }
 
 
@@ -95,8 +101,6 @@ namespace conf {
     float crossLength = 0.4;
     float crossoverProba = 0.8;
 
-    // Mutation
-    vector<string> mutaFunctions = {"addAction", "removeAction", "addAngleOffset", "addDistanceOffset"};
     // Mutation functions, configurations
     float mutaOrtoAngleProba = 0.1;
     float mutaRandAngleProba = 0.1;

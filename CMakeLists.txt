@@ -201,10 +201,10 @@ set(OPTI_ENV
   # src/pool.cpp
   src/tools/path_tools.h
   src/tools/path_tools.cpp
-  src/optimizer/ga_path_generator.h
-  src/optimizer/ga_path_generator.cpp
-  src/optimizer/grid_search.h
-  src/optimizer/grid_search.cpp
+  # src/optimizer/ga_path_generator.h
+  # src/optimizer/ga_path_generator.cpp
+  # src/optimizer/grid_search.h
+  # src/optimizer/grid_search.cpp
   src/optimizer/optimizer.h
   src/optimizer/optimizer.cpp
   src/tools/debug.h
@@ -213,6 +213,8 @@ set(OPTI_ENV
   src/tools/mapGen.cpp
   src/tools/pa_serializer.h
   src/tools/pa_serializer.cpp
+  src/tools/genome_tools.h
+  src/tools/genome_tools.cpp
 
 )
 
@@ -271,13 +273,13 @@ catkin_add_executable_with_gtest(test-path-tools
 #   # ${catkin_LIBRARIES}
 #   )
 
-catkin_add_executable_with_gtest(test-io
-  test/test_io_tools.cpp
-  ${OPTI_ENV}
-  # src/tools/path_tools.h
-  # src/tools/path_tools.cpp
-  # ${catkin_LIBRARIES}
-  )
+# catkin_add_executable_with_gtest(test-io
+#   test/test_io_tools.cpp
+#   ${OPTI_ENV}
+#   # src/tools/path_tools.h
+#   # src/tools/path_tools.cpp
+#   # ${catkin_LIBRARIES}
+#   )
 
 catkin_add_executable_with_gtest(test-ga
   test/test_new_optimizer.cpp
@@ -292,6 +294,6 @@ catkin_add_executable_with_gtest(test-ga
 target_link_libraries(test-path-tools ${catkin_LIBRARIES})
 # target_link_libraries(test-opti ${catkin_LIBRARIES})
 # target_link_libraries(test-app ${catkin_LIBRARIES})
-target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
+# target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
 target_link_libraries(test-ga ${catkin_LIBRARIES} yaml-cpp)
 # endif()
