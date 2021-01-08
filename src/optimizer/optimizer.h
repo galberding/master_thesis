@@ -83,6 +83,14 @@ namespace op {
   /////////////////////////////////////////////////////////////////////////////
   struct Optimizer {
     executionConfig eConf;
+    shared_ptr<FitnessStrategy> calFitness;
+    shared_ptr<MutationStrategy> mutate;
+    shared_ptr<CrossoverStrategy> cross;
+    shared_ptr<SelectionStrategy> select;
+    shared_ptr<InitStrategy> init;
+    Genpool pool;
+    SelectionPool sPool;
+
     Optimizer(
 	      shared_ptr<InitStrategy> init,
 	      shared_ptr<SelectionStrategy> select,
@@ -90,8 +98,17 @@ namespace op {
 	      shared_ptr<MutationStrategy> mutate,
 	      shared_ptr<FitnessStrategy> calFitness,
 	      executionConfig eConf
-	      ):eConf(eConf){}
+	      ):calFitness(calFitness),mutate(mutate),cross(cross),select(select),init(init),eConf(eConf){}
   };
+  /**
+     Continously optimize the path.
+     If the current population is initialized -> size > 0,
+     the initialization step will be omitted.
+   */
+  void optimizePath();
+  void restorePopulationFromSnapshot(string path);
+  void snapshotPopulation(string path);
+  
 }
 
 

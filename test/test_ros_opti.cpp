@@ -4,6 +4,7 @@
 // #include "../src/environment/robot.hpp"
 #include "../src/tools/path_tools.h"
 #include <grid_map_cv/GridMapCvConverter.hpp>
+#include "../src/tools/pa_serializer.h"
 
 using namespace path;
 using namespace grid_map;
@@ -364,6 +365,39 @@ TEST(ActionCopy, copytest){
 }
 
 
+TEST(Serializer, writePoolToFile){
+  Position start(42,42), end(42,42);
+
+  StartAction sa(start);
+  EndAction ea({end});
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 2000}, {PAP::Angle, 270}});
+  AheadAction aa1(PAT::CAhead, {{PAP::Distance, 30}, {PAP::Angle, 130}});
+  AheadAction aa2(PAT::CAhead, {{PAP::Distance, 20}, {PAP::Angle, 90}});
+  AheadAction aa3(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+
+  PAs act = {
+      make_shared<StartAction>(sa),
+      make_shared<AheadAction>(aa),
+      make_shared<AheadAction>(aa1),
+      make_shared<AheadAction>(aa2),
+      make_shared<AheadAction>(aa3),
+      make_shared<EndAction>(ea)
+  };
+
+  for (auto it = act.begin(); it != act.end(); ++it) {
+    if((*it)->type == PAT::Start){
+      (*it)->generateWPs(start);
+    } else {
+      (*it)->generateWPs((*prev(it,1))->wps.back());
+    }
+  }
+
+  vector<PAs> pps = {act};
+
+  EXPECT_TRUE(pa_serializer::writeActionsToFile(pps, "testSerialize"));
+
+}
 
 
 int main(int argc, char **argv){

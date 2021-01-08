@@ -211,6 +211,8 @@ set(OPTI_ENV
   src/tools/debug.cpp
   src/tools/mapGen.h
   src/tools/mapGen.cpp
+  src/tools/pa_serializer.h
+  src/tools/pa_serializer.cpp
 
 )
 
@@ -245,13 +247,13 @@ target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
 ## Add gtest based cpp test target and link libraries
 
 # catkin_add_gtest(opti-test test/test_ros_opti.cpp)
-# catkin_add_executable_with_gtest(test-path-tools
-#   test/test_ros_opti.cpp
-#   ${OPTI_ENV}
-#   # src/tools/path_tools.h
-#   # src/tools/path_tools.cpp
-#   # ${catkin_LIBRARIES}
-#   )
+catkin_add_executable_with_gtest(test-path-tools
+  test/test_ros_opti.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
 
 # catkin_add_executable_with_gtest(test-opti
 #   test/test_optimizer.cpp
@@ -277,9 +279,19 @@ catkin_add_executable_with_gtest(test-io
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-ga
+  test/test_new_optimizer.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
+
+
 # if(TARGET test-path-tools)
-# target_link_libraries(test-path-tools ${catkin_LIBRARIES})
+target_link_libraries(test-path-tools ${catkin_LIBRARIES})
 # target_link_libraries(test-opti ${catkin_LIBRARIES})
 # target_link_libraries(test-app ${catkin_LIBRARIES})
 target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
+target_link_libraries(test-ga ${catkin_LIBRARIES} yaml-cpp)
 # endif()
