@@ -69,6 +69,7 @@ namespace path {
     CrossCount = 0,
     StepCount = 1
   };
+  struct PathAction;
 
   using RP = RobotProperty;
   using PAP = PathActionParameter;
@@ -81,6 +82,7 @@ namespace path {
   using WPs = vector<grid_map::Position>;
   //Direction needs to be a normed vector
   using direction = grid_map::Position;
+  using PAs = deque<shared_ptr<PathAction>>;
 
 
   // static grid_map::GridMap global_map;
@@ -101,6 +103,7 @@ namespace path {
   // return true if the conversion to angle was successful
   bool dirToAngle(direction pos, float &angle);
 
+  void actionToPath(PAs& pas, vector<Position> &path);
   /////////////////////////////////////////////////////////////////////////////
   //                                PathAction                               //
   /////////////////////////////////////////////////////////////////////////////
@@ -155,7 +158,7 @@ namespace path {
 
 
 
-  using PAs = deque<shared_ptr<PathAction>>;
+
 
   /////////////////////////////////////////////////////////////////////////////
   //                              AheadAction                                 //

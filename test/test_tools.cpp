@@ -3,6 +3,7 @@
 // #include "robot.hpp"
 // #include "../src/environment/robot.hpp"
 #include "../src/tools/path_tools.h"
+#include "../src/tools/mapGen.h"
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include "../src/tools/pa_serializer.h"
 
@@ -404,6 +405,47 @@ TEST(Serializer, readPoolFromFile){
 
   pa_serializer::readActrionsFromFile(pps, "testSerialize");
   pa_serializer::writeActionsToFile(pps, "testReSer");
+}
+
+TEST(MapGen, changeResolution){
+  Position start;
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.1, 1, start);
+  EXPECT_FLOAT_EQ(mapgen::changeMapRes(map, 0.3)->getResolution(), 0.3);
+}
+
+TEST(MapGen, drawPath){
+  Position start, pos0, pos1, pos2, pos3;
+  cv::Mat rob_map, old;
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.4, 1, start);
+
+
+  map->getPosition(Index(1,1), pos0);
+  map->getPosition(Index(5,5), pos1);
+  map->getPosition(Index(10,10), pos2);
+  vector<Position> pp ={
+    Position(0,0),
+    Position(2,3),
+    Position(5,5)
+  };
+  map->add("map", 0);
+  // GridMap gg = *map;
+
+  mapgen::drawPathOnMap(map, pp, true);
+
+
+  shared_ptr<GridMap> newMap = mapgen::changeMapRes(map, 0.01);
+  GridMapCvConverter::toImage<unsigned char, 1>(*map, "map", CV_8U, 0.0, 1, old);
+  cv::imshow("Path", old);
+  cv::waitKey();
+
+  mapgen::drawPathOnMap(newMap, pp, false);
+
+  GridMapCvConverter::toImage<unsigned char, 1>(*newMap, "map", CV_8U, 0.0, 1, rob_map);
+
+  cv::imshow("Path", rob_map);
+  cv::waitKey();
+
+
 }
 
 

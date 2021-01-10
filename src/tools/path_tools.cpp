@@ -61,6 +61,11 @@ bool path::dirToAngle(direction pos, float &angle) {
   return !isnan(angle);
 }
 
+void path::actionToPath(PAs& pas, vector<Position>& path) {
+
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                   PathAction                                  //
 ///////////////////////////////////////////////////////////////////////////////
