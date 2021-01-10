@@ -62,7 +62,10 @@ bool path::dirToAngle(direction pos, float &angle) {
 }
 
 void path::actionToPath(PAs& pas, vector<Position>& path) {
-
+  for (auto it = pas.begin(); it != pas.end(); ++it) {
+    assert((*it)->wps.size() > 0);
+    path.push_back((*it)->wps.back());
+  }
 }
 
 
