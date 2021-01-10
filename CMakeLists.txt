@@ -251,8 +251,8 @@ target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
 ## Add gtest based cpp test target and link libraries
 
 # catkin_add_gtest(opti-test test/test_ros_opti.cpp)
-catkin_add_executable_with_gtest(test-path-tools
-  test/test_ros_opti.cpp
+catkin_add_executable_with_gtest(test-tools
+  test/test_tools.cpp
   ${OPTI_ENV}
   # src/tools/path_tools.h
   # src/tools/path_tools.cpp
@@ -293,7 +293,7 @@ catkin_add_executable_with_gtest(test-ga
 
 
 # if(TARGET test-path-tools)
-target_link_libraries(test-path-tools ${catkin_LIBRARIES} yaml-cpp)
+target_link_libraries(test-tools ${catkin_LIBRARIES} yaml-cpp)
 # target_link_libraries(test-opti ${catkin_LIBRARIES})
 # target_link_libraries(test-app ${catkin_LIBRARIES})
 # target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)

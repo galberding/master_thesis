@@ -48,3 +48,11 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, in
 
   return make_shared<GridMap>(map);
 }
+
+void mapgen::actionToPath(PAs& pas, vector<Position>& path) {
+
+}
+
+void mapgen::drawPathOnMap(GridMap& gmap, vector<Position>& path) {
+
+}

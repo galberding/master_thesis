@@ -415,6 +415,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
       // Update last position
       lastIdx = *lit;
       if (clean){
+	// TODO: Not prepared for pure Ahead action
 	float mapVal = cmap->at(opName, *lit);
 	// debug("Map Val: ", mapVal);
 	if (mapVal > 0){
