@@ -21,7 +21,7 @@ initIndividuals: 5000
 
 # Selection
 keep: 20
-select: 10
+select: 100
 
 # Crossover
 crossoverProba: 0.8

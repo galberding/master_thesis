@@ -29,6 +29,12 @@ void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
     gen.actions = actions;
 }
 
+void op::InitStrategy::replaceZeroGensWithRandom(Genpool& pool){
+  debug("Replace phase: ");
+
+
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //                            SelectionStrategy                             //
 /////////////////////////////////////////////////////////////////////////////
@@ -109,7 +115,7 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
 
 }
 
-void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf){
+void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf){
   fPool.clear();
   // Shuffle will reorder the elements in random order
   shuffle(pool.begin(), pool.end(), eConf.generator);
@@ -124,11 +130,12 @@ void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, execut
   }
 }
 
-void elitistSelection(FamilyPool& fPool, Genpool& pool){
+void op::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
   // select best two out of four
   // we expect that all individuals in the family pool have their fitness calculated
   pool.clear();
   for(auto &family : fPool){
+    if(family.size() == 2) continue;
     assert(family.size() == 4);
     sort(family.begin(), family.end());
     pool.push_back(family[2]);
@@ -136,6 +143,9 @@ void elitistSelection(FamilyPool& fPool, Genpool& pool){
   }
 
 }
+
+genome op::SelectionStrategy::selection(Genpool &currentPopulation,
+					executionConfig &eConf) {return genome();}
 
 genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executionConfig &eConf){
   // Calculate the total fitness value
@@ -317,6 +327,7 @@ void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eCo
 
 void op::MutationStrategy::operator()(FamilyPool& fPool, executionConfig& eConf){
   for (auto &family : fPool) {
+    if(family.size() == 2) continue;
     assert(family.size() == 4);
     mutateGen(family[2], eConf);
     mutateGen(family[3], eConf);
@@ -407,6 +418,7 @@ void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.actionLenAvg /= poolsize;
 }
 
+
 void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
   resetLoggingFitnessParameter(eConf);
   for(Genpool::iterator it = currentPool.begin(); it != currentPool.end();){
@@ -423,6 +435,23 @@ void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, exe
     }
   }
   finalizeFitnessLogging(currentPool.size(), eConf);
+}
+
+void op::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf) {
+  // Deactivate logging -> recalculate with
+  // resetLoggingFitnessParameter(eConf);
+  for (auto &family : fPool) {
+    if(family.size() > 2){
+      for (int i = 2; i <= 3; i++) {
+        assertm(family[i].actions.size() > 0, "Not enough actions");
+        assert(rob.evaluateActions(family[i].actions));
+        // assertm(family[i].actions.size() > 0, "Not enough actions");
+        calculation(family[i], rob.getFreeArea(), eConf);
+        // trackFitnessParameter(family[i] , eConf);
+      }
+    }
+  }
+  // finalizeFitnessLogging(currentPool.size(), eConf);
 }
 
 float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConfig &eConf){
@@ -532,6 +561,14 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
     }
 }
 
+void getBestGen(Genpool& pool, executionConfig& eConf){
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    if(it->fitness >  eConf.best.fitness){
+      eConf.best = *it;
+    }
+  }
+}
+
 void op::Optimizer::optimizePath(bool display){
   if(!eConf.restore){
     (*init)(pool, eConf);
@@ -547,16 +584,26 @@ void op::Optimizer::optimizePath(bool display){
   while(eConf.currentIter <= eConf.maxIterations){
 
     // Fitness calculation
+    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
     (*calFitness)(pool, *rob, eConf);
+    getBestGen(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
     logAndSnapshotPool(eConf, zeroPercent);
-    // Selection
-    (*select)(pool, sPool, eConf);
     printRunInformation(eConf, zeroPercent, display);
+
+    // Selection
+    // (*select)(pool, sPool, eConf);
+    select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+    // TODO: introduce modified parameter to reduce useless recalculation of gens
+    // TODO: put the statistic calculation of the fitness outside, all values are already exposed due to the gens
+
     // Crossover
-    (*cross)(sPool, pool, eConf);
+    (*cross)(fPool, pool, eConf);
     // Mutation
-    (*mutate)(pool, eConf);
+    (*mutate)(fPool, eConf);
+    calFitness->estimateChildren(fPool, *rob, eConf);
+    select->elitistSelection(fPool, pool);
+
     // Increase Iteration
     eConf.currentIter++;
   }

@@ -75,7 +75,7 @@ TEST(Optimizer, standardConfig){
 
   op::Optimizer opti(
 		     make_shared<op::InitStrategy>(op::InitStrategy()),
-		     make_shared<op::RouletteWheelSelection>(op::RouletteWheelSelection()),
+		     make_shared<op::SelectionStrategy>(op::SelectionStrategy()),
 		     make_shared<op::DualPointCrossover>(op::DualPointCrossover()),
 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),

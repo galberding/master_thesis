@@ -47,8 +47,8 @@ namespace genome_tools {
     PAs actions;
     WPs waypoints;
     float fitness = 0;
-    float traveledDist = 0;
-    float cross = 0;
+    int traveledDist = 0;
+    int cross = 0;
     float coverage = 0;
     float finalCoverage = 0;
     float finalTime = 0;

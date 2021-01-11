@@ -20,6 +20,7 @@ namespace op {
   struct InitStrategy {
     virtual void operator()(Genpool& pool, executionConfig& eConf);
     virtual void operator()(genome &gen, int len, executionConfig& eConf);
+    void replaceZeroGensWithRandom(Genpool& pool);
   };
   /////////////////////////////////////////////////////////////////////////////
   //                            SelectionStrategy                             //
@@ -30,7 +31,7 @@ namespace op {
     // - Selection Pool is supposed to be cleared before it is filled again here
     virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
     // virtual void operator()(Genpool& currentPool, FamilyPool& selPool, executionConfig& eConf);
-    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) = 0;
+    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf);
     // Shuffle pool and generate pairs of two which are contained in a vector and placed in the family pool
     void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf);
     // Select two best of four in the family
@@ -81,6 +82,7 @@ namespace op {
 
   struct FitnessStrategy {
     virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
+    void estimateChildren(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf);
     virtual float calculation(genome& gen, int freeSpace, executionConfig &eConf);
     virtual float calculation(float cdist,
 			      float dist,
@@ -103,6 +105,7 @@ namespace op {
     shared_ptr<InitStrategy> init;
     Genpool pool;
     SelectionPool sPool;
+    FamilyPool fPool;
     shared_ptr<Robot> rob;
 
     Optimizer(
