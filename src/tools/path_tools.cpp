@@ -455,7 +455,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 
 cv::Mat path::Robot::gridToImg(string layer){
   cv::Mat img;
-  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(*pmap, layer, CV_8U, 0.0, 2, img);
+  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(*pmap, layer, CV_8U, 0.0, 6, img);
   return img;
 }
 

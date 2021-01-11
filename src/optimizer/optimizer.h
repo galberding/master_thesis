@@ -5,6 +5,7 @@
 #include "../tools/pa_serializer.h"
 #include "../tools/configuration.h"
 #include "../tools/debug.h"
+#include <algorithm>
 // using namespace ga;
 using namespace conf;
 
@@ -28,7 +29,12 @@ namespace op {
     // - current Pool will be cleared here
     // - Selection Pool is supposed to be cleared before it is filled again here
     virtual void operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf);
+    // virtual void operator()(Genpool& currentPool, FamilyPool& selPool, executionConfig& eConf);
     virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) = 0;
+    // Shuffle pool and generate pairs of two which are contained in a vector and placed in the family pool
+    void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf);
+    // Select two best of four in the family
+    void elitistSelection(FamilyPool& fPool, Genpool& pool);
 
   };
 
@@ -44,12 +50,15 @@ namespace op {
     // - Selection pools needs to be filled
     // - Next Pool is expected to be already emptied
     virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) = 0;
+    virtual void operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf) = 0;
     void copyActions(PAs::iterator begin, PAs::iterator end, PAs &child, bool modify=false);
   };
 
   struct DualPointCrossover : CrossoverStrategy {
     virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) override;
-    void mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf);
+    virtual void operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf) override;
+    template <typename T>
+    void mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf);
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -57,6 +66,8 @@ namespace op {
   /////////////////////////////////////////////////////////////////////////////
   struct MutationStrategy {
     virtual void operator()(Genpool& currentPool, executionConfig& eConf);
+    virtual void operator()(FamilyPool& fPool, executionConfig& eConf);
+    void mutateGen(genome &gen, executionConfig &eConf);
     void addOrthogonalAngleOffset(genome& gen, executionConfig& eConf);
     void addRandomAngleOffset(genome& gen, executionConfig& eConf);
     void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
@@ -70,6 +81,7 @@ namespace op {
 
   struct FitnessStrategy {
     virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
+    virtual float calculation(genome& gen, int freeSpace, executionConfig &eConf);
     virtual float calculation(float cdist,
 			      float dist,
 			      int crossed,
@@ -110,16 +122,19 @@ namespace op {
 				     eConf.gmap,
 				     eConf.obstacleName));
     }
-      /**
-     Continously optimize the path.
+    /**
+       Continously optimize the path.
      If the current population is initialized -> size > 0,
      the initialization step will be omitted.
-   */
-  // private:
-  //   Optimizer()
-  void optimizePath(bool display = false);
-  void restorePopulationFromSnapshot(const string path);
-  void snapshotPopulation(const string path);
+      */
+    // private:
+    //   Optimizer()
+    void printRunInformation(executionConfig& eConf, float zeroPercent, bool display);
+    void optimizePath(bool display = false);
+    void restorePopulationFromSnapshot(const string path);
+    void snapshotPopulation(const string path);
+    void snapshotPopulation(executionConfig& eConf);
+    void logAndSnapshotPool(executionConfig& eConf, float zeros);
   };
 }
 

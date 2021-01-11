@@ -41,7 +41,8 @@ namespace conf {
     string snapshot = "";
     bool takeSnapshot = true;
     int takeSnapshotEvery = 1;
-    string tSnap = "population.pas";
+    string tSnap = "pool.actions";
+    string tPerformanceSnap = "pool.performance";
 
     float actionLenMin = 0;
     float actionLenMax = 0;

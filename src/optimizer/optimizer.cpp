@@ -32,6 +32,46 @@ void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
 /////////////////////////////////////////////////////////////////////////////
 //                            SelectionStrategy                             //
 /////////////////////////////////////////////////////////////////////////////
+
+// void op::SelectionStrategy::operator()(Genpool& currentPool, FamilyPool& selPool, executionConfig& eConf){
+//   Genpool keep;
+//   selPool.clear();
+//   // Ensure population is not empty
+//   assert(currentPool.size() > 0);
+//   assert(eConf.selectKeepBest < currentPool.size());
+//   // Keep the best individuals in the population for the next generation
+//   sort(currentPool.begin(), currentPool.end());
+//   eConf.best = currentPool.back();
+//   keep.insert(keep.begin(),
+// 	      prev(currentPool.end(), eConf.selectKeepBest),
+// 	      currentPool.end());
+
+//   // Start selection process
+//   // TODO: Remember select individuals is now the value of the selected pairs!
+//   while(selPool.size() < eConf.selectIndividuals / 2){
+//     // Draw individuals
+//     vector<genome> couple = {selection(currentPool, eConf),
+// 	      selection(currentPool, eConf)};
+//     // Check if fitness is high enough
+//     // 0 fitness indicates a defect gen
+//     if(couple[0].fitness == 0
+//        || couple[1].fitness == 0){
+//       warn("Selection: skip gen with fitness 0");
+//       continue;
+//     }
+
+//     // Insert into the selection Pool
+//     selPool.push_back(couple);
+//   }
+
+//   currentPool.clear();
+//   // Insert preserved gens to the pool
+//   currentPool.insert(currentPool.begin(),
+// 		     keep.begin(),
+// 		     keep.end());
+
+// }
+
 void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf){
   Genpool keep;
   selPool.clear();
@@ -58,16 +98,42 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
       warn("Selection: skip gen with fitness 0");
       continue;
     }
-
     // Insert into the selection Pool
     selPool.push_back(couple);
   }
-
   currentPool.clear();
   // Insert preserved gens to the pool
   currentPool.insert(currentPool.begin(),
 		     keep.begin(),
 		     keep.end());
+
+}
+
+void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf){
+  fPool.clear();
+  // Shuffle will reorder the elements in random order
+  shuffle(pool.begin(), pool.end(), eConf.generator);
+  for (auto it = pool.begin(); it != pool.end();) {
+    auto itn = next(it, 1);
+    if(it != pool.end() && itn != pool.end()){
+      fPool.push_back({*it, *itn});
+      it = next(itn, 1);
+    }else{
+      break;
+    }
+  }
+}
+
+void elitistSelection(FamilyPool& fPool, Genpool& pool){
+  // select best two out of four
+  // we expect that all individuals in the family pool have their fitness calculated
+  pool.clear();
+  for(auto &family : fPool){
+    assert(family.size() == 4);
+    sort(family.begin(), family.end());
+    pool.push_back(family[2]);
+    pool.push_back(family[3]);
+  }
 
 }
 
@@ -84,6 +150,7 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
   std::uniform_real_distribution<float> selDistr(0.0,1);
 
   float rand = selDistr(eConf.generator);
+  debug("Random val: ", rand);
   // cout << "Wheel: " << rand << endl;
   float offset = 0.0;
   genome gen;
@@ -92,6 +159,7 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
     offset += it->fitness / totalFitness;
     if(rand < offset){
       gen = *it;
+      debug("ID: ", gen.id);
       break;
     }
   }
@@ -119,6 +187,24 @@ void op::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& nextPoo
   }
 }
 
+void op::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf){
+  assert(fPool.size() > 0);
+  for (auto &family : fPool) {
+    assert(family.size() == 2);
+    if(!applyAction(eConf.crossoverProba, eConf)){
+      // Add gens to pool if they are not already inside
+      pool.push_back(family[0]);
+      pool.push_back(family[1]);
+	continue;
+    }
+    assert(family[0].actions.size() > 3);
+    assert(family[1].actions.size() > 3);
+    mating(family[0], family[1], family, eConf);
+    assert(family.size() == 4);
+  }
+}
+
+
 void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, PAs &child, bool modify){
   for(begin; begin != end; begin++){
     // debug("Type: ", (int) (*begin)->type);
@@ -141,8 +227,8 @@ void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, 
   }
 }
 
-
-void op::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf){
+template <typename T>
+void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf){
   // mate two parents
   // estimate the individual Length
   // debug("Parent length: ", par1.actions.size(), " ", par2.actions.size());
@@ -216,14 +302,27 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newPopu
 //                             MutationStrategy                            //
 /////////////////////////////////////////////////////////////////////////////
 
-void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eConf){
-  for (auto &gen : currentPool) {
+void op::MutationStrategy::mutateGen(genome &gen, executionConfig &eConf) {
     addOrthogonalAngleOffset(gen, eConf);
     addRandomAngleOffset(gen, eConf);
     addPositiveDistanceOffset(gen, eConf);
     addNegativeDistanceOffset(gen, eConf);
+}
+
+void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eConf){
+  for (auto &gen : currentPool) {
+    mutateGen(gen, eConf);
   }
 }
+
+void op::MutationStrategy::operator()(FamilyPool& fPool, executionConfig& eConf){
+  for (auto &family : fPool) {
+    assert(family.size() == 4);
+    mutateGen(family[2], eConf);
+    mutateGen(family[3], eConf);
+  }
+}
+
 
 void op::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf){
   if(!applyAction(eConf.mutaOrtoAngleProba, eConf)) return;
@@ -275,8 +374,9 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
 ///////////////////////////////////////////////////////////////////////////////
 //                              Fitness strategy                         //
 ///////////////////////////////////////////////////////////////////////////////
-void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
-   eConf.fitnessAvg = 0;
+
+void resetLoggingFitnessParameter(executionConfig& eConf){
+  eConf.fitnessAvg = 0;
   eConf.fitnessMax = 0;
   eConf.fitnessMin = 1;
   eConf.fitnessAvgTime = 0;
@@ -285,53 +385,36 @@ void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, exe
   eConf.actionLenMax = 0;
   eConf.actionLenMin = 100000;
   eConf.actionLenAvg = 0;
+}
+
+void trackFitnessParameter(genome& gen, executionConfig& eConf){
+  float fitness = gen.fitness;
+  // Logging of fittnessvalues
+  if(fitness > eConf.fitnessMax) eConf.fitnessMax = fitness;
+  if(fitness < eConf.fitnessMin) eConf.fitnessMin = fitness;
+  auto size = gen.actions.size();
+  if(size > eConf.actionLenMax) eConf.actionLenMax = size;
+  if(size < eConf.actionLenMin) eConf.actionLenMin = size;
+  eConf.fitnessAvg += fitness;
+  eConf.actionLenAvg += gen.actions.size();
+}
+
+void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
+  eConf.fitnessAvg /= poolsize;
+  eConf.fitnessAvgTime /= poolsize;
+  eConf.fitnessAvgOcc /= poolsize;
+  eConf.fitnessAvgCoverage /= poolsize;
+  eConf.actionLenAvg /= poolsize;
+}
+
+void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
+  resetLoggingFitnessParameter(eConf);
   for(Genpool::iterator it = currentPool.begin(); it != currentPool.end();){
     assertm(it->actions.size() > 0, "Not enough actions");
     if(rob.evaluateActions(it->actions)){
       assertm(it->actions.size() > 0, "Not enough actions");
-      float Cdistance = 0; // Cleand distance
-      float distance = 0; // uncleand distance
-      float occ = 0;
-      int crossed = 0;
-      // iterate over all actions
-      for(auto &action : it->actions){
-	auto conf = action->c_config;
-	// Check if action did a move
-	if(conf.count(Counter::StepCount) > 0){
-	  if(action->type == PAT::CAhead){
-	    // Add cross count (default is 1)
-	    crossed += conf[Counter::CrossCount];
-	    // crossed += conf[PAP::CrossCount] - 1;
-	    Cdistance += conf[Counter::StepCount];
- 	  }else{
-	    distance += conf[Counter::StepCount];
-	  }
-	}else{
-	  // assertm(false, "Action did not make a move and is still listed");
-	}
-      }
-      // debug("Crossed: ", crossed, " dist: ", Cdistance);
-      assertm(crossed <= Cdistance, "CrossCount is bigger than traveled distance!");
-      // crossed = crossed / it->actions.size();
-      float fitness = calculation(
-				  Cdistance,
-				  distance,
-				  crossed,
-				  rob.getConfig()[RP::Clean_speed_cm_s] / 100,
-				  rob.getConfig()[RP::Drive_speed_cm_s] / 100,
-				  rob.getFreeArea(),
-				  eConf);
-      it->fitness = fitness;
-
-      // Logging of fittnessvalues
-      if(fitness > eConf.fitnessMax) eConf.fitnessMax = fitness;
-      if(fitness < eConf.fitnessMin) eConf.fitnessMin = fitness;
-      auto size = it->actions.size();
-      if(size > eConf.actionLenMax) eConf.actionLenMax = size;
-      if(size < eConf.actionLenMin) eConf.actionLenMin = size;
-      eConf.fitnessAvg += fitness;
-      eConf.actionLenAvg += it->actions.size();
-
+      calculation((*it), rob.getFreeArea(), eConf);
+      trackFitnessParameter(*it , eConf);
       it++;
     }else{
       warn("Erase Gen!");
@@ -339,11 +422,34 @@ void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, exe
       it = currentPool.erase(it);
     }
   }
-  eConf.fitnessAvg /= currentPool.size();
-  eConf.fitnessAvgTime /= currentPool.size();
-  eConf.fitnessAvgOcc /= currentPool.size();
-  eConf.fitnessAvgCoverage /= currentPool.size();
-  eConf.actionLenAvg /= currentPool.size();
+  finalizeFitnessLogging(currentPool.size(), eConf);
+}
+
+float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConfig &eConf){
+  // prepare parameters
+  // Check if the gen is valid -> returns false if gen has distance 0
+  if(!gen.updateGenParameter()){
+    debug("Update: ", gen.updateGenParameter());
+    return 0;
+  }
+  // Time parameter:
+  float actualTime = gen.traveledDist;
+  float optimalTime = gen.traveledDist - gen.cross;
+  float finalTime = optimalTime / actualTime;
+
+  float currentCoverage = optimalTime;
+  float totalCoverage = freeSpace;
+  float finalCoverage = currentCoverage / totalCoverage;
+
+  float weight = eConf.fitnessWeight;
+  gen.finalCoverage = finalCoverage;
+  gen.finalTime = finalTime;
+  gen.fitness = weight*finalTime + (1-weight)*finalCoverage;
+  eConf.fitnessAvgTime += finalTime;
+  // eConf.fitnessAvgOcc += final_occ;
+  eConf.fitnessAvgCoverage += finalCoverage;
+
+  return gen.fitness;
 }
 
 float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig& eConf){
@@ -356,17 +462,17 @@ assert(cdist >= crossed);
 
   // Calculate the final occ based on the
   // TODO: rename fitness parameter, sth like crossFactor or overlapping
-  float current_occ = cdist - crossed;
+  float actual_occ = cdist - crossed;
   // if (current_occ < 0){
   //   current_occ = crossed;
   // }
   float optimal_occ = cdist + crossed;
 
-  float final_occ = current_occ / optimal_occ ;
+  float final_occ = actual_occ / optimal_occ ;
 
   // Area coverage
-  float final_coverage = current_occ / freeSpace;
-  assertm(freeSpace >= current_occ , "No space to cover");
+  float final_coverage = actual_occ / freeSpace;
+  assertm(freeSpace >= actual_occ , "No space to cover");
   // Ensure that the gen is not selected for crossover by setting the fitness to 0
   if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
 
@@ -383,9 +489,48 @@ assert(cdist >= crossed);
   return fitness;
 }
 
+
+
+
 /////////////////////////////////////////////////////////////////////////////
 //                                Optimizer                                 //
 /////////////////////////////////////////////////////////////////////////////
+
+void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
+   if(!eConf.logName.empty()){
+      *(eConf.logStr)  << argsToCsv(
+				    eConf.currentIter,
+				    eConf.fitnessAvg,
+				    eConf.fitnessMax,
+				    eConf.fitnessMin,
+				    eConf.fitnessAvgTime,
+				    eConf.fitnessAvgOcc,
+				    eConf.fitnessAvgCoverage,
+				    eConf.actionLenAvg,
+				    eConf.actionLenMax,
+				    eConf.actionLenMin,
+				    zeros
+				    );
+    }
+    if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
+      debug("Take snapshot to: ", eConf.tSnap);
+      snapshotPopulation(eConf);
+    }
+}
+
+void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercent, bool display){
+  if(eConf.best.id > 0 && display){
+      debug(eConf.currentIter, ", MaxFitness: ",
+	    eConf.best.fitness," : ",
+	    argsToCsv(eConf.fitnessAvgTime,
+		      eConf.fitnessAvgOcc,
+		      eConf.fitnessAvgCoverage,
+		      zeroPercent));
+      rob->evaluateActions(eConf.best.actions);
+      cv::imshow("Current Run ", rob->gridToImg("map"));
+      cv::waitKey(1);
+    }
+}
 
 void op::Optimizer::optimizePath(bool display){
   if(!eConf.restore){
@@ -398,46 +543,24 @@ void op::Optimizer::optimizePath(bool display){
   // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
   *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
 
+  // Main loop
   while(eConf.currentIter <= eConf.maxIterations){
 
+    // Fitness calculation
     (*calFitness)(pool, *rob, eConf);
     float zeroPercent = calZeroActionPercent(pool);
-    if(!eConf.logName.empty()){
-      *(eConf.logStr)  << argsToCsv(
-				    eConf.currentIter,
-				    eConf.fitnessAvg,
-				    eConf.fitnessMax,
-				    eConf.fitnessMin,
-				    eConf.fitnessAvgTime,
-				    eConf.fitnessAvgOcc,
-				    eConf.fitnessAvgCoverage,
-				    eConf.actionLenAvg,
-				    eConf.actionLenMax,
-				    eConf.actionLenMin,
-				    zeroPercent
-				    );
-    }
-    if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
-      debug("Take snapshot to: ", eConf.tSnap);
-      snapshotPopulation(eConf.tSnap);
-    }
+    logAndSnapshotPool(eConf, zeroPercent);
+    // Selection
     (*select)(pool, sPool, eConf);
-    if(eConf.best.id > 0 && display){
-      debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness," : ",
-	    argsToCsv(eConf.fitnessAvgTime,
-		      eConf.fitnessAvgOcc,
-		      eConf.fitnessAvgCoverage,
-		      zeroPercent));
-      rob->evaluateActions(eConf.best.actions);
-      cv::imshow("Current Run ", rob->gridToImg("map"));
-      cv::waitKey(1);
-    }
+    printRunInformation(eConf, zeroPercent, display);
+    // Crossover
     (*cross)(sPool, pool, eConf);
+    // Mutation
     (*mutate)(pool, eConf);
-
+    // Increase Iteration
     eConf.currentIter++;
   }
+  // Log Fitnessvalues for all iterations
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
 }
 
@@ -455,4 +578,24 @@ void op::Optimizer::snapshotPopulation(const string path){
     pp.push_back(it->actions);
   }
   pa_serializer::writeActionsToFile(pp, path);
+}
+
+void op::Optimizer::snapshotPopulation(executionConfig& eConf){
+  // Take the current iteration into account
+  string iter = to_string(eConf.currentIter);
+  // Save Genpool:
+  string popName = eConf.logDir + "/" + iter + "_" + eConf.tSnap;
+  string performanceName = iter + "_" + eConf.tPerformanceSnap;
+  // Store gen information
+  ostringstream perform;
+  vector<PAs> pp;
+  perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
+
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
+  }
+  logging::Logger(perform.str(), eConf.logDir, performanceName);
+  pa_serializer::writeActionsToFile(pp, popName);
+
 }

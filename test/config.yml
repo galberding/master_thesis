@@ -1,12 +1,12 @@
-logDir: basic
+logDir: testing
 logName: test5
-maxIterations: 100
+maxIterations: 100000
 
 # Snapshots
 restore: false
 snapshot: name
 takeSnapshot: true
-takeSnapshotEvery: 1
+takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Map
@@ -20,8 +20,8 @@ initActions: 60
 initIndividuals: 5000
 
 # Selection
-keep: 200
-select: 900
+keep: 20
+select: 10
 
 # Crossover
 crossoverProba: 0.8

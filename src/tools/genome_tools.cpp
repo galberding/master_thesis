@@ -2,6 +2,19 @@
 
 int genome_tools::genome::gen_id = 0;
 
+
+bool genome_tools::genome::updateGenParameter(){
+  this->traveledDist = 0;
+  this->cross = 0;
+  // debug("Update");
+  for (auto it = actions.begin(); it != actions.end(); ++it) {
+    traveledDist += (*it)->c_config[Counter::StepCount];
+    cross += (*it)->c_config[Counter::CrossCount];
+  }
+
+  return !(traveledDist == 0);
+}
+
 void genome_tools::validateGen(genome &gen){
  for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
    // What is needed to validate the gens?
@@ -55,7 +68,7 @@ float genome_tools::calZeroActionPercent(genome &gen){
 float genome_tools::calZeroActionPercent(Genpool &pool){
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    if(calZeroActionPercent(*it) == 1){
+    if(it->fitness == 0){
       res += 1;
     }
   }

@@ -25,20 +25,39 @@ namespace genome_tools {
 
     float getPathLen(){
       float len = 0;
+      // int crossings = 0;
       for(auto it = actions.begin(); it != actions.end(); it++){
 	len += (*it)->mod_config[PAP::Distance];
+	// crossings += (*it)->c_config[Counter::CrossCount];
       }
+      // traveledDist = len;
       return len / actions.size();
     }
+
+    /**
+       Calculate the traveled dist and cross count.
+       The calues are stored in the traveledDist and coverage paremeter.
+       Returns false if distance is 0 -> gen fitness does not need to be calculated
+     */
+    bool updateGenParameter();
+
+
 
     int id = 0;
     PAs actions;
     WPs waypoints;
     float fitness = 0;
+    float traveledDist = 0;
+    float cross = 0;
+    float coverage = 0;
+    float finalCoverage = 0;
+    float finalTime = 0;
   };
 
   using Genpool = std::deque<genome>;
-  using SelectionPool = list<pair<genome, genome>>;
+  using GenPair = pair<genome, genome>;
+  using SelectionPool = list<GenPair>;
+  using FamilyPool = deque<vector<genome>>;
 
   void validateGen(genome &gen);
   float calZeroActionPercent(genome &gen);
