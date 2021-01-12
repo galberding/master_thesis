@@ -1,43 +1,50 @@
-logDir: testing
-logName: test5
+logDir: ElitistRetrain
+logName: run.log
 maxIterations: 100000
 
 # Snapshots
-restore: false
-snapshot: name
+restore: true
+snapshot: "/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions"
 takeSnapshot: true
-takeSnapshotEvery: 100
+takeSnapshotEvery: 1000
 tSnap: pop.pas
 
 # Map
 mapType: 1
 mapWidth: 10
-mapHeight: 10
+mapHeight: 20
 mapResolution: 0.3
 
 # Initialization
-initActions: 60
-initIndividuals: 5000
+initActions: 20
+initIndividuals: 100
 
 # Selection
 keep: 20
 select: 100
 
 # Crossover
-crossoverProba: 0.8
-crossLength: 0.45
+crossoverProba: 0.9
+crossLength: 0.5
 
 # Fitness
 weights:
   time: 0.2
   occ: 0.3
-  coverage: 0.5
+  coverage: 0.45
 
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.2
-mutaRandAngleProba: 0.21
-mutaPosDistProba: 0.01
-mutaNegDistProba: 0.01
+mutaRandAngleProba: 0.2
+mutaPosDistProba: 0.6
+mutaNegDistProba: 0.6
+
+# Lastest conf
+# mutaOrtoAngleProba: 0.02
+# mutaRandAngleProba: 0.02
+# mutaPosDistProba: 0.06
+# mutaNegDistProba: 0.06
+
 # TODO: obsolete
 mutaPosDistMax: 5

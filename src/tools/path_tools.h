@@ -104,6 +104,11 @@ namespace path {
   bool dirToAngle(direction pos, float &angle);
 
   void actionToPath(PAs& pas, vector<Position> &path);
+
+  bool compareF(float f1, float f2, float epsilon = 0.001){
+    if(fabs(f1-f2) < epsilon) return true;
+    return false;
+  }
   /////////////////////////////////////////////////////////////////////////////
   //                                PathAction                               //
   /////////////////////////////////////////////////////////////////////////////

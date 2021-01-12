@@ -383,6 +383,20 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
   }
 }
 
+// void op::MutationStrategy::addRandomDistanceOffset(genome& gen, executionConfig& eConf) {
+//   if(!applyAction(eConf.mutaRandDistProba, eConf)) return;
+//   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+//   uniform_real_distribution<> changeDistro(0,eConf.mutaPosDistMax);
+
+//   // Select action and add the offset
+//   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+//   float offset = changeDistro(eConf.generator);
+//   if(offset < 0 && (*action)->mod_config[PAP::Distance] < abs(offset)) return;
+//     (*action)->mod_config[PAP::Distance] -= offset;
+//     (*action)->modified = true;
+
+// }
+
 ///////////////////////////////////////////////////////////////////////////////
 //                              Fitness strategy                         //
 ///////////////////////////////////////////////////////////////////////////////
@@ -487,7 +501,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   float totalCoverage = freeSpace;
   float finalCoverage = currentCoverage / totalCoverage;
 
-  float weight = eConf.fitnessWeight;
+  float weight = eConf.fitnessWeights[2];
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
   gen.fitness = weight*finalTime + (1-weight)*finalCoverage;
@@ -571,7 +585,7 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
 	    argsToCsv(eConf.fitnessAvgTime,
 		      eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
-		      zeroPercent));
+		      eConf.actionLenAvg));
       rob->evaluateActions(eConf.best.actions);
       cv::imshow("Current Run ", rob->gridToImg("map"));
       cv::waitKey(1);
