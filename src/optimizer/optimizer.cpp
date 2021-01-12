@@ -128,12 +128,13 @@ void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, Fa
       break;
     }
   }
+  pool.clear();
 }
 
 void op::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
   // select best two out of four
   // we expect that all individuals in the family pool have their fitness calculated
-  pool.clear();
+  // pool.clear();
   for(auto &family : fPool){
     if(family.size() == 2) continue;
     assert(family.size() == 4);
@@ -398,6 +399,7 @@ void resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.actionLenAvg = 0;
 }
 
+
 void trackFitnessParameter(genome& gen, executionConfig& eConf){
   float fitness = gen.fitness;
   // Logging of fittnessvalues
@@ -408,7 +410,10 @@ void trackFitnessParameter(genome& gen, executionConfig& eConf){
   if(size < eConf.actionLenMin) eConf.actionLenMin = size;
   eConf.fitnessAvg += fitness;
   eConf.actionLenAvg += gen.actions.size();
+  eConf.fitnessAvgTime += gen.finalTime;
+  eConf.fitnessAvgCoverage += gen.finalCoverage;
 }
+
 
 void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.fitnessAvg /= poolsize;
@@ -417,6 +422,18 @@ void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.fitnessAvgCoverage /= poolsize;
   eConf.actionLenAvg /= poolsize;
 }
+
+
+void trackPoolFitness(Genpool& pool, executionConfig& eConf){
+  resetLoggingFitnessParameter(eConf);
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    trackFitnessParameter(*it, eConf);
+  }
+
+  finalizeFitnessLogging(pool.size(), eConf);
+
+}
+
 
 
 void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
@@ -581,12 +598,14 @@ void op::Optimizer::optimizePath(bool display){
   *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
 
   // Main loop
+  (*calFitness)(pool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
 
     // Fitness calculation
     // TODO: only useful for statistic evaluation -> all parameters are already recalculated
-    (*calFitness)(pool, *rob, eConf);
     getBestGen(pool, eConf);
+    // resetLoggingFitnessParameter(eConf);
+    trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
@@ -603,6 +622,7 @@ void op::Optimizer::optimizePath(bool display){
     (*mutate)(fPool, eConf);
     calFitness->estimateChildren(fPool, *rob, eConf);
     select->elitistSelection(fPool, pool);
+
 
     // Increase Iteration
     eConf.currentIter++;
