@@ -393,7 +393,7 @@ void op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
   // Select action and add the offset
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   float offset = changeDistro(eConf.generator);
-  debug("Mut scale: ", offset);
+  // debug("Mut scale: ", offset);
   if((*action)->mod_config[PAP::Distance] > 0){
     (*action)->mod_config[PAP::Distance] *= offset;
     (*action)->modified = true;
@@ -630,6 +630,7 @@ void op::Optimizer::optimizePath(bool display){
 
   // Main loop
   (*calFitness)(pool, *rob, eConf);
+  genome_tools::removeZeroPAs(pool);
   while(eConf.currentIter <= eConf.maxIterations){
 
     // Fitness calculation
@@ -638,7 +639,7 @@ void op::Optimizer::optimizePath(bool display){
     // resetLoggingFitnessParameter(eConf);
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
-    genome_tools::removeZeroPAs(pool);
+
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
 

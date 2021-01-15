@@ -10,14 +10,14 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Map
-mapType: 2
+mapType: 1
 mapWidth: 20
 mapHeight: 20
 mapResolution: 0.3
 
 # Initialization
-initActions: 60
-initIndividuals: 62
+initActions: 22
+initIndividuals: 60
 
 # Selection
 keep: 1000
@@ -25,7 +25,7 @@ select: 100
 
 # Crossover
 crossoverProba: 0.9
-crossLength: 0.5
+crossLength: 0.3
 
 # Fitness
 weights:
@@ -35,7 +35,7 @@ weights:
 
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.01
+mutaOrtoAngleProba: 0.02
 mutaRandAngleProba: 0.01
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
