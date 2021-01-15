@@ -62,6 +62,8 @@ namespace genome_tools {
   void validateGen(genome &gen);
   float calZeroActionPercent(genome &gen);
   float calZeroActionPercent(Genpool &pool);
+  void removeZeroPAs(Genpool &pool);
+  void removeZeroPAs(genome &gen);
 
 }
 

@@ -40,9 +40,10 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mutaPosDistProba = yConf["mutaPosDistProba"].as<float>();
   if(yConf["mutaNegDistProba"])
     mutaNegDistProba = yConf["mutaNegDistProba"].as<float>();
+   if(yConf["mutaRandScaleDistProba"])
+    mutaRandScaleDistProba = yConf["mutaRandScaleDistProba"].as<float>();
   if(yConf["mutaPosDistMax"])
     mutaPosDistMax = yConf["mutaPosDistMax"].as<float>();
-
   // Snapshots
   if(yConf["restore"])
     restore = yConf["restore"].as<bool>();

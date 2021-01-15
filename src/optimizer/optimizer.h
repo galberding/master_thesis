@@ -12,7 +12,7 @@ using namespace conf;
 namespace op {
   // namespace to organize the optimizer strategies
 
-  bool applyAction(float proba, executionConfig eConf);
+  bool applyAction(float proba, executionConfig& eConf);
 
   /////////////////////////////////////////////////////////////////////////////
   //                               InitStrategy                              //
@@ -73,6 +73,7 @@ namespace op {
     void addRandomAngleOffset(genome& gen, executionConfig& eConf);
     void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
     void addNegativeDistanceOffset(genome& gen, executionConfig& eConf);
+    void randomScaleDistance(genome& gen, executionConfig& eConf);
   };
 
 

@@ -6,6 +6,8 @@
 #include "../src/tools/mapGen.h"
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include "../src/tools/pa_serializer.h"
+#include "../src/tools/genome_tools.h"
+
 
 using namespace path;
 using namespace grid_map;
@@ -435,17 +437,76 @@ TEST(MapGen, drawPath){
 
   shared_ptr<GridMap> newMap = mapgen::changeMapRes(map, 0.01);
   GridMapCvConverter::toImage<unsigned char, 1>(*map, "map", CV_8U, 0.0, 1, old);
-  cv::imshow("Path", old);
-  cv::waitKey();
+  // cv::imshow("Path", old);
+  // cv::waitKey();
 
   mapgen::drawPathOnMap(newMap, pp, false);
 
   GridMapCvConverter::toImage<unsigned char, 1>(*newMap, "map", CV_8U, 0.0, 1, rob_map);
 
-  cv::imshow("Path", rob_map);
-  cv::waitKey();
+  // cv::imshow("Path", rob_map);
+  // cv::waitKey();
 
 
+}
+
+
+TEST(MapGen, inspectMapType2){
+  // TODO: Check if start position is correct
+  // Vis results
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(100, 100, 0.4, 2, start);
+
+
+  // Visualize results
+  cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
+  // cv::imshow("Path", bb);
+  // cv::waitKey();
+
+}
+
+
+TEST(GenTools, testErase){
+  Position start(42,42), end(42,42);
+
+  StartAction sa(start);
+  EndAction ea({end});
+  AheadAction aa(PAT::CAhead, {{PAP::Distance, 2000}, {PAP::Angle, 270}});
+  AheadAction aa1(PAT::CAhead, {{PAP::Distance, 0}, {PAP::Angle, 130}});
+  AheadAction aa2(PAT::CAhead, {{PAP::Distance, 0}, {PAP::Angle, 90}});
+  AheadAction aa3(PAT::CAhead, {{PAP::Distance, 0}, {PAP::Angle, 0}});
+  AheadAction aa4(PAT::CAhead, {{PAP::Distance, 0}, {PAP::Angle, 0}});
+  AheadAction aa5(PAT::CAhead, {{PAP::Distance, 0}, {PAP::Angle, 0}});
+  AheadAction aa6(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+  AheadAction aa7(PAT::CAhead, {{PAP::Distance, 10}, {PAP::Angle, 0}});
+
+  PAs act = {make_shared<StartAction>(sa)};
+
+  vector<float> dists = {0,0,0,0,0,0,0,1,0};
+  for(auto f : dists){
+    AheadAction aa(PAT::CAhead, {{PAP::Distance, f}, {PAP::Angle, 2}});
+    act.push_back(make_shared<AheadAction>(aa));
+  }
+  act.push_back(make_shared<EndAction>(ea));
+
+  // PAs act = {
+  //     make_shared<StartAction>(sa),
+  //     make_shared<AheadAction>(aa),
+  //     make_shared<AheadAction>(aa1),
+  //     make_shared<AheadAction>(aa2),
+  //     make_shared<AheadAction>(aa3),
+  //     make_shared<AheadAction>(aa4),
+  //     make_shared<AheadAction>(aa5),
+  //     make_shared<AheadAction>(aa6),
+  //     make_shared<AheadAction>(aa7),
+  //     make_shared<EndAction>(ea)
+  // };
+
+  genome_tools::genome gen(act);
+  debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
+  genome_tools::removeZeroPAs(gen);
+  // genome_tools::genome gen(act);
+  debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
 }
 
 

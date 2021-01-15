@@ -109,6 +109,7 @@ namespace conf {
     float mutaRandAngleProba = 0.1;
     float mutaPosDistProba = 0.1;
     float mutaNegDistProba = 0.01;
+    float mutaRandScaleDistProba = 0.01;
     float mutaPosDistMax = 50;
 
     string config_to_string(){

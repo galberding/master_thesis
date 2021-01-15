@@ -1,6 +1,6 @@
 #include "optimizer.h"
 
-bool op::applyAction(float proba, executionConfig eConf){
+bool op::applyAction(float proba, executionConfig& eConf){
   uniform_real_distribution<float> probaDist(0,1);
   return proba > probaDist(eConf.generator);
 }
@@ -318,6 +318,7 @@ void op::MutationStrategy::mutateGen(genome &gen, executionConfig &eConf) {
     addRandomAngleOffset(gen, eConf);
     addPositiveDistanceOffset(gen, eConf);
     addNegativeDistanceOffset(gen, eConf);
+    randomScaleDistance(gen, eConf);
 }
 
 void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eConf){
@@ -379,6 +380,22 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
   float offset = changeDistro(eConf.generator);
   if((*action)->mod_config[PAP::Distance] > offset){
     (*action)->mod_config[PAP::Distance] -= offset;
+    (*action)->modified = true;
+  }
+}
+
+
+void op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eConf) {
+
+  if(!applyAction(eConf.mutaRandScaleDistProba, eConf)) return;
+  uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
+  uniform_real_distribution<float> changeDistro(0,2);
+  // Select action and add the offset
+  auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
+  float offset = changeDistro(eConf.generator);
+  debug("Mut scale: ", offset);
+  if((*action)->mod_config[PAP::Distance] > 0){
+    (*action)->mod_config[PAP::Distance] *= offset;
     (*action)->modified = true;
   }
 }
@@ -621,6 +638,7 @@ void op::Optimizer::optimizePath(bool display){
     // resetLoggingFitnessParameter(eConf);
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
+    genome_tools::removeZeroPAs(pool);
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
 

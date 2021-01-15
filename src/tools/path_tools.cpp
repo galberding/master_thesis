@@ -68,6 +68,12 @@ void path::actionToPath(PAs& pas, vector<Position>& path) {
   }
 }
 
+bool path::compareF(float f1, float f2, float epsilon){
+  float diff = fabs(f1-f2);
+  // debug(f1, "-", f2, "=", diff);
+    if(diff < epsilon) return true;
+    return false;
+  }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                                   PathAction                                  //
@@ -454,8 +460,8 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 
 
 cv::Mat path::Robot::gridToImg(string layer){
-  cv::Mat img;
-  grid_map::GridMapCvConverter::toImage<unsigned char, 1>(*pmap, layer, CV_8U, 0.0, 6, img);
+  cv::Mat img = mapgen::gmapToImg(mapgen::changeMapRes(pmap, 0.2), layer);
+  // grid_map::GridMapCvConverter::toImage<unsigned char, 1>(*pmap, layer, CV_8U, 0.0, 6, img);
   return img;
 }
 

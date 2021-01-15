@@ -20,7 +20,16 @@ namespace mapgen {
 
   shared_ptr<GridMap> changeMapRes(shared_ptr<GridMap> gmap, float res);
   void drawPathOnMap(shared_ptr<GridMap> gmap, vector<Position>& path, bool inc);
-
+  /**
+   * @brief      Generate OpenCV img from GridMap.
+   *
+   * @param      gmap shared pointer to grid map
+   * @param      layer name of the layer
+   * @param      upperThresh highest possible value in gridmap layer (used for visualization)
+   *
+   * @return     return OpenCV image
+   */
+  cv::Mat gmapToImg(const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh=5);
 }
 
 #endif /* MAPGEN_H */

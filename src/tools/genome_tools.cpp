@@ -58,7 +58,7 @@ void genome_tools::validateGen(genome &gen){
 float genome_tools::calZeroActionPercent(genome &gen){
   float res = 0;
   for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
-    if(it->get()->mod_config[PAP::Distance] == 0){
+    if(compareF(it->get()->mod_config[PAP::Distance], 0, 0.000001)){
       res += 1;
     }
   }
@@ -68,9 +68,37 @@ float genome_tools::calZeroActionPercent(genome &gen){
 float genome_tools::calZeroActionPercent(Genpool &pool){
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    if(it->fitness == 0){
+    if(compareF(it->fitness, 0.0, 0.00001)){
       res += 1;
     }
   }
   return res / pool.size();
+}
+
+void genome_tools::removeZeroPAs(Genpool &pool) {
+  for(auto &gen : pool){
+    removeZeroPAs(gen);
+  }
+}
+
+void genome_tools::removeZeroPAs(genome &gen){
+  // Remove consecutive zero actions and check if the third action is still a zero action
+  // We will allow to consecutive zero actions, everything else will be removed
+  // This will have no impact on the fitness thus it can safely be executed after the evaluation process
+  PAs clone;
+  clone.insert(clone.begin(), gen.actions.begin(), gen.actions.end());
+  gen.actions.clear();
+  for (auto &ac : clone){
+    if(ac->type == PAT::Start || ac->type == PAT::End){
+      gen.actions.push_back(ac);
+    }else{
+      if(compareF(ac->mod_config[PAP::Distance], 0)
+	 && compareF(gen.actions.back()->mod_config[PAP::Distance], 0)){
+	continue;
+      }else{
+	gen.actions.push_back(ac);
+      }
+    }
+  }
+  // gen.actions =
 }

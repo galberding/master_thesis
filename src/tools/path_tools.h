@@ -14,6 +14,7 @@
 #include <grid_map_core/grid_map_core.hpp>
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include <cstring>
+#include "mapGen.h"
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"      /* Red */
@@ -105,10 +106,7 @@ namespace path {
 
   void actionToPath(PAs& pas, vector<Position> &path);
 
-  bool compareF(float f1, float f2, float epsilon = 0.001){
-    if(fabs(f1-f2) < epsilon) return true;
-    return false;
-  }
+  bool compareF(float f1, float f2, float epsilon = 0.001);
   /////////////////////////////////////////////////////////////////////////////
   //                                PathAction                               //
   /////////////////////////////////////////////////////////////////////////////
@@ -201,6 +199,8 @@ For now we will just return the start point because the robot object should find
   struct StartAction : public PathAction{
     StartAction(Position startPoint):PathAction(PAT::Start) {
       // wps.insert(wps.begin(), startPoint);
+      mod_config.insert({{PAP::Angle, 0}, {PAP::Distance, 0}, {PAP::CrossCount, 0}, {PAP::StepCount, 0}});
+      // updateConfig(mod_config, {{PAP::Distance, 0}});
       wps.push_back(startPoint);
     };
     bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges){return true;};
