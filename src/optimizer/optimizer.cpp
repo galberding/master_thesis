@@ -624,10 +624,11 @@ void op::Optimizer::optimizePath(bool display){
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
-  *eConf.logStr << eConf.config_to_string();
+  // *eConf.logStr << eConf.config_to_string();
   // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
   *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
-
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  eConf.logStr->str("");
   // Main loop
   (*calFitness)(pool, *rob, eConf);
   genome_tools::removeZeroPAs(pool);
@@ -661,7 +662,7 @@ void op::Optimizer::optimizePath(bool display){
     eConf.currentIter++;
   }
   // Log Fitnessvalues for all iterations
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
 }
 
 void op::Optimizer::restorePopulationFromSnapshot(const string path){
@@ -697,5 +698,6 @@ void op::Optimizer::snapshotPopulation(executionConfig& eConf){
   }
   logging::Logger(perform.str(), eConf.logDir, performanceName);
   pa_serializer::writeActionsToFile(pp, popName);
-
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+  eConf.logStr->str("");
 }

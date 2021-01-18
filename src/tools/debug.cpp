@@ -22,7 +22,7 @@ inline std::string logging::getCurrentDateTime( std::string s ){
     return std::string(buf);
   };
 
-void logging::Logger(std::string logMsg, std::string dir, std::string name){
+void logging::Logger(std::string logMsg, std::string dir, std::string name, bool append){
 
   fs::create_directories(dir);
 
@@ -30,7 +30,7 @@ void logging::Logger(std::string logMsg, std::string dir, std::string name){
   std::string now = getCurrentDateTime("now");
   std::ofstream ofs;
   // ofs.open(filePath.c_str(), std::ios_base::out | std::ios_base::app);
-  ofs.open(filePath.c_str(), std::ios_base::out);
+  ofs.open(filePath.c_str(), append ? std::ios_base::out | std::ios_base::app : std::ios_base::out);
   // std::string endMsg = ((logMsg[logMsg.size() - 1] != '\n') ? '\n' : "");
 
   // ofs << now << ',' << logMsg;

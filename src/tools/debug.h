@@ -101,7 +101,8 @@ namespace logging{
   // lets go with just the name for now!
 
   inline std::string getCurrentDateTime( std::string s );
-  void Logger(std::string logMsg, std::string dir, std::string name);
+  void Logger(std::string logMsg, std::string dir, std::string name, bool append=false);
+
 }
 
 
