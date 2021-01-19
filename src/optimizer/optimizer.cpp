@@ -268,7 +268,8 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   // Mark the inserted part as modified to recalculate waypoints
   copyActions(next(par2.actions.begin(), sIdx2),
 	      next(par2.actions.begin(), (sIdx2+len2)),
-	      child1, true);
+	      child1);
+	      // child1, true);
   // Append remaining part
   copyActions(next(par1.actions.begin(), sIdx1 +len1),
 	      par1.actions.end(),
@@ -280,6 +281,7 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   copyActions(next(par1.actions.begin(), sIdx1),
 	      next(par1.actions.begin(), (sIdx1+len1)),
 	      child2, true);
+	      // child2, true);
   copyActions(next(par2.actions.begin(), sIdx2 +len2),
 	      par2.actions.end(),
 	      child2);
@@ -638,6 +640,7 @@ void op::Optimizer::optimizePath(bool display){
     // TODO: only useful for statistic evaluation -> all parameters are already recalculated
     getBestGen(pool, eConf);
     // resetLoggingFitnessParameter(eConf);
+    genome_tools::removeZeroPAs(pool);
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
 
