@@ -684,7 +684,7 @@ void op::Optimizer::optimizePath(bool display){
     // TODO: only useful for statistic evaluation -> all parameters are already recalculated
     getBestGen(pool, eConf);
     // resetLoggingFitnessParameter(eConf);
-    genome_tools::removeZeroPAs(pool);
+    // genome_tools::removeZeroPAs(pool);
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
 

@@ -21,13 +21,13 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   if(yConf["weights"]["coverage"])
     fitnessWeights[2] = yConf["weights"]["coverage"].as<float>();
   if(yConf["initActions"])
-    initActions = yConf["initActions"].as<int>();
+    initActions = yConf["initActions"].as<float>();
   if(yConf["initIndividuals"])
     initIndividuals = yConf["initIndividuals"].as<float>();
   if(yConf["keep"])
-    selectKeepBest = yConf["keep"].as<int>();
+    selectKeepBest = yConf["keep"].as<float>();
   if(yConf["select"])
-    selectIndividuals = yConf["select"].as<int>();
+    selectIndividuals = yConf["select"].as<float>();
   if(yConf["crossoverProba"])
     crossoverProba = yConf["crossoverProba"].as<float>();
   if(yConf["crossLength"])
@@ -57,11 +57,11 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   //   tSnap = yConf["tSnap"].as<string>();
   // Map
   if(yConf["mapType"])
-    mapType = yConf["mapType"].as<int>();
+    mapType = yConf["mapType"].as<float>();
   if(yConf["mapWidth"])
-    mapWidth = yConf["mapWidth"].as<int>();
+    mapWidth = yConf["mapWidth"].as<float>();
   if(yConf["mapHeight"])
-    mapHeight = yConf["mapHeight"].as<int>();
+    mapHeight = yConf["mapHeight"].as<float>();
   if(yConf["mapResolution"])
     mapResolution = yConf["mapResolution"].as<float>();
 
