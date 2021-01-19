@@ -137,10 +137,11 @@ void op::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
   // pool.clear();
   for(auto &family : fPool){
     if(family.size() == 2) continue;
-    assert(family.size() == 4);
+    assert(family.size() >= 4);
     sort(family.begin(), family.end());
-    pool.push_back(family[2]);
-    pool.push_back(family[3]);
+    pool.push_back(family.back());
+    family.pop_back();
+    pool.push_back(family.back());
   }
 
 }
@@ -211,7 +212,7 @@ void op::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , execu
     assert(family[0].actions.size() > 3);
     assert(family[1].actions.size() > 3);
     mating(family[0], family[1], family, eConf);
-    assert(family.size() == 4);
+    assert(family.size() >= 4);
   }
 }
 
@@ -243,7 +244,7 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   // mate two parents
   // estimate the individual Length
   // debug("Parent length: ", par1.actions.size(), " ", par2.actions.size());
-  PAs parent1, parent2, child1, child2;
+  PAs parent1, parent2, child1, child2, child3, child4;
   int maxlen1 = static_cast<int>((par1.actions.size() - 3) * eConf.crossLength);
   int maxlen2 = static_cast<int>((par2.actions.size() - 3) * eConf.crossLength);
   assertm(maxlen1 > 0, "Cross length is too small!");
@@ -268,13 +269,13 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   // Mark the inserted part as modified to recalculate waypoints
   copyActions(next(par2.actions.begin(), sIdx2),
 	      next(par2.actions.begin(), (sIdx2+len2)),
-	      child1);
-	      // child1, true);
+	      child1, true);
   // Append remaining part
   copyActions(next(par1.actions.begin(), sIdx1 +len1),
 	      par1.actions.end(),
 	      child1);
-    // Copy first part of parent 2 to child 2
+
+   // Copy first part of parent 2 to child 2
   copyActions(par2.actions.begin(),
 	      next(par2.actions.begin(), sIdx2),
 	      child2);
@@ -286,9 +287,39 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
 	      par2.actions.end(),
 	      child2);
 
+  // Copy first part of parent 1
+  copyActions(par1.actions.begin(),
+	      next(par1.actions.begin(), sIdx1),
+	      child3);
+  // Insert cross over part from parent 2
+  // Mark the inserted part as modified to recalculate waypoints
+  copyActions(next(par2.actions.begin(), sIdx2),
+	      next(par2.actions.begin(), (sIdx2+len2)),
+	      child3);
+  // Append remaining part
+  copyActions(next(par1.actions.begin(), sIdx1 +len1),
+	      par1.actions.end(),
+	      child3);
+
+   // Copy first part of parent 2 to child 2
+  copyActions(par2.actions.begin(),
+	      next(par2.actions.begin(), sIdx2),
+	      child4);
+  copyActions(next(par1.actions.begin(), sIdx1),
+	      next(par1.actions.begin(), (sIdx1+len1)),
+	      child4);
+	      // child4, true);
+  copyActions(next(par2.actions.begin(), sIdx2 +len2),
+	      par2.actions.end(),
+	      child4);
+
+
   // Check if new length match
   assert(child1.size() == (par1.actions.size() - len1 + len2));
   assert(child2.size() == (par2.actions.size() + len1 - len2));
+  assert(child3.size() == (par1.actions.size() - len1 + len2));
+  assert(child4.size() == (par2.actions.size() + len1 - len2));
+
 
   // Mark crossings as modified
   (*next(child1.begin(), sIdx1-1))->modified = true;
@@ -296,19 +327,30 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   (*next(child2.begin(), sIdx2-1))->modified = true;
   (*next(child2.begin(), sIdx2+len1-1))->modified = true;
 
+  (*next(child3.begin(), sIdx1-1))->modified = true;
+  (*next(child3.begin(), sIdx1+len2-1))->modified = true;
+  (*next(child4.begin(), sIdx2-1))->modified = true;
+  (*next(child4.begin(), sIdx2+len1-1))->modified = true;
+
   // Insert children in pool
   genome child_gen1(child1);
   genome child_gen2(child2);
+  genome child_gen3(child3);
+  genome child_gen4(child4);
   assert(child_gen1.actions.back()->type == PAT::End
 	 && child_gen1.actions.back()->type == PAT::End);
 
   // Validate the gens
   validateGen(child_gen1);
   validateGen(child_gen2);
+  validateGen(child_gen3);
+  validateGen(child_gen4);
 
   // Insert to new Population
   newPopulation.push_back(child_gen1);
   newPopulation.push_back(child_gen2);
+  newPopulation.push_back(child_gen3);
+  newPopulation.push_back(child_gen4);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -332,9 +374,11 @@ void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eCo
 void op::MutationStrategy::operator()(FamilyPool& fPool, executionConfig& eConf){
   for (auto &family : fPool) {
     if(family.size() == 2) continue;
-    assert(family.size() == 4);
-    mutateGen(family[2], eConf);
-    mutateGen(family[3], eConf);
+    assert(family.size() >= 4);
+    for(int i=2; i<family.size(); i++){
+      mutateGen(family[i], eConf);
+    }
+    // mutateGen(family[3], eConf);
   }
 }
 
@@ -492,7 +536,7 @@ void op::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob, 
   // resetLoggingFitnessParameter(eConf);
   for (auto &family : fPool) {
     if(family.size() > 2){
-      for (int i = 2; i <= 3; i++) {
+      for (int i = 2; i < family.size(); i++) {
         assertm(family[i].actions.size() > 0, "Not enough actions");
         assert(rob.evaluateActions(family[i].actions));
         // assertm(family[i].actions.size() > 0, "Not enough actions");
