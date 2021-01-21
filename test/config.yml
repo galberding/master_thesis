@@ -2,6 +2,8 @@ logDir: nonConvexRegionTest
 logName: run.log
 maxIterations: 50000
 
+visualize: true
+
 # Snapshots
 restore: false
 snapshot: "/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions"
@@ -40,6 +42,7 @@ mutaRandAngleProba: 0.01
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.05
+mutaReplaceGen: 0.01
 
 # Lastest conf
 # mutaOrtoAngleProba: 0.02

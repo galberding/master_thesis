@@ -18,6 +18,7 @@ void op::InitStrategy::operator()(Genpool& pool, executionConfig& eConf){
 
 void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
   PAs actions;
+  // gen.actions.clear();
   uniform_int_distribution<> angleDist(0,360);
   uniform_real_distribution<float> distanceDist(0,50);
   actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
@@ -119,6 +120,7 @@ void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, Fa
   fPool.clear();
   // Shuffle will reorder the elements in random order
   shuffle(pool.begin(), pool.end(), eConf.generator);
+  // sort(pool.begin(), pool.end());
   for (auto it = pool.begin(); it != pool.end();) {
     auto itn = next(it, 1);
     if(it != pool.end() && itn != pool.end()){
@@ -220,6 +222,7 @@ void op::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , execu
 void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, PAs &child, bool modify){
   for(begin; begin != end; begin++){
     // debug("Type: ", (int) (*begin)->type);
+    assert((*begin)->wps.size() > 0);
     switch((*begin)->type){
     case PAT::Start:{
       StartAction sa((*begin)->wps.front());
@@ -363,6 +366,7 @@ void op::MutationStrategy::mutateGen(genome &gen, executionConfig &eConf) {
     addPositiveDistanceOffset(gen, eConf);
     addNegativeDistanceOffset(gen, eConf);
     randomScaleDistance(gen, eConf);
+    // randomReplaceGen(gen, eConf);
 }
 
 void op::MutationStrategy::operator()(Genpool& currentPool, executionConfig& eConf){
@@ -446,6 +450,25 @@ void op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
   }
 }
 
+bool op::MutationStrategy::randomReplaceGen(genome& gen, executionConfig& eConf) {
+
+  if(!applyAction(eConf.mutaReplaceGen, eConf)) return false;
+  // debug("Insert Random!");
+  InitStrategy init;
+  init(gen, gen.actions.size(), eConf);
+  validateGen(gen);
+  return true;
+}
+
+// void op::MutationStrategy::reviveZeroAction(genome& gen, executionConfig& eConf) {
+
+//   if(!applyAction(eConf.mutaReviveAction, eConf)) return;
+//   // debug("Insert Random!");
+//   InitStrategy init;
+//   init(gen, gen.actions.size(), eConf);
+// }
+
+
 // void op::MutationStrategy::addRandomDistanceOffset(genome& gen, executionConfig& eConf) {
 //   if(!applyAction(eConf.mutaRandDistProba, eConf)) return;
 //   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
@@ -493,6 +516,7 @@ void trackFitnessParameter(genome& gen, executionConfig& eConf){
 
 
 void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
+  assert(poolsize > 0);
   eConf.fitnessAvg /= poolsize;
   eConf.fitnessAvgTime /= poolsize;
   eConf.fitnessAvgOcc /= poolsize;
@@ -515,20 +539,25 @@ void trackPoolFitness(Genpool& pool, executionConfig& eConf){
 
 void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
   resetLoggingFitnessParameter(eConf);
-  for(Genpool::iterator it = currentPool.begin(); it != currentPool.end();){
-    assertm(it->actions.size() > 0, "Not enough actions");
-    if(rob.evaluateActions(it->actions)){
-      assertm(it->actions.size() > 0, "Not enough actions");
-      calculation((*it), rob.getFreeArea(), eConf);
-      trackFitnessParameter(*it , eConf);
-      it++;
-    }else{
-      warn("Erase Gen!");
-      assertm(false, "Attempt to erase a gen!!");
-      it = currentPool.erase(it);
-    }
+  // debug("Before cal");
+  assert(currentPool.size() > 0);
+  for(Genpool::iterator it = currentPool.begin(); it != currentPool.end(); ++it){
+    estimateGen(*it, rob, eConf);
   }
   finalizeFitnessLogging(currentPool.size(), eConf);
+  // debug("After Finalize");
+}
+
+void op::FitnessStrategy::estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf){
+  assertm(gen.actions.size() > 0, "Not enough actions");
+  if(rob.evaluateActions(gen.actions)){
+    assertm(gen.actions.size() > 0, "Not enough actions");
+    calculation(gen, rob.getFreeArea(), eConf);
+    trackFitnessParameter(gen , eConf);
+  }else{
+    warn("Erase Gen!");
+    assertm(false, "Attempt to erase a gen!!");
+  }
 }
 
 void op::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf) {
@@ -548,6 +577,7 @@ void op::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob, 
   // finalizeFitnessLogging(currentPool.size(), eConf);
 }
 
+
 float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConfig &eConf){
   // prepare parameters
   // Check if the gen is valid -> returns false if gen has distance 0
@@ -557,17 +587,20 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   }
   // Time parameter:
   float actualTime = gen.traveledDist;
+  // debug(log(10 + gen.cross));
   float optimalTime = gen.traveledDist - gen.cross;
   float finalTime = optimalTime / actualTime;
 
-  float currentCoverage = optimalTime;
+  float currentCoverage = gen.traveledDist - gen.cross;
   float totalCoverage = freeSpace;
   float finalCoverage = currentCoverage / totalCoverage;
+
+  // finalTime *= finalCoverage;
 
   float weight = eConf.fitnessWeights[2];
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
-  gen.fitness = weight*finalTime + (1-weight)*finalCoverage;
+  gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
   eConf.fitnessAvgTime += finalTime;
   // eConf.fitnessAvgOcc += final_occ;
   eConf.fitnessAvgCoverage += finalCoverage;
@@ -638,6 +671,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
       debug("Take snapshot to: ", eConf.tSnap);
       snapshotPopulation(eConf);
+      genome_tools::removeZeroPAs(pool);
     }
 }
 
@@ -649,13 +683,16 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
 		      eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
 		      eConf.actionLenAvg));
-      rob->evaluateActions(eConf.best.actions);
-      cv::imshow("Current Run ", rob->gridToImg("map"));
-      cv::waitKey(1);
+      if(eConf.visualize){
+	rob->evaluateActions(eConf.best.actions);
+	cv::imshow("Current Run ", rob->gridToImg("map"));
+	cv::waitKey(1);
+      }
     }
 }
 
 void getBestGen(Genpool& pool, executionConfig& eConf){
+  eConf.best = pool.front();
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     if(it->fitness >  eConf.best.fitness){
       eConf.best = *it;
@@ -670,6 +707,7 @@ void op::Optimizer::optimizePath(bool display){
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
+  // debug("After Init");
   // *eConf.logStr << eConf.config_to_string();
   // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
   *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
@@ -677,9 +715,10 @@ void op::Optimizer::optimizePath(bool display){
   eConf.logStr->str("");
   // Main loop
   (*calFitness)(pool, *rob, eConf);
-  genome_tools::removeZeroPAs(pool);
+  // genome_tools::removeZeroPAs(pool);
+  // debug("Before while");
   while(eConf.currentIter <= eConf.maxIterations){
-
+    // debug("Inside");
     // Fitness calculation
     // TODO: only useful for statistic evaluation -> all parameters are already recalculated
     getBestGen(pool, eConf);
@@ -703,7 +742,15 @@ void op::Optimizer::optimizePath(bool display){
     (*mutate)(fPool, eConf);
     calFitness->estimateChildren(fPool, *rob, eConf);
     select->elitistSelection(fPool, pool);
-
+    // Second mutation stage:
+    for(auto &gen : pool){
+      if(mutate->randomReplaceGen(gen, eConf)){
+	assert(gen.actions.size() > 0);
+	calFitness->estimateGen(gen, *rob, eConf);
+	assert(gen.actions.size() > 0);
+	// debug("Fitness: ", gen.fitness);
+      }
+    }
 
     // Increase Iteration
     eConf.currentIter++;

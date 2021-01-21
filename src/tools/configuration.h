@@ -36,6 +36,8 @@ namespace conf {
     // string logFitness = "";
     string logName = "";
 
+    bool visualize = true;
+
     // Snapshots
     bool restore = false;
     string snapshot = "";
@@ -111,6 +113,7 @@ namespace conf {
     float mutaNegDistProba = 0.01;
     float mutaRandScaleDistProba = 0.01;
     float mutaPosDistMax = 50;
+    float mutaReplaceGen = 0.001;
 
     string config_to_string(){
 

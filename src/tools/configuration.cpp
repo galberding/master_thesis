@@ -7,10 +7,12 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   // if(yConf["weights"]){
   //   cout << yConf["weights"] << endl;
   // }
-  maxIterations = yConf["maxIterations"].as<int>();
+  maxIterations = yConf["maxIterations"].as<float>();
   // Time, occ, configverage
 
-  if(yConf["logName"])
+  if(yConf["visualize"])
+    visualize = yConf["visualize"].as<bool>();
+ if(yConf["logName"])
     logName = yConf["logName"].as<string>();
   if(yConf["logDir"])
     logDir = yConf["logDir"].as<string>();
@@ -44,6 +46,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mutaRandScaleDistProba = yConf["mutaRandScaleDistProba"].as<float>();
   if(yConf["mutaPosDistMax"])
     mutaPosDistMax = yConf["mutaPosDistMax"].as<float>();
+  if(yConf["mutaReplaceGen"])
+    mutaReplaceGen = yConf["mutaReplaceGen"].as<float>();
   // Snapshots
   if(yConf["restore"])
     restore = yConf["restore"].as<bool>();

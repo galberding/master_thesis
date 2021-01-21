@@ -6,6 +6,7 @@
 #include "../tools/configuration.h"
 #include "../tools/debug.h"
 #include <algorithm>
+#include <cmath>
 // using namespace ga;
 using namespace conf;
 
@@ -74,6 +75,8 @@ namespace op {
     void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
     void addNegativeDistanceOffset(genome& gen, executionConfig& eConf);
     void randomScaleDistance(genome& gen, executionConfig& eConf);
+    bool randomReplaceGen(genome& gen, executionConfig& eConf);
+
   };
 
 
@@ -84,6 +87,8 @@ namespace op {
   struct FitnessStrategy {
     virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
     void estimateChildren(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf);
+
+    virtual void estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf);
     virtual float calculation(genome& gen, int freeSpace, executionConfig &eConf);
     virtual float calculation(float cdist,
 			      float dist,

@@ -72,7 +72,7 @@ TEST(Optimizer, standardConfig){
 
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
   // executionConfig eConf("/homes/galberding/catkin_ws/src/ros_optimizer/test/config.yml");
-
+  debug("Start opti");
   op::Optimizer opti(
 		     make_shared<op::InitStrategy>(op::InitStrategy()),
 		     make_shared<op::SelectionStrategy>(op::SelectionStrategy()),
@@ -80,6 +80,7 @@ TEST(Optimizer, standardConfig){
 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
 		     eConf);
+  debug("Init");
   opti.optimizePath(true);
 
 
