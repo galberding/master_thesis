@@ -119,8 +119,8 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
 void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf){
   fPool.clear();
   // Shuffle will reorder the elements in random order
-  shuffle(pool.begin(), pool.end(), eConf.generator);
-  // sort(pool.begin(), pool.end());
+  // shuffle(pool.begin(), pool.end(), eConf.generator);
+  sort(pool.begin(), pool.end());
   for (auto it = pool.begin(); it != pool.end();) {
     auto itn = next(it, 1);
     if(it != pool.end() && itn != pool.end()){
