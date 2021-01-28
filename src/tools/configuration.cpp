@@ -30,6 +30,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     selectKeepBest = yConf["keep"].as<float>();
   if(yConf["select"])
     selectIndividuals = yConf["select"].as<float>();
+  if(yConf["tournamentSize"])
+    tournamentSize = yConf["tournamentSize"].as<float>();
   if(yConf["crossoverProba"])
     crossoverProba = yConf["crossoverProba"].as<float>();
   if(yConf["crossLength"])
