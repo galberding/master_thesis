@@ -26,7 +26,8 @@ int main(int argc, char *argv[])
 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
 		     eConf);
-  opti.optimizePath(true);
+  // opti.optimizePath(true);
+  opti.optimizePath_s_tourn_c_dp(true);
 
 
   return 0;

@@ -37,10 +37,15 @@ namespace op {
     void uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf);
     // Select two best of four in the family
     void elitistSelection(FamilyPool& fPool, Genpool& pool);
-
+    genome tournamentSelection(Genpool &pool, executionConfig &eConf);
+    // void tournamentSelection(Genpool &pool, FamilyPool &fPool, executionConfig &eConf);
   };
 
   struct RouletteWheelSelection : SelectionStrategy{
+    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) override;
+  };
+
+  struct TournamentSelection : SelectionStrategy {
     virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) override;
   };
 
@@ -70,11 +75,11 @@ namespace op {
     virtual void operator()(Genpool& currentPool, executionConfig& eConf);
     virtual void operator()(FamilyPool& fPool, executionConfig& eConf);
     void mutateGen(genome &gen, executionConfig &eConf);
-    void addOrthogonalAngleOffset(genome& gen, executionConfig& eConf);
-    void addRandomAngleOffset(genome& gen, executionConfig& eConf);
+    bool addOrthogonalAngleOffset(genome& gen, executionConfig& eConf);
+    bool addRandomAngleOffset(genome& gen, executionConfig& eConf);
     void addPositiveDistanceOffset(genome& gen, executionConfig& eConf);
     void addNegativeDistanceOffset(genome& gen, executionConfig& eConf);
-    void randomScaleDistance(genome& gen, executionConfig& eConf);
+    bool randomScaleDistance(genome& gen, executionConfig& eConf);
     bool randomReplaceGen(genome& gen, executionConfig& eConf);
 
   };
@@ -109,7 +114,7 @@ namespace op {
     shared_ptr<CrossoverStrategy> cross;
     shared_ptr<SelectionStrategy> select;
     shared_ptr<InitStrategy> init;
-    Genpool pool;
+    Genpool pool, sel;
     SelectionPool sPool;
     FamilyPool fPool;
     shared_ptr<Robot> rob;
@@ -140,6 +145,7 @@ namespace op {
     //   Optimizer()
     void printRunInformation(executionConfig& eConf, float zeroPercent, bool display);
     void optimizePath(bool display = false);
+    void optimizePath_s_tourn_c_dp(bool display = false);
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);

@@ -24,6 +24,7 @@ initIndividuals: 60
 # Selection
 keep: 1000
 select: 100
+turnSize: 10
 
 # Crossover
 crossoverProba: 0.9

@@ -119,8 +119,8 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
 void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, FamilyPool &fPool, executionConfig &eConf){
   fPool.clear();
   // Shuffle will reorder the elements in random order
-  // shuffle(pool.begin(), pool.end(), eConf.generator);
-  sort(pool.begin(), pool.end());
+  shuffle(pool.begin(), pool.end(), eConf.generator);
+  // sort(pool.begin(), pool.end());
   for (auto it = pool.begin(); it != pool.end();) {
     auto itn = next(it, 1);
     if(it != pool.end() && itn != pool.end()){
@@ -132,6 +132,17 @@ void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, Fa
   }
   pool.clear();
 }
+
+genome op::SelectionStrategy::tournamentSelection(Genpool &pool, executionConfig &eConf){
+
+  assert(pool.size() > eConf.tournamentSize);
+  deque<genome> turn;
+  shuffle(pool.begin(), pool.end(), eConf.generator);
+  turn.insert(turn.begin(), pool.begin(), next(pool.begin(), eConf.tournamentSize));
+  sort(turn.begin(), turn.end());
+  return turn.back();
+}
+
 
 void op::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
   // select best two out of four
@@ -150,6 +161,7 @@ void op::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
 
 genome op::SelectionStrategy::selection(Genpool &currentPopulation,
 					executionConfig &eConf) {return genome();}
+
 
 genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executionConfig &eConf){
   // Calculate the total fitness value
@@ -179,6 +191,11 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
   }
   return gen;
 }
+
+genome op::TournamentSelection::selection(Genpool &currentPopulation, executionConfig &eConf) {
+  return tournamentSelection(currentPopulation, eConf);
+}
+
 /////////////////////////////////////////////////////////////////////////////
 //                            CrossoverStrategy                             //
 /////////////////////////////////////////////////////////////////////////////
@@ -387,8 +404,8 @@ void op::MutationStrategy::operator()(FamilyPool& fPool, executionConfig& eConf)
 }
 
 
-void op::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf){
-  if(!applyAction(eConf.mutaOrtoAngleProba, eConf)) return;
+bool op::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfig& eConf){
+  if(!applyAction(eConf.mutaOrtoAngleProba, eConf)) return false;
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_int_distribution<int> changeDistro(0,1);
 
@@ -396,10 +413,11 @@ void op::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfig
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator) ? 90 : -90;
   (*action)->modified = true;
+  return true;
 }
 
-void op::MutationStrategy::addRandomAngleOffset(genome& gen, executionConfig& eConf) {
-  if(!applyAction(eConf.mutaRandAngleProba, eConf)) return;
+bool op::MutationStrategy::addRandomAngleOffset(genome& gen, executionConfig& eConf) {
+  if(!applyAction(eConf.mutaRandAngleProba, eConf)) return false;
 
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_int_distribution<int> changeDistro(0,360);
@@ -407,6 +425,7 @@ void op::MutationStrategy::addRandomAngleOffset(genome& gen, executionConfig& eC
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator);
   (*action)->modified = true;
+  return true;
 }
 
 void op::MutationStrategy::addPositiveDistanceOffset(genome& gen, executionConfig& eConf) {
@@ -435,9 +454,9 @@ void op::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfi
 }
 
 
-void op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eConf) {
+bool op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eConf) {
 
-  if(!applyAction(eConf.mutaRandScaleDistProba, eConf)) return;
+  if(!applyAction(eConf.mutaRandScaleDistProba, eConf)) return false;
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
   uniform_real_distribution<float> changeDistro(0,2);
   // Select action and add the offset
@@ -447,7 +466,12 @@ void op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
   if((*action)->mod_config[PAP::Distance] > 0){
     (*action)->mod_config[PAP::Distance] *= offset;
     (*action)->modified = true;
+  }else{
+    // Use mean traveled distance to revive a zero action
+    gen.updateGenParameter();
+    (*action)->mod_config[PAP::Distance] += gen.traveledDist / gen.actions.size();
   }
+  return true;
 }
 
 bool op::MutationStrategy::randomReplaceGen(genome& gen, executionConfig& eConf) {
@@ -600,11 +624,16 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   float weight = eConf.fitnessWeights[2];
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
-  gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
   eConf.fitnessAvgTime += finalTime;
-  // eConf.fitnessAvgOcc += final_occ;
   eConf.fitnessAvgCoverage += finalCoverage;
-
+  // eConf.fitnessAvgOcc += final_occ;
+  float x = finalTime;
+  float y = finalCoverage;
+  // gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
+  gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
+  // gen.fitness = (pow(x, 5)*pow(y, 4));
+  // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
+  // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
   return gen.fitness;
 }
 
@@ -678,11 +707,11 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
 void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercent, bool display){
   if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness," : ",
+	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
-		      eConf.fitnessAvgOcc,
+		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
-		      eConf.actionLenAvg));
+		      eConf.actionLenAvg, eConf.crossoverProba));
       if(eConf.visualize){
 	rob->evaluateActions(eConf.best.actions);
 	cv::imshow("Current Run ", rob->gridToImg("map"));
@@ -693,14 +722,116 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
 
 void getBestGen(Genpool& pool, executionConfig& eConf){
   eConf.best = pool.front();
+  bool foundBest = false;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     if(it->fitness >  eConf.best.fitness){
       eConf.best = *it;
+      // debug("New best");
+      if(it->fitness > eConf.crossBestFit){
+	eConf.crossBestFit = it->fitness;
+	foundBest = true;
+      }
     }
+  }
+  if(foundBest){
+    eConf.crossAdapter = 0;
+  }else{
+    eConf.crossAdapter++;
   }
 }
 
+void adaptCrossover(executionConfig& eConf){
+  float lower = 0.4;
+  float upper = 0.85;
+
+  // if(eConf.crossAdapter < 25){
+  //   eConf.crossoverProba -= 0.01;
+  // }else if(eConf.crossAdapter < 50){
+  //   eConf.crossoverProba += 0.01;
+  // }
+  // if(eConf.crossoverProba < lower)
+  //   eConf.crossoverProba = lower;
+
+  // if(eConf.crossoverProba > upper)
+  //   eConf.crossoverProba = upper;
+
+  if(eConf.currentIter < 1000){
+
+    // eConf.crossoverProba += 0.0005;
+    eConf.crossLength -= 0.0003;
+  }
+
+
+}
+
+
 void op::Optimizer::optimizePath(bool display){
+  if(!eConf.restore){
+    (*init)(pool, eConf);
+  } else {
+    pool.clear();
+    restorePopulationFromSnapshot(eConf.snapshot);
+  }
+  // debug("After Init");
+  // *eConf.logStr << eConf.config_to_string();
+  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  eConf.logStr->str("");
+  // Main loop
+  (*calFitness)(pool, *rob, eConf);
+  genome_tools::removeZeroPAs(pool);
+  // debug("Before while");
+  while(eConf.currentIter <= eConf.maxIterations){
+    // debug("Inside");
+    // Fitness calculation
+    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
+    getBestGen(pool, eConf);
+    adaptCrossover(eConf);
+    // resetLoggingFitnessParameter(eConf);
+    // genome_tools::removeZeroPAs(pool);
+    trackPoolFitness(pool, eConf);
+    float zeroPercent = calZeroActionPercent(pool);
+
+    logAndSnapshotPool(eConf, zeroPercent);
+    printRunInformation(eConf, zeroPercent, display);
+
+    // Selection
+    select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+
+    // Crossover
+    (*cross)(fPool, pool, eConf);
+    // Mutation
+    (*mutate)(fPool, eConf);
+    calFitness->estimateChildren(fPool, *rob, eConf);
+    select->elitistSelection(fPool, pool);
+    // Second mutation stage:
+    sort(pool.begin(), pool.end());
+
+    for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 2); ++it) {
+      bool mutated = mutate->randomReplaceGen(*it, eConf);
+      if(not mutated){
+	mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	mutated |= mutate->randomScaleDistance(*it, eConf);
+      }
+      if(mutated){
+	calFitness->estimateGen(*it, *rob, eConf);
+      }
+    }
+
+    // Increase Iteration
+    eConf.currentIter++;
+  }
+  // Log Fitnessvalues for all iterations
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+}
+
+
+void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
+
+  TournamentSelection tSelect;
+
   if(!eConf.restore){
     (*init)(pool, eConf);
   } else {
@@ -732,25 +863,40 @@ void op::Optimizer::optimizePath(bool display){
 
     // Selection
     // (*select)(pool, sPool, eConf);
-    select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+    // select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+    tSelect(pool, sPool, eConf);
     // TODO: introduce modified parameter to reduce useless recalculation of gens
     // TODO: put the statistic calculation of the fitness outside, all values are already exposed due to the gens
 
     // Crossover
-    (*cross)(fPool, pool, eConf);
+    (*cross)(sPool, pool, eConf);
+    // (*cross)(fPool, pool, eConf);
     // Mutation
-    (*mutate)(fPool, eConf);
-    calFitness->estimateChildren(fPool, *rob, eConf);
-    select->elitistSelection(fPool, pool);
+    // (*mutate)(pool, eConf);
+    // calFitness->estimateChildren(fPool, *rob, eConf);
+    // select->elitistSelection(fPool, pool);
     // Second mutation stage:
-    for(auto &gen : pool){
-      if(mutate->randomReplaceGen(gen, eConf)){
-	assert(gen.actions.size() > 0);
-	calFitness->estimateGen(gen, *rob, eConf);
-	assert(gen.actions.size() > 0);
-	// debug("Fitness: ", gen.fitness);
+
+    for (auto it = pool.begin(); it != pool.end(); ++it) {
+      bool mutated = mutate->randomReplaceGen(*it, eConf);
+      if(not mutated){
+	mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
+      // if(mutated){
+      calFitness->estimateGen(*it, *rob, eConf);
+      // }
     }
+
+    // for(auto &gen : pool){
+    //   if(mutate->randomReplaceGen(gen, eConf)){
+    // 	assert(gen.actions.size() > 0);
+    // 	calFitness->estimateGen(gen, *rob, eConf);
+    // 	assert(gen.actions.size() > 0);
+    // 	// debug("Fitness: ", gen.fitness);
+    //   }
+    // }
 
     // Increase Iteration
     eConf.currentIter++;
@@ -758,6 +904,7 @@ void op::Optimizer::optimizePath(bool display){
   // Log Fitnessvalues for all iterations
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
 }
+
 
 void op::Optimizer::restorePopulationFromSnapshot(const string path){
   vector<PAs> pp;

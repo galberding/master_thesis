@@ -97,6 +97,7 @@ namespace conf {
     // Selection
     int selectIndividuals = 10;
     int selectKeepBest = 0;
+    int tournamentSize = 2;
     genome best;
     // Switch between roulettWheelSelection or best N selection
     bool toggleRoulettSelectionOn = false;
@@ -105,6 +106,8 @@ namespace conf {
     // Length of the segment that will be transferred to the other gen
     float crossLength = 0.4;
     float crossoverProba = 0.8;
+    int crossAdapter = 0;
+    float crossBestFit = 0;
 
     // Mutation functions, configurations
     float mutaOrtoAngleProba = 0.1;
