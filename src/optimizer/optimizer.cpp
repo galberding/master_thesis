@@ -267,8 +267,8 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   PAs parent1, parent2, child1, child2, child3, child4;
   int maxlen1 = static_cast<int>((par1.actions.size() - 3) * eConf.crossLength);
   int maxlen2 = static_cast<int>((par2.actions.size() - 3) * eConf.crossLength);
-  assertm(maxlen1 > 0, "Cross length is too small!");
-  assertm(maxlen2 > 0, "Cross length is too small!");
+  assertm(maxlen1 > 3, "Cross length is too small!");
+  assertm(maxlen2 > 3, "Cross length is too small!");
   uniform_int_distribution<int> lendist1(3, maxlen1);
   uniform_int_distribution<int> lendist2(3, maxlen2);
 
@@ -458,7 +458,7 @@ bool op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
 
   if(!applyAction(eConf.mutaRandScaleDistProba, eConf)) return false;
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
-  uniform_real_distribution<float> changeDistro(0,2);
+  uniform_real_distribution<float> changeDistro(0.5,2);
   // Select action and add the offset
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   float offset = changeDistro(eConf.generator);
@@ -469,7 +469,7 @@ bool op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
   }else{
     // Use mean traveled distance to revive a zero action
     gen.updateGenParameter();
-    (*action)->mod_config[PAP::Distance] += gen.traveledDist / gen.actions.size();
+    (*action)->mod_config[PAP::Distance] = (gen.traveledDist / gen.actions.size()) * offset;
   }
   return true;
 }
@@ -888,6 +888,7 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
       calFitness->estimateGen(*it, *rob, eConf);
       // }
     }
+    pool.push_back(eConf.best);
 
     // for(auto &gen : pool){
     //   if(mutate->randomReplaceGen(gen, eConf)){

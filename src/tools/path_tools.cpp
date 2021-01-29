@@ -124,7 +124,7 @@ bool path::PathAction::mendConfig(shared_ptr<PathAction> pa, bool overrideChange
 
   assertm(!(wps.size() == 0 && !modified), "Mending during initialization!");
   assertm(!(wps.size() == 0 && modified), "Modified action (probably added action while modification?) with no waypoints. \nWe do not allow this anymore!");
-  assertm(!(type == PAT::End), "End action was called for mending!");
+  // assertm(!(type == PAT::End), "End action was called for mending!");
   assertm(wps.size() >= 2, "Waypoint generation failure while mending!");
 
 
@@ -277,10 +277,8 @@ bool path::Robot::execute(shared_ptr<PathAction> action, shared_ptr<grid_map::Gr
     break;
   }
   case PAT::End:{
-    WPs wps = action->generateWPs(currentPos);
-    // res = mapMove(action, steps, currentPos);
-    wps = findShortestEndpointPath(wps);
-    res = true;
+    action->setConfigByWaypoints(currentPos, action->endPoint);
+    res = mapMove(map, action, steps, currentPos, traveledPath, true);
     break;
   }
   default:{
@@ -335,17 +333,13 @@ bool path::Robot::evaluateActions(PAs &pas){
     if(!(success || init)){
       auto it_next = next(it, 1);
       auto it_prev = it;
-      while(!((*it_next)->mendConfig(*it_prev, overrideChanges) && it_next != pas.end())){
-	// debug("Propagate change ...");
+      while(it_next != pas.end() && !((*it_next)->mendConfig(*it_prev, overrideChanges))){
+	// debug("Propagate change ", static_cast<int>((*it_next)->type));
 	it_prev = it_next;
 	it_next++;
       }
     }
     incConfParameter(typeCount, (*it)->type, 1);
-  }
-  if (pas.size() < 4){
-    debug("TOO few action remain in sequence: " + to_string(pas.size()));
-    // debug("Type: ");
   }
   assertm(pas.size() >= 3, "TOO few action remain in sequence");
   return true;
@@ -405,8 +399,8 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 
   Index lastIdx;
   // TODO: setting values directly in the matrix is faster!
-  Matrix& moveMap = (*cmap)[opName];
-  Matrix& obstacleMap = (*cmap)["obstacle"];
+  // Matrix& moveMap = (*cmap)[opName];
+  // Matrix& obstacleMap = (*cmap)["obstacle"];
   for(grid_map::LineIterator lit(*cmap, start, lastPos) ; !lit.isPastEnd(); ++lit){
 
     // Check if start or endpoint collidates with obstacle
@@ -466,6 +460,7 @@ cv::Mat path::Robot::gridToImg(string layer){
 }
 
 int path::Robot::getFreeArea(){
-  return pmap->getSize().x()*pmap->getSize().y() - (pmap->get("obstacle").sum());
-
+  if (!(freeArea > 0))
+    freeArea =  pmap->getSize().x()*pmap->getSize().y() - (pmap->get("obstacle").sum());
+  return freeArea;
 }

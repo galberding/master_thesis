@@ -11,7 +11,12 @@ bool genome_tools::genome::updateGenParameter(){
     traveledDist += (*it)->c_config[Counter::StepCount];
     cross += (*it)->c_config[Counter::CrossCount];
   }
-
+  auto end = actions.back();
+  // Panilty if endpoint cannot be reached
+  // increase the cross count because the same distance needs to be taken twice
+  // (robot is driving backwards until it reaches the startpoint)
+  if (end->wps.back() != end->endPoint)
+    cross += traveledDist;
   return !(traveledDist == 0);
 }
 
@@ -49,8 +54,6 @@ void genome_tools::validateGen(genome &gen){
       it_next++;
       // TODO: goto end or just return because all changes had been applied
       if(it_next == gen.actions.end()) return;
-
-
     }
   }
 }

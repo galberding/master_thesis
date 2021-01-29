@@ -21,6 +21,7 @@ namespace conf {
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
+      ends = {start};
     }
     executionConfig(const string loadPath){
       loadConfFromYaml(loadPath);
@@ -28,6 +29,7 @@ namespace conf {
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
+      ends = {start};
     }
 
 

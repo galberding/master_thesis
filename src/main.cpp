@@ -1,6 +1,5 @@
 #include "../src/optimizer/optimizer.h"
 
-
 // using namespace ga;
 using namespace path;
 namespace fs = std::filesystem;

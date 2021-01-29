@@ -123,6 +123,7 @@ namespace path {
     WPs wps;
     PA_config mod_config;
     map<Counter, int> c_config;
+    Position endPoint;
 
     PathAction(PAT type):
       pa_id(id),
@@ -133,6 +134,7 @@ namespace path {
 	{Counter::CrossCount, 0}}{
       id++;
     };
+
 
     WPs get_wps() { return wps; }
 
@@ -179,8 +181,10 @@ namespace path {
   /////////////////////////////////////////////////////////////////////////////
 
   struct EndAction : public PathAction{
+    // Position endPoint;
     EndAction(WPs endPoints):PathAction(PAT::End){
       modified = false;
+      endPoint = endPoints.front();
       wps.insert(wps.begin(), endPoints.begin(), endPoints.end());
     };
     /*
@@ -189,8 +193,8 @@ namespace path {
 For now we will just return the start point because the robot object should find the shortest path to the possible endpoints
      */
     virtual WPs generateWPs(Position start) override;
-    virtual bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges) override {return true;}
-    virtual bool applyModifications() override {return true;}
+    virtual bool mendConfig(shared_ptr<PathAction> pa, bool overrideChanges) override {return true;};
+    // virtual bool applyModifications() override {return true;}
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -262,6 +266,7 @@ For now we will just return the start point because the robot object should find
     float lastAngle;
     direction lastDirection;
     Position currentPos;
+    int freeArea = 0;
   };
 }
 

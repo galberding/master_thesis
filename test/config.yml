@@ -12,14 +12,14 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Map
-mapType: 1
-mapWidth: 20
-mapHeight: 20
+mapType: 2
+mapWidth: 10
+mapHeight: 10
 mapResolution: 0.3
 
 # Initialization
-initActions: 22
-initIndividuals: 60
+initActions: 42
+initIndividuals: 100
 
 # Selection
 keep: 1000
