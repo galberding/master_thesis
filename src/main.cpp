@@ -25,8 +25,10 @@ int main(int argc, char *argv[])
 		     make_shared<op::MutationStrategy>(op::MutationStrategy()),
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
 		     eConf);
-  // opti.optimizePath(true);
-  opti.optimizePath_s_tourn_c_dp(true);
+  if(eConf.scenario == 0)  // elitist selection
+    opti.optimizePath(true);
+  else if(eConf.scenario == 1) // tournament selection
+    opti.optimizePath_s_tourn_c_dp(true);
 
 
   return 0;

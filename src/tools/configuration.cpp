@@ -12,7 +12,9 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
 
   if(yConf["visualize"])
     visualize = yConf["visualize"].as<bool>();
- if(yConf["logName"])
+  if(yConf["scenario"])
+    scenario = yConf["scenario"].as<float>();
+  if(yConf["logName"])
     logName = yConf["logName"].as<string>();
   if(yConf["logDir"])
     logDir = yConf["logDir"].as<string>();
@@ -44,7 +46,7 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mutaPosDistProba = yConf["mutaPosDistProba"].as<float>();
   if(yConf["mutaNegDistProba"])
     mutaNegDistProba = yConf["mutaNegDistProba"].as<float>();
-   if(yConf["mutaRandScaleDistProba"])
+  if(yConf["mutaRandScaleDistProba"])
     mutaRandScaleDistProba = yConf["mutaRandScaleDistProba"].as<float>();
   if(yConf["mutaPosDistMax"])
     mutaPosDistMax = yConf["mutaPosDistMax"].as<float>();

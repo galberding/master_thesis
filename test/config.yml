@@ -3,6 +3,7 @@ logName: run.log
 maxIterations: 50000
 
 visualize: true
+scenario: 0
 
 # Snapshots
 restore: false

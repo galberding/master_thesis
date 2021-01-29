@@ -39,6 +39,7 @@ namespace conf {
     string logName = "";
 
     bool visualize = true;
+    int scenario = 0;
 
     // Snapshots
     bool restore = false;
