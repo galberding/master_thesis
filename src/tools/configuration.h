@@ -40,6 +40,7 @@ namespace conf {
 
     bool visualize = true;
     int scenario = 0;
+    int clearZeros = 0;
 
     // Snapshots
     bool restore = false;

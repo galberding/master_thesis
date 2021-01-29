@@ -12,6 +12,9 @@ takeSnapshot: true
 takeSnapshotEvery: 100
 tSnap: pop.pas
 
+# Clear Zero action every X iteration
+clearZeros: 0
+
 # Map
 mapType: 2
 mapWidth: 10

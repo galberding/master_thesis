@@ -700,7 +700,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
       debug("Take snapshot to: ", eConf.tSnap);
       snapshotPopulation(eConf);
-      genome_tools::removeZeroPAs(pool);
+
     }
 }
 
@@ -764,6 +764,12 @@ void adaptCrossover(executionConfig& eConf){
 
 }
 
+void clearZeroPAs(Genpool& pool, executionConfig& eConf){
+  if(eConf.clearZeros > 0 and eConf.currentIter % eConf.clearZeros == 0)
+    genome_tools::removeZeroPAs(pool);
+}
+
+
 
 void op::Optimizer::optimizePath(bool display){
   if(!eConf.restore){
@@ -793,6 +799,7 @@ void op::Optimizer::optimizePath(bool display){
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
 
+    clearZeroPAs(pool, eConf);
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
 
@@ -828,6 +835,7 @@ void op::Optimizer::optimizePath(bool display){
 }
 
 
+
 void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 
   TournamentSelection tSelect;
@@ -858,9 +866,9 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
 
+    clearZeroPAs(pool, eConf);
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
-
     // Selection
     // (*select)(pool, sPool, eConf);
     // select->uniformSelectionWithoutReplacement(pool, fPool, eConf);

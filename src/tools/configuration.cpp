@@ -18,6 +18,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     logName = yConf["logName"].as<string>();
   if(yConf["logDir"])
     logDir = yConf["logDir"].as<string>();
+  if(yConf["clearZeros"])
+    clearZeros = yConf["clearZeros"].as<float>();
   if(yConf["weights"]["time"])
     fitnessWeights[0] = yConf["weights"]["time"].as<float>();
   if(yConf["weights"]["occ"])
