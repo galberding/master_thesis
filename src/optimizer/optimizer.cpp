@@ -326,97 +326,6 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   loc.push_back(getChild(par2.actions, par1.actions, sIdx, len, true));
   glob.push_back(getChild(par2.actions, par1.actions, sIdx, len, false));
 
-
-
-
-
-  // // Cut out the part
-  // // Copy first part of parent 1
-  // copyActions(par1.actions.begin(),
-  // 	      next(par1.actions.begin(), sIdx1),
-  // 	      child1);
-  // // Insert cross over part from parent 2
-  // // Mark the inserted part as modified to recalculate waypoints
-  // copyActions(next(par2.actions.begin(), sIdx2),
-  // 	      next(par2.actions.begin(), (sIdx2+len2)),
-  // 	      child1, true);
-  // // Append remaining part
-  // copyActions(next(par1.actions.begin(), sIdx1 +len1),
-  // 	      par1.actions.end(),
-  // 	      child1);
-
-
-  //  // Copy first part of parent 2 to child 2
-  // copyActions(par2.actions.begin(),
-  // 	      next(par2.actions.begin(), sIdx2),
-  // 	      child2);
-  // copyActions(next(par1.actions.begin(), sIdx1),
-  // 	      next(par1.actions.begin(), (sIdx1+len1)),
-  // 	      child2, true);
-  // 	      // child2, true);
-  // copyActions(next(par2.actions.begin(), sIdx2 +len2),
-  // 	      par2.actions.end(),
-  // 	      child2);
-
-  // // Copy first part of parent 1
-  // copyActions(par1.actions.begin(),
-  // 	      next(par1.actions.begin(), sIdx1),
-  // 	      child3);
-  // // Insert cross over part from parent 2
-  // // Mark the inserted part as modified to recalculate waypoints
-  // copyActions(next(par2.actions.begin(), sIdx2),
-  // 	      next(par2.actions.begin(), (sIdx2+len2)),
-  // 	      child3);
-  // // Append remaining part
-  // copyActions(next(par1.actions.begin(), sIdx1 +len1),
-  // 	      par1.actions.end(),
-  // 	      child3);
-
-  //  // Copy first part of parent 2 to child 2
-  // copyActions(par2.actions.begin(),
-  // 	      next(par2.actions.begin(), sIdx2),
-  // 	      child4);
-  // copyActions(next(par1.actions.begin(), sIdx1),
-  // 	      next(par1.actions.begin(), (sIdx1+len1)),
-  // 	      child4);
-  // 	      // child4, true);
-  // copyActions(next(par2.actions.begin(), sIdx2 +len2),
-  // 	      par2.actions.end(),
-  // 	      child4);
-
-
-  // // Check if new length match
-  // assert(child1.size() == (par1.actions.size() - len1 + len2));
-  // assert(child2.size() == (par2.actions.size() + len1 - len2));
-  // assert(child3.size() == (par1.actions.size() - len1 + len2));
-  // assert(child4.size() == (par2.actions.size() + len1 - len2));
-
-
-  // // Mark crossings as modified
-  // (*next(child1.begin(), sIdx1-1))->modified = true;
-  // (*next(child1.begin(), sIdx1+len2-1))->modified = true;
-  // (*next(child2.begin(), sIdx2-1))->modified = true;
-  // (*next(child2.begin(), sIdx2+len1-1))->modified = true;
-
-  // (*next(child3.begin(), sIdx1-1))->modified = true;
-  // (*next(child3.begin(), sIdx1+len2-1))->modified = true;
-  // (*next(child4.begin(), sIdx2-1))->modified = true;
-  // (*next(child4.begin(), sIdx2+len1-1))->modified = true;
-
-  // // Insert children in pool
-  // genome child_gen1(child1);
-  // genome child_gen2(child2);
-  // genome child_gen3(child3);
-  // genome child_gen4(child4);
-  // assert(child_gen1.actions.back()->type == PAT::End
-  // 	 && child_gen1.actions.back()->type == PAT::End);
-
-  // // Validate the gens
-  // validateGen(child_gen1);
-  // validateGen(child_gen2);
-  // validateGen(child_gen3);
-  // validateGen(child_gen4);
-
   // Insert to new Population
 
 
@@ -439,10 +348,6 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   }
   }
 
-  // newPopulation.push_back(child_gen1);
-  // newPopulation.push_back(child_gen2);
-  // newPopulation.push_back(child_gen3);
-  // newPopulation.push_back(child_gen4);
 }
 
 /////////////////////////////////////////////////////////////////////////////
