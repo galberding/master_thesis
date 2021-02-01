@@ -7,6 +7,8 @@
 #include "../tools/debug.h"
 #include <algorithm>
 #include <cmath>
+// #include <opencv2/core/eigen.hpp>
+#include <opencv2/core/eigen.hpp>
 // using namespace ga;
 using namespace conf;
 

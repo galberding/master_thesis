@@ -3,6 +3,9 @@ logName: run.log
 maxIterations: 50000
 
 visualize: true
+# 0: elitist selction
+# 1: Tournament selection
+# 2: Roulettwheel selection
 scenario: 2
 
 # Snapshots
@@ -13,16 +16,16 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 50
+clearZeros: 200
 
 # Map
-mapType: 2
+mapType: 1
 mapWidth: 10
 mapHeight: 10
 mapResolution: 0.3
 
 # Initialization
-initActions: 42
+initActions: 30
 initIndividuals: 100
 
 # Selection
@@ -31,9 +34,9 @@ select: 100
 tournamentSize: 10
 
 # Crossover
-crossoverProba: 0.9
-crossLength: 0.3
-crossChildSelector: 1
+crossoverProba: 0.8
+crossLength: 0.5
+crossChildSelector: 2
 # Fitness
 weights:
   time: 0.2
@@ -42,12 +45,12 @@ weights:
 
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.02
+mutaOrtoAngleProba: 0.05
 mutaRandAngleProba: 0.01
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.05
-mutaReplaceGen: 0.01
+mutaReplaceGen: 0.02
 
 # Lastest conf
 # mutaOrtoAngleProba: 0.02

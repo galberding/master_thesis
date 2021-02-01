@@ -12,6 +12,7 @@ namespace genome_tools {
   struct genome{
 
     static int gen_id;
+    grid_map::Matrix trail;
     genome():id(gen_id){gen_id++;};
     genome(float fitness):fitness(fitness),id(gen_id){gen_id++;};
     genome(PAs actions):actions(actions),id(gen_id){gen_id++;};

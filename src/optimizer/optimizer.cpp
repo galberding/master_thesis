@@ -544,6 +544,7 @@ void op::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, exe
   assert(currentPool.size() > 0);
   for(Genpool::iterator it = currentPool.begin(); it != currentPool.end(); ++it){
     estimateGen(*it, rob, eConf);
+    (*it).trail = 1 * (*eConf.gmap)["map"];
   }
   finalizeFitnessLogging(currentPool.size(), eConf);
   // debug("After Finalize");
@@ -688,10 +689,13 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
-		      eConf.actionLenAvg, eConf.crossoverProba));
+		      eConf.actionLenAvg, zeroPercent));
       if(eConf.visualize){
-	rob->evaluateActions(eConf.best.actions);
-	cv::imshow("Current Run ", rob->gridToImg("map"));
+	cv::Mat src;
+	// rob->evaluateActions(eConf.best.actions);
+	// eConf.best.trail = (*eConf.gmap)["map"];
+	cv::eigen2cv(eConf.best.trail, src);
+	cv::imshow("Current Run ",src);
 	cv::waitKey(1);
       }
     }
@@ -801,6 +805,7 @@ void op::Optimizer::optimizePath(bool display){
       }
       if(mutated){
 	calFitness->estimateGen(*it, *rob, eConf);
+	it->trail = 1 * (*eConf.gmap)["map"];
       }
     }
 
@@ -865,6 +870,7 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
       }
       // if(mutated){
       calFitness->estimateGen(*it, *rob, eConf);
+
       // }
     }
     pool.push_back(eConf.best);
