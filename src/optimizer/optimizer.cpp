@@ -176,7 +176,7 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
   std::uniform_real_distribution<float> selDistr(0.0,1);
 
   float rand = selDistr(eConf.generator);
-  debug("Random val: ", rand);
+  // debug("Random val: ", rand);
   // cout << "Wheel: " << rand << endl;
   float offset = 0.0;
   genome gen;
@@ -185,7 +185,7 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
     offset += it->fitness / totalFitness;
     if(rand < offset){
       gen = *it;
-      debug("ID: ", gen.id);
+      // debug("ID: ", gen.id);
       break;
     }
   }
@@ -259,6 +259,37 @@ void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, 
   }
 }
 
+// pair<genome, genome> makeChildren(int )
+
+genome op::DualPointCrossover::getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move){
+  PAs child;
+
+  copyActions(par1.begin(),
+	      next(par1.begin(), sIdx[0]),
+	      child);
+  // Insert cross over part from parent 2
+  // Mark the inserted part as modified to recalculate waypoints
+  copyActions(next(par2.begin(), sIdx[1]),
+	      next(par2.begin(), (sIdx[1]+len[1])),
+	      child, move); // if move is true we loose locality
+  // Append remaining part
+  copyActions(next(par1.begin(), sIdx[0] + len[0]),
+	      par1.end(),
+	      child);
+
+  // Check if copy was successful
+  assert(child.size() == (par1.size() - len[0] + len[1]));
+
+  // Mark actions as
+  (*next(child.begin(), sIdx[0] - 1))->modified = true;
+  (*next(child.begin(), sIdx[0] + len[1] - 1))->modified = true;
+  genome child_gen(child);
+  validateGen(child_gen);
+  assert(child_gen.actions.front()->type == PAT::Start
+	 && child_gen.actions.back()->type == PAT::End);
+  return child_gen;
+}
+
 template <typename T>
 void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf){
   // mate two parents
@@ -272,105 +303,146 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   uniform_int_distribution<int> lendist1(3, maxlen1);
   uniform_int_distribution<int> lendist2(3, maxlen2);
 
-  int len1 = lendist1(eConf.generator);
-  int len2 = lendist2(eConf.generator);
+  int len[2];
+  int len1 = len[0] = lendist1(eConf.generator);
+  int len2 = len[1] = lendist2(eConf.generator);
   // Ensure that the generated index in still in range
   uniform_int_distribution<int> dist1(2,par1.actions.size() - (len1+1));
   uniform_int_distribution<int> dist2(2,par2.actions.size() - (len2+1));
   // calculate the start Index
-  int sIdx1 = dist1(eConf.generator);
-  int sIdx2= dist2(eConf.generator);
-  // Cut out the part
-  // Copy first part of parent 1
-  copyActions(par1.actions.begin(),
-	      next(par1.actions.begin(), sIdx1),
-	      child1);
-  // Insert cross over part from parent 2
-  // Mark the inserted part as modified to recalculate waypoints
-  copyActions(next(par2.actions.begin(), sIdx2),
-	      next(par2.actions.begin(), (sIdx2+len2)),
-	      child1, true);
-  // Append remaining part
-  copyActions(next(par1.actions.begin(), sIdx1 +len1),
-	      par1.actions.end(),
-	      child1);
+  int sIdx[2];
+  int sIdx1 = sIdx[0] = dist1(eConf.generator);
+  int sIdx2= sIdx[1] = dist2(eConf.generator);
+  vector<genome> loc, glob;
 
-   // Copy first part of parent 2 to child 2
-  copyActions(par2.actions.begin(),
-	      next(par2.actions.begin(), sIdx2),
-	      child2);
-  copyActions(next(par1.actions.begin(), sIdx1),
-	      next(par1.actions.begin(), (sIdx1+len1)),
-	      child2, true);
-	      // child2, true);
-  copyActions(next(par2.actions.begin(), sIdx2 +len2),
-	      par2.actions.end(),
-	      child2);
-
-  // Copy first part of parent 1
-  copyActions(par1.actions.begin(),
-	      next(par1.actions.begin(), sIdx1),
-	      child3);
-  // Insert cross over part from parent 2
-  // Mark the inserted part as modified to recalculate waypoints
-  copyActions(next(par2.actions.begin(), sIdx2),
-	      next(par2.actions.begin(), (sIdx2+len2)),
-	      child3);
-  // Append remaining part
-  copyActions(next(par1.actions.begin(), sIdx1 +len1),
-	      par1.actions.end(),
-	      child3);
-
-   // Copy first part of parent 2 to child 2
-  copyActions(par2.actions.begin(),
-	      next(par2.actions.begin(), sIdx2),
-	      child4);
-  copyActions(next(par1.actions.begin(), sIdx1),
-	      next(par1.actions.begin(), (sIdx1+len1)),
-	      child4);
-	      // child4, true);
-  copyActions(next(par2.actions.begin(), sIdx2 +len2),
-	      par2.actions.end(),
-	      child4);
+  // Calculate children for first parent
+  loc.push_back(getChild(par1.actions, par2.actions, sIdx, len, true));
+  glob.push_back(getChild(par1.actions, par2.actions, sIdx, len, false));
+  sIdx[0] = sIdx2;
+  sIdx[1] = sIdx1;
+  len[0] = len2;
+  len[1] = len1;
+  // Calculate children for second parent
+  loc.push_back(getChild(par2.actions, par1.actions, sIdx, len, true));
+  glob.push_back(getChild(par2.actions, par1.actions, sIdx, len, false));
 
 
-  // Check if new length match
-  assert(child1.size() == (par1.actions.size() - len1 + len2));
-  assert(child2.size() == (par2.actions.size() + len1 - len2));
-  assert(child3.size() == (par1.actions.size() - len1 + len2));
-  assert(child4.size() == (par2.actions.size() + len1 - len2));
 
 
-  // Mark crossings as modified
-  (*next(child1.begin(), sIdx1-1))->modified = true;
-  (*next(child1.begin(), sIdx1+len2-1))->modified = true;
-  (*next(child2.begin(), sIdx2-1))->modified = true;
-  (*next(child2.begin(), sIdx2+len1-1))->modified = true;
 
-  (*next(child3.begin(), sIdx1-1))->modified = true;
-  (*next(child3.begin(), sIdx1+len2-1))->modified = true;
-  (*next(child4.begin(), sIdx2-1))->modified = true;
-  (*next(child4.begin(), sIdx2+len1-1))->modified = true;
+  // // Cut out the part
+  // // Copy first part of parent 1
+  // copyActions(par1.actions.begin(),
+  // 	      next(par1.actions.begin(), sIdx1),
+  // 	      child1);
+  // // Insert cross over part from parent 2
+  // // Mark the inserted part as modified to recalculate waypoints
+  // copyActions(next(par2.actions.begin(), sIdx2),
+  // 	      next(par2.actions.begin(), (sIdx2+len2)),
+  // 	      child1, true);
+  // // Append remaining part
+  // copyActions(next(par1.actions.begin(), sIdx1 +len1),
+  // 	      par1.actions.end(),
+  // 	      child1);
 
-  // Insert children in pool
-  genome child_gen1(child1);
-  genome child_gen2(child2);
-  genome child_gen3(child3);
-  genome child_gen4(child4);
-  assert(child_gen1.actions.back()->type == PAT::End
-	 && child_gen1.actions.back()->type == PAT::End);
 
-  // Validate the gens
-  validateGen(child_gen1);
-  validateGen(child_gen2);
-  validateGen(child_gen3);
-  validateGen(child_gen4);
+  //  // Copy first part of parent 2 to child 2
+  // copyActions(par2.actions.begin(),
+  // 	      next(par2.actions.begin(), sIdx2),
+  // 	      child2);
+  // copyActions(next(par1.actions.begin(), sIdx1),
+  // 	      next(par1.actions.begin(), (sIdx1+len1)),
+  // 	      child2, true);
+  // 	      // child2, true);
+  // copyActions(next(par2.actions.begin(), sIdx2 +len2),
+  // 	      par2.actions.end(),
+  // 	      child2);
+
+  // // Copy first part of parent 1
+  // copyActions(par1.actions.begin(),
+  // 	      next(par1.actions.begin(), sIdx1),
+  // 	      child3);
+  // // Insert cross over part from parent 2
+  // // Mark the inserted part as modified to recalculate waypoints
+  // copyActions(next(par2.actions.begin(), sIdx2),
+  // 	      next(par2.actions.begin(), (sIdx2+len2)),
+  // 	      child3);
+  // // Append remaining part
+  // copyActions(next(par1.actions.begin(), sIdx1 +len1),
+  // 	      par1.actions.end(),
+  // 	      child3);
+
+  //  // Copy first part of parent 2 to child 2
+  // copyActions(par2.actions.begin(),
+  // 	      next(par2.actions.begin(), sIdx2),
+  // 	      child4);
+  // copyActions(next(par1.actions.begin(), sIdx1),
+  // 	      next(par1.actions.begin(), (sIdx1+len1)),
+  // 	      child4);
+  // 	      // child4, true);
+  // copyActions(next(par2.actions.begin(), sIdx2 +len2),
+  // 	      par2.actions.end(),
+  // 	      child4);
+
+
+  // // Check if new length match
+  // assert(child1.size() == (par1.actions.size() - len1 + len2));
+  // assert(child2.size() == (par2.actions.size() + len1 - len2));
+  // assert(child3.size() == (par1.actions.size() - len1 + len2));
+  // assert(child4.size() == (par2.actions.size() + len1 - len2));
+
+
+  // // Mark crossings as modified
+  // (*next(child1.begin(), sIdx1-1))->modified = true;
+  // (*next(child1.begin(), sIdx1+len2-1))->modified = true;
+  // (*next(child2.begin(), sIdx2-1))->modified = true;
+  // (*next(child2.begin(), sIdx2+len1-1))->modified = true;
+
+  // (*next(child3.begin(), sIdx1-1))->modified = true;
+  // (*next(child3.begin(), sIdx1+len2-1))->modified = true;
+  // (*next(child4.begin(), sIdx2-1))->modified = true;
+  // (*next(child4.begin(), sIdx2+len1-1))->modified = true;
+
+  // // Insert children in pool
+  // genome child_gen1(child1);
+  // genome child_gen2(child2);
+  // genome child_gen3(child3);
+  // genome child_gen4(child4);
+  // assert(child_gen1.actions.back()->type == PAT::End
+  // 	 && child_gen1.actions.back()->type == PAT::End);
+
+  // // Validate the gens
+  // validateGen(child_gen1);
+  // validateGen(child_gen2);
+  // validateGen(child_gen3);
+  // validateGen(child_gen4);
 
   // Insert to new Population
-  newPopulation.push_back(child_gen1);
-  newPopulation.push_back(child_gen2);
-  newPopulation.push_back(child_gen3);
-  newPopulation.push_back(child_gen4);
+
+
+  switch(eConf.crossChildSelector){
+  case 0:{
+    newPopulation.insert(newPopulation.end(), loc.begin(), loc.end());
+    break;
+  }
+  case 1:{
+    newPopulation.insert(newPopulation.end(), glob.begin(), glob.end());
+    break;
+  }
+  case 2:{
+    newPopulation.insert(newPopulation.end(), loc.begin(), loc.end());
+    newPopulation.insert(newPopulation.end(), glob.begin(), glob.end());
+    break;
+  }
+  default:{
+    assertm(false, "Wrong value for child selector");
+  }
+  }
+
+  // newPopulation.push_back(child_gen1);
+  // newPopulation.push_back(child_gen2);
+  // newPopulation.push_back(child_gen3);
+  // newPopulation.push_back(child_gen4);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -878,12 +950,6 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 
     // Crossover
     (*cross)(sPool, pool, eConf);
-    // (*cross)(fPool, pool, eConf);
-    // Mutation
-    // (*mutate)(pool, eConf);
-    // calFitness->estimateChildren(fPool, *rob, eConf);
-    // select->elitistSelection(fPool, pool);
-    // Second mutation stage:
 
     for (auto it = pool.begin(); it != pool.end(); ++it) {
       bool mutated = mutate->randomReplaceGen(*it, eConf);
@@ -906,6 +972,69 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
     // 	// debug("Fitness: ", gen.fitness);
     //   }
     // }
+
+    // Increase Iteration
+    eConf.currentIter++;
+  }
+  // Log Fitnessvalues for all iterations
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+}
+
+void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
+
+  RouletteWheelSelection rSelect;
+
+  if(!eConf.restore){
+    (*init)(pool, eConf);
+  } else {
+    pool.clear();
+    restorePopulationFromSnapshot(eConf.snapshot);
+  }
+  // debug("After Init");
+  // *eConf.logStr << eConf.config_to_string();
+  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
+  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+  eConf.logStr->str("");
+  // Main loop
+  (*calFitness)(pool, *rob, eConf);
+  // genome_tools::removeZeroPAs(pool);
+  // debug("Before while");
+  while(eConf.currentIter <= eConf.maxIterations){
+    // debug("Inside");
+    // Fitness calculation
+    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
+    getBestGen(pool, eConf);
+    // resetLoggingFitnessParameter(eConf);
+    // genome_tools::removeZeroPAs(pool);
+    trackPoolFitness(pool, eConf);
+    float zeroPercent = calZeroActionPercent(pool);
+
+    clearZeroPAs(pool, eConf);
+    logAndSnapshotPool(eConf, zeroPercent);
+    printRunInformation(eConf, zeroPercent, display);
+    // Selection
+    // (*select)(pool, sPool, eConf);
+    // select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+    rSelect(pool, sPool, eConf);
+    // TODO: introduce modified parameter to reduce useless recalculation of gens
+    // TODO: put the statistic calculation of the fitness outside, all values are already exposed due to the gens
+
+    // Crossover
+    (*cross)(sPool, pool, eConf);
+
+    for (auto it = pool.begin(); it != pool.end(); ++it) {
+      bool mutated = mutate->randomReplaceGen(*it, eConf);
+      if(not mutated){
+	mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	mutated |= mutate->randomScaleDistance(*it, eConf);
+      }
+      // if(mutated){
+      calFitness->estimateGen(*it, *rob, eConf);
+      // }
+    }
+    pool.push_back(eConf.best);
 
     // Increase Iteration
     eConf.currentIter++;

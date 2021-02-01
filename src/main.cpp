@@ -29,6 +29,10 @@ int main(int argc, char *argv[])
     opti.optimizePath(true);
   else if(eConf.scenario == 1) // tournament selection
     opti.optimizePath_s_tourn_c_dp(true);
+  else if(eConf.scenario == 2) // roulette selection
+    opti.optimizePath_s_roulette_c_dp(true);
+  else
+    warn("No valid scenario selected!");
 
 
   return 0;

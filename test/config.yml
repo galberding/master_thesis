@@ -3,7 +3,7 @@ logName: run.log
 maxIterations: 50000
 
 visualize: true
-scenario: 0
+scenario: 2
 
 # Snapshots
 restore: false
@@ -13,7 +13,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 0
+clearZeros: 50
 
 # Map
 mapType: 2
@@ -26,14 +26,14 @@ initActions: 42
 initIndividuals: 100
 
 # Selection
-keep: 1000
+keep: 0
 select: 100
-tournamentSize: 2
+tournamentSize: 10
 
 # Crossover
 crossoverProba: 0.9
 crossLength: 0.3
-
+crossChildSelector: 1
 # Fitness
 weights:
   time: 0.2

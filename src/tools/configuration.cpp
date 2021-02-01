@@ -40,6 +40,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     crossoverProba = yConf["crossoverProba"].as<float>();
   if(yConf["crossLength"])
     crossLength = yConf["crossLength"].as<float>();
+   if(yConf["crossChildSelector"])
+    crossChildSelector = yConf["crossChildSelector"].as<float>();
   if(yConf["mutaRandAngleProba"])
     mutaRandAngleProba = yConf["mutaRandAngleProba"].as<float>();
   if(yConf["mutaOrtoAngleProba"])

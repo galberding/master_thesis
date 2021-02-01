@@ -66,6 +66,7 @@ namespace op {
     virtual void operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf) override;
     template <typename T>
     void mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf);
+    genome getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move);
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -146,6 +147,7 @@ namespace op {
     void printRunInformation(executionConfig& eConf, float zeroPercent, bool display);
     void optimizePath(bool display = false);
     void optimizePath_s_tourn_c_dp(bool display = false);
+    void optimizePath_s_roulette_c_dp(bool display);
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);

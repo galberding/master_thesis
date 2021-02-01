@@ -112,6 +112,7 @@ namespace conf {
     float crossoverProba = 0.8;
     int crossAdapter = 0;
     float crossBestFit = 0;
+    int crossChildSelector = 2;
 
     // Mutation functions, configurations
     float mutaOrtoAngleProba = 0.1;
