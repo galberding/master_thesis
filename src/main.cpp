@@ -26,11 +26,11 @@ int main(int argc, char *argv[])
 		     make_shared<op::FitnessStrategy>(op::FitnessStrategy()),
 		     eConf);
   if(eConf.scenario == 0)  // elitist selection
-    opti.optimizePath(true);
+    opti.optimizePath(eConf.printInfo);
   else if(eConf.scenario == 1) // tournament selection
-    opti.optimizePath_s_tourn_c_dp(true);
+    opti.optimizePath_s_tourn_c_dp(eConf.printInfo);
   else if(eConf.scenario == 2) // roulette selection
-    opti.optimizePath_s_roulette_c_dp(true);
+    opti.optimizePath_s_roulette_c_dp(eConf.printInfo);
   else
     warn("No valid scenario selected!");
 

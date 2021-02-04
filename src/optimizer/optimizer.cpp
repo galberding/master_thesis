@@ -662,6 +662,13 @@ assert(cdist >= crossed);
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
+
+  // Write initial logfile
+  if(eConf.currentIter == 0){
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,Zeros,BestTime,BestCov\n";
+      logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
+      eConf.logStr->str("");
+  }
    if(!eConf.logName.empty()){
       *(eConf.logStr)  << argsToCsv(
 				    eConf.currentIter,
@@ -669,18 +676,23 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
 				    eConf.fitnessMax,
 				    eConf.fitnessMin,
 				    eConf.fitnessAvgTime,
-				    eConf.fitnessAvgOcc,
+				    // eConf.fitnessAvgOcc,
 				    eConf.fitnessAvgCoverage,
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
 				    eConf.actionLenMin,
-				    zeros
+				    zeros,
+				    // eConf.best.fitness,
+				    eConf.best.finalTime,
+				    eConf.best.finalCoverage
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
-      debug("Take snapshot to: ", eConf.tSnap);
+      // debug("Take snapshot to: ", eConf.tSnap);
       snapshotPopulation(eConf);
 
+      logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+      eConf.logStr->str("");
     }
 }
 
@@ -702,6 +714,43 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
       }
     }
 }
+
+
+void op::Optimizer::restorePopulationFromSnapshot(const string path){
+  vector<PAs> pp;
+  pa_serializer::readActrionsFromFile(pp, path);
+  for (auto it = pp.begin(); it != pp.end(); ++it) {
+    pool.push_back(genome(*it));
+  }
+}
+
+void op::Optimizer::snapshotPopulation(const string path){
+  vector<PAs> pp;
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+  }
+  pa_serializer::writeActionsToFile(pp, path);
+}
+
+void op::Optimizer::snapshotPopulation(executionConfig& eConf){
+  // Take the current iteration into account
+  string iter = to_string(eConf.currentIter);
+  // Save Genpool:
+  string popName = eConf.logDir + "/" + iter + "_" + eConf.tSnap;
+  string performanceName = iter + "_" + eConf.tPerformanceSnap;
+  // Store gen information
+  ostringstream perform;
+  vector<PAs> pp;
+  perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
+
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
+  }
+  logging::Logger(perform.str(), eConf.logDir, performanceName);
+  pa_serializer::writeActionsToFile(pp, popName);
+}
+
 
 void getBestGen(Genpool& pool, executionConfig& eConf){
   eConf.best = pool.front();
@@ -754,44 +803,6 @@ void clearZeroPAs(Genpool& pool, executionConfig& eConf){
 
 
 
-void op::Optimizer::restorePopulationFromSnapshot(const string path){
-  vector<PAs> pp;
-  pa_serializer::readActrionsFromFile(pp, path);
-  for (auto it = pp.begin(); it != pp.end(); ++it) {
-    pool.push_back(genome(*it));
-  }
-}
-
-void op::Optimizer::snapshotPopulation(const string path){
-  vector<PAs> pp;
-  for (auto it = pool.begin(); it != pool.end(); ++it) {
-    pp.push_back(it->actions);
-  }
-  pa_serializer::writeActionsToFile(pp, path);
-}
-
-void op::Optimizer::snapshotPopulation(executionConfig& eConf){
-  // Take the current iteration into account
-  string iter = to_string(eConf.currentIter);
-  // Save Genpool:
-  string popName = eConf.logDir + "/" + iter + "_" + eConf.tSnap;
-  string performanceName = iter + "_" + eConf.tPerformanceSnap;
-  // Store gen information
-  ostringstream perform;
-  vector<PAs> pp;
-  perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
-
-  for (auto it = pool.begin(); it != pool.end(); ++it) {
-    pp.push_back(it->actions);
-    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
-  }
-  logging::Logger(perform.str(), eConf.logDir, performanceName);
-  pa_serializer::writeActionsToFile(pp, popName);
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-  eConf.logStr->str("");
-}
-
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //                         Elitist Selection Scenario                        //
@@ -804,12 +815,7 @@ void op::Optimizer::optimizePath(bool display){
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
-  // debug("After Init");
-  // *eConf.logStr << eConf.config_to_string();
-  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
-  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
-  eConf.logStr->str("");
+
   // Main loop
   (*calFitness)(pool, *rob, eConf);
   genome_tools::removeZeroPAs(pool);
@@ -877,12 +883,6 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
-  // debug("After Init");
-  // *eConf.logStr << eConf.config_to_string();
-  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
-  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
-  eConf.logStr->str("");
   // Main loop
   (*calFitness)(pool, *rob, eConf);
   // genome_tools::removeZeroPAs(pool);
@@ -923,16 +923,6 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
       // }
     }
     pool.push_back(eConf.best);
-
-    // for(auto &gen : pool){
-    //   if(mutate->randomReplaceGen(gen, eConf)){
-    // 	assert(gen.actions.size() > 0);
-    // 	calFitness->estimateGen(gen, *rob, eConf);
-    // 	assert(gen.actions.size() > 0);
-    // 	// debug("Fitness: ", gen.fitness);
-    //   }
-    // }
-
     // Increase Iteration
     eConf.currentIter++;
   }
@@ -956,23 +946,11 @@ void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
-  // debug("After Init");
-  // *eConf.logStr << eConf.config_to_string();
-  // Logger(eConf.config_to_string(), eConf.logDir, eConf.logName);
-  *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgOcc,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin\n";
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
-  eConf.logStr->str("");
   // Main loop
   (*calFitness)(pool, *rob, eConf);
-  // genome_tools::removeZeroPAs(pool);
-  // debug("Before while");
+
   while(eConf.currentIter <= eConf.maxIterations){
-    // debug("Inside");
-    // Fitness calculation
-    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
     getBestGen(pool, eConf);
-    // resetLoggingFitnessParameter(eConf);
-    // genome_tools::removeZeroPAs(pool);
     trackPoolFitness(pool, eConf);
     float zeroPercent = calZeroActionPercent(pool);
 
@@ -980,12 +958,7 @@ void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
     logAndSnapshotPool(eConf, zeroPercent);
     printRunInformation(eConf, zeroPercent, display);
     // Selection
-    // (*select)(pool, sPool, eConf);
-    // select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
     rSelect(pool, sPool, eConf);
-    // TODO: introduce modified parameter to reduce useless recalculation of gens
-    // TODO: put the statistic calculation of the fitness outside, all values are already exposed due to the gens
-
     // Crossover
     (*cross)(sPool, pool, eConf);
 

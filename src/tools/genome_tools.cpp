@@ -127,11 +127,11 @@ void genome_tools::removeZeroPAs(genome &gen){
 // }
 
 
-// genome_tools::genome genome_tools::calMeanGen(Genpool& pool, vector<int> &contrib, int maxActionSize){
+// void genome_tools::calMeanGen(Genpool& pool, vector<int> &contrib, vector<vector<float>> &meanActions, int maxActionSize){
 //   //$G_{n}^{ave} = \frac{1}{P}\displaystyle\sum_{i=1}^{P} G_{i,n}$
-//   PAs meanActions;
+//   // PAs meanActions;
 //   // float actions[maxActionSize][5]; // [type, x_s, y_s, x_e, y_e]
-//   vector<vector<float>> actions(5, vector<float>(maxActionSize));
+//   // vector<vector<float>> meanActions(5, vector<float>(maxActionSize));
 
 
 
@@ -145,27 +145,19 @@ void genome_tools::removeZeroPAs(genome &gen){
 //       // Add contribution
 //       contrib[i]++;
 //       // Add action parameter
-//       actions[i][0] += static_cast<int>(it->actions[i]->type);
-//       actions[i][1] += it->actions[i]->wps.front()[0];
-//       actions[i][2] += it->actions[i]->wps.front()[1];
-//       actions[i][3] += it->actions[i]->wps.back()[0];
-//       actions[i][4] += it->actions[i]->wps.back()[1];
+//       // meanActions[i][0] += static_cast<int>(it->actions[i]->type);
+//       meanActions[i][0] += it->actions[i]->wps.front()[0];
+//       meanActions[i][1] += it->actions[i]->wps.front()[1];
+//       meanActions[i][2] += it->actions[i]->wps.back()[0];
+//       meanActions[i][3] += it->actions[i]->wps.back()[1];
 //     }
 //   }
 
 //   // Generate Actions
 //   for(int i = 0; i < maxActionSize; i++){
 //     // create mean actions
-//     Position start(actions[i][1] / contrib[i], actions[i][2] / contrib[i]);
-//     Position end(actions[i][3] / contrib[i], actions[i][4] / contrib[i]);
-//     if(i == 0)
-//       meanActions.push_back(makeAction(PAT::Start, start, end));
-//     else if(i == maxActionSize -1)
-//       meanActions.push_back(makeAction(PAT::End, start, end));
-//     else
-//       meanActions.push_back(makeAction(PAT::CAhead, start, end));
-//     // create actual gen
-//     return genome(meanActions);
+//     for(int j=0; j<4; j++)
+//       meanActions[i][j] = meanActions[i][j] / contrib[i];
 //   }
 // }
 
@@ -174,14 +166,15 @@ void genome_tools::removeZeroPAs(genome &gen){
 //   // Action wise difference and
 //   vector<int> contrib(maxActionSize);
 //   vector<float> actionStd(maxActionSize);
-//   auto meanGen = calMeanGen(pool, contrib, maxActionSize);
+//   vector<vector<float>> meanActions(5, vector<float>(maxActionSize));
+//   calMeanGen(pool, contrib, meanActions maxActionSize);
 //   for (auto it = pool.begin(); it != pool.end(); ++it) {
 //     SPD(*it, meanGen, actionStd);
 //   }
 // }
 
-// // calculate the genwise SPD and patially calculate the action wise standard deviation
-// void genome_tools::SPD(genome &gen, genome &meanGen, vector<float> &actionStd) {
+// // // calculate the genwise SPD and patially calculate the action wise standard deviation
+// void genome_tools::SPD(genome &gen, vector<vector<float>> &meanGen, vector<float> &actionStd) {
 //   float spd = 0;
 //   // $G_{n}^{ave} = \frac{1}{P}\displaystyle\sum_{i=1}^{P} G_{i,n}$
 //   for(int i=0; i<gen.actions.size(); i++){

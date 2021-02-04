@@ -1,12 +1,13 @@
-logDir: nonConvexRegionTest
+logDir: nonConvexRegion
 logName: run.log
 maxIterations: 50000
 
 visualize: true
+printInfo: false
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 2
+scenario: 0
 
 # Snapshots
 restore: false
@@ -26,7 +27,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 20
-initIndividuals: 200
+initIndividuals: 100
 
 # Selection
 keep: 0
@@ -39,14 +40,14 @@ crossLength: 0.3
 # 0 - local
 # 1 - global
 # 2 - both
-crossChildSelector: 0
+crossChildSelector: 1
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.01
+mutaOrtoAngleProba: 0.0
 mutaRandAngleProba: 0.0
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.01
+mutaRandScaleDistProba: 0.0
 mutaReplaceGen: 0.01
 
 # Lastest conf

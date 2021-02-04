@@ -12,6 +12,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
 
   if(yConf["visualize"])
     visualize = yConf["visualize"].as<bool>();
+  if(yConf["printInfo"])
+    printInfo = yConf["printInfo"].as<bool>();
   if(yConf["scenario"])
     scenario = yConf["scenario"].as<float>();
   if(yConf["logName"])

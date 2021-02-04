@@ -39,6 +39,7 @@ namespace conf {
     string logName = "";
 
     bool visualize = true;
+    bool printInfo = true;
     int scenario = 0;
     int clearZeros = 0;
 

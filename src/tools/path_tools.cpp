@@ -341,7 +341,7 @@ bool path::Robot::evaluateActions(PAs &pas){
     }
     incConfParameter(typeCount, (*it)->type, 1);
   }
-  assertm(pas.size() >= 3, "TOO few action remain in sequence");
+  // assertm(pas.size() >= 3, "TOO few action remain in sequence");
   return true;
 }
 
