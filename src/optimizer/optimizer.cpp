@@ -301,7 +301,7 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   PAs parent1, parent2, child1, child2, child3, child4;
   int maxlen1 = static_cast<int>((par1.actions.size() - 2) * eConf.crossLength);
   int maxlen2 = static_cast<int>((par2.actions.size() - 2) * eConf.crossLength);
-  debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
+  // debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
   assertm(maxlen1 > 2, "Cross length is too small!");
   assertm(maxlen2 > 2, "Cross length is too small!");
   uniform_int_distribution<int> lendist1(2, maxlen1);
@@ -458,7 +458,7 @@ bool op::MutationStrategy::randomReplaceGen(genome& gen, executionConfig& eConf)
   if(!applyAction(eConf.mutaReplaceGen, eConf)) return false;
   // debug("Insert Random!");
   InitStrategy init;
-  init(gen, gen.actions.size(), eConf);
+  init(gen, eConf.getMinGenLen() + 10, eConf);
   validateGen(gen);
   return true;
 }
