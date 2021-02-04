@@ -10,7 +10,9 @@
 // #include <opencv2/core/eigen.hpp>
 #include <opencv2/core/eigen.hpp>
 // using namespace ga;
+#define MIN_CROSS_LEN 4
 using namespace conf;
+
 
 namespace op {
   // namespace to organize the optimizer strategies
@@ -67,7 +69,7 @@ namespace op {
     virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) override;
     virtual void operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf) override;
     template <typename T>
-    void mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf);
+    bool mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf);
     genome getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move);
   };
 

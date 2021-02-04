@@ -107,23 +107,24 @@ void genome_tools::removeZeroPAs(genome &gen){
 }
 
 // TODO: Put this in path tools
-shared_ptr<PathAction> makeAction(PAT type, Position start, Position end){
-  switch(type){
-  case PAT::Start:{
-    return make_shared<StartAction>(StartAction(start));
-    break;
-  }
-  case PAT::Ahead: case PAT::CAhead:{
-    auto ac = AheadAction(static_cast<PAT>(type), {});
-    ac.setConfigByWaypoints(start, end);
-    return make_shared<AheadAction>(ac);
-    break;
-  }
-  case PAT::End:{
-    return make_shared<EndAction>(EndAction({start, end}));
-  }
-  }
-}
+// shared_ptr<PathAction> makeAction(PAT type, Position start, Position end){
+//   switch(type){
+//   case PAT::Start:{
+//     return make_shared<StartAction>(StartAction(start));
+//     break;
+//   }
+//   case PAT::Ahead: case PAT::CAhead:{
+//     auto ac = AheadAction(static_cast<PAT>(type), {});
+//     ac.setConfigByWaypoints(start, end);
+//     return make_shared<AheadAction>(ac);
+//     break;
+//   }
+//   case PAT::End:{
+//     return make_shared<EndAction>(EndAction({start, end}));
+//   }
+//   }
+
+// }
 
 
 // genome_tools::genome genome_tools::calMeanGen(Genpool& pool, vector<int> &contrib, int maxActionSize){

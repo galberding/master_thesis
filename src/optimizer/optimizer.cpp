@@ -202,7 +202,7 @@ genome op::TournamentSelection::selection(Genpool &currentPopulation, executionC
 void op::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf){
   assert(selPool.size() > 0);
   for (auto it = selPool.begin(); it != selPool.end(); ++it) {
-    if(!applyAction(eConf.crossoverProba, eConf)){
+    if(!applyAction(eConf.crossoverProba, eConf) or !mating(it->first, it->second, nextPool, eConf)){
       // Add gens to pool if they are not already inside
       if(std::find(nextPool.begin(), nextPool.end(), it->first)
 	 != nextPool.end())
@@ -214,7 +214,7 @@ void op::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& nextPoo
     }
     assert(it->first.actions.size() > 3);
     assert(it->second.actions.size() > 3);
-    mating(it->first, it->second, nextPool, eConf);
+    // mating(it->first, it->second, nextPool, eConf);
   }
 }
 
@@ -222,16 +222,17 @@ void op::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , execu
   assert(fPool.size() > 0);
   for (auto &family : fPool) {
     assert(family.size() == 2);
-    if(!applyAction(eConf.crossoverProba, eConf)){
+    // Check if crossover can be performed
+    if(!applyAction(eConf.crossoverProba, eConf) or !mating(family[0], family[1], family, eConf)){
       // Add gens to pool if they are not already inside
       pool.push_back(family[0]);
       pool.push_back(family[1]);
 	continue;
     }
-    assert(family[0].actions.size() > 3);
-    assert(family[1].actions.size() > 3);
-    mating(family[0], family[1], family, eConf);
-    assert(family.size() >= 4);
+    // assert(family[0].actions.size() > 3);
+    // assert(family[1].actions.size() > 3);
+    // mating(family[0], family[1], family, eConf);
+    // assert(family.size() >= 4);
   }
 }
 
@@ -258,8 +259,6 @@ void op::CrossoverStrategy::copyActions(PAs::iterator begin, PAs::iterator end, 
     }
   }
 }
-
-// pair<genome, genome> makeChildren(int )
 
 genome op::DualPointCrossover::getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move){
   PAs child;
@@ -291,17 +290,22 @@ genome op::DualPointCrossover::getChild(PAs par1, PAs par2, int sIdx[2], int len
 }
 
 template <typename T>
-void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf){
+bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf){
   // mate two parents
   // estimate the individual Length
-  // debug("Parent length: ", par1.actions.size(), " ", par2.actions.size());
+  int minActionCount = eConf.getMinGenLen();
+
+  if (par1.actions.size() < minActionCount
+      or par2.actions.size() < minActionCount)
+    return false;
   PAs parent1, parent2, child1, child2, child3, child4;
-  int maxlen1 = static_cast<int>((par1.actions.size() - 3) * eConf.crossLength);
-  int maxlen2 = static_cast<int>((par2.actions.size() - 3) * eConf.crossLength);
-  assertm(maxlen1 > 3, "Cross length is too small!");
-  assertm(maxlen2 > 3, "Cross length is too small!");
-  uniform_int_distribution<int> lendist1(3, maxlen1);
-  uniform_int_distribution<int> lendist2(3, maxlen2);
+  int maxlen1 = static_cast<int>((par1.actions.size() - 2) * eConf.crossLength);
+  int maxlen2 = static_cast<int>((par2.actions.size() - 2) * eConf.crossLength);
+  debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
+  assertm(maxlen1 > 2, "Cross length is too small!");
+  assertm(maxlen2 > 2, "Cross length is too small!");
+  uniform_int_distribution<int> lendist1(2, maxlen1);
+  uniform_int_distribution<int> lendist2(2, maxlen2);
 
   int len[2];
   int len1 = len[0] = lendist1(eConf.generator);
@@ -327,8 +331,6 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   glob.push_back(getChild(par2.actions, par1.actions, sIdx, len, false));
 
   // Insert to new Population
-
-
   switch(eConf.crossChildSelector){
   case 0:{
     newPopulation.insert(newPopulation.end(), loc.begin(), loc.end());
@@ -347,7 +349,7 @@ void op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
     assertm(false, "Wrong value for child selector");
   }
   }
-
+  return true;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -691,11 +693,11 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercen
 		      eConf.fitnessAvgCoverage,
 		      eConf.actionLenAvg, zeroPercent));
       if(eConf.visualize){
-	cv::Mat src;
-	// rob->evaluateActions(eConf.best.actions);
+	// cv::Mat src;
+	rob->evaluateActions(eConf.best.actions);
 	// eConf.best.trail = (*eConf.gmap)["map"];
-	cv::eigen2cv(eConf.best.trail, src);
-	cv::imshow("Current Run ",src);
+	// cv::eigen2cv(eConf.best.trail, src);
+	cv::imshow("Current Run ", rob->gridToImg("map"));
 	cv::waitKey(1);
       }
     }
@@ -751,6 +753,49 @@ void clearZeroPAs(Genpool& pool, executionConfig& eConf){
 }
 
 
+
+void op::Optimizer::restorePopulationFromSnapshot(const string path){
+  vector<PAs> pp;
+  pa_serializer::readActrionsFromFile(pp, path);
+  for (auto it = pp.begin(); it != pp.end(); ++it) {
+    pool.push_back(genome(*it));
+  }
+}
+
+void op::Optimizer::snapshotPopulation(const string path){
+  vector<PAs> pp;
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+  }
+  pa_serializer::writeActionsToFile(pp, path);
+}
+
+void op::Optimizer::snapshotPopulation(executionConfig& eConf){
+  // Take the current iteration into account
+  string iter = to_string(eConf.currentIter);
+  // Save Genpool:
+  string popName = eConf.logDir + "/" + iter + "_" + eConf.tSnap;
+  string performanceName = iter + "_" + eConf.tPerformanceSnap;
+  // Store gen information
+  ostringstream perform;
+  vector<PAs> pp;
+  perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
+
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    pp.push_back(it->actions);
+    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
+  }
+  logging::Logger(perform.str(), eConf.logDir, performanceName);
+  pa_serializer::writeActionsToFile(pp, popName);
+  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+  eConf.logStr->str("");
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                         Elitist Selection Scenario                        //
+///////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::optimizePath(bool display){
   if(!eConf.restore){
@@ -816,6 +861,10 @@ void op::Optimizer::optimizePath(bool display){
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//                       Tournament Selection Scenario                       //
+///////////////////////////////////////////////////////////////////////////////
 
 
 void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
@@ -891,6 +940,12 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//                      Roulettewheel Selection Scenario                     //
+///////////////////////////////////////////////////////////////////////////////
+
+
 void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
 
   RouletteWheelSelection rSelect;
@@ -952,42 +1007,4 @@ void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
   }
   // Log Fitnessvalues for all iterations
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-}
-
-
-void op::Optimizer::restorePopulationFromSnapshot(const string path){
-  vector<PAs> pp;
-  pa_serializer::readActrionsFromFile(pp, path);
-  for (auto it = pp.begin(); it != pp.end(); ++it) {
-    pool.push_back(genome(*it));
-  }
-}
-
-void op::Optimizer::snapshotPopulation(const string path){
-  vector<PAs> pp;
-  for (auto it = pool.begin(); it != pool.end(); ++it) {
-    pp.push_back(it->actions);
-  }
-  pa_serializer::writeActionsToFile(pp, path);
-}
-
-void op::Optimizer::snapshotPopulation(executionConfig& eConf){
-  // Take the current iteration into account
-  string iter = to_string(eConf.currentIter);
-  // Save Genpool:
-  string popName = eConf.logDir + "/" + iter + "_" + eConf.tSnap;
-  string performanceName = iter + "_" + eConf.tPerformanceSnap;
-  // Store gen information
-  ostringstream perform;
-  vector<PAs> pp;
-  perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
-
-  for (auto it = pool.begin(); it != pool.end(); ++it) {
-    pp.push_back(it->actions);
-    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
-  }
-  logging::Logger(perform.str(), eConf.logDir, performanceName);
-  pa_serializer::writeActionsToFile(pp, popName);
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-  eConf.logStr->str("");
 }

@@ -4,7 +4,7 @@
 #include "path_tools.h"
 #include "genome_tools.h"
 #include "mapGen.h"
-
+#define MIN_CROSS_LEN 4
 using namespace genome_tools;
 
 namespace conf {
@@ -134,7 +134,7 @@ namespace conf {
 
     bool loadConfFromYaml(const string path);
     shared_ptr<GridMap> generateMapType(int width, int height, float res, int type, Position& start);
-
+    int getMinGenLen(){return MIN_CROSS_LEN / crossLength;}
   };
 
 }
