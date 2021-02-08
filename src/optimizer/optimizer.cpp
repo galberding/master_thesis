@@ -829,11 +829,11 @@ void op::Optimizer::optimizePath(bool display){
     // resetLoggingFitnessParameter(eConf);
     // genome_tools::removeZeroPAs(pool);
     trackPoolFitness(pool, eConf);
-    float zeroPercent = calZeroActionPercent(pool);
+    float deadGens = countDeadGens(pool, eConf.getMinGenLen());
 
     clearZeroPAs(pool, eConf);
-    logAndSnapshotPool(eConf, zeroPercent);
-    printRunInformation(eConf, zeroPercent, display);
+    logAndSnapshotPool(eConf, deadGens);
+    printRunInformation(eConf, deadGens, display);
 
     // Selection
     select->uniformSelectionWithoutReplacement(pool, fPool, eConf);

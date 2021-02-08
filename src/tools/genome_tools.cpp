@@ -69,11 +69,12 @@ float genome_tools::calZeroActionPercent(genome &gen){
 }
 
 float genome_tools::calZeroActionPercent(Genpool &pool){
+  // TODO: Does nothing!!
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    if(compareF(it->fitness, 0.0, 0.00001)){
-      res += 1;
-    }
+    // if(it->actions.size() < minSize){
+    //   res += 1;
+    // }
   }
   return res / pool.size();
 }
@@ -82,6 +83,14 @@ void genome_tools::removeZeroPAs(Genpool &pool) {
   for(auto &gen : pool){
     removeZeroPAs(gen);
   }
+}
+
+int genome_tools::countDeadGens(Genpool &pool, int minSize){
+  int res = 0;
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    res += it->actions.size() > minSize ? 0 : 1;
+  }
+  return res;
 }
 
 void genome_tools::removeZeroPAs(genome &gen){

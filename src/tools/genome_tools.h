@@ -65,6 +65,11 @@ namespace genome_tools {
   void validateGen(genome &gen);
   float calZeroActionPercent(genome &gen);
   float calZeroActionPercent(Genpool &pool);
+  /**
+     Count how many gens have action length less than minSize.
+     Those gens cannot participate on crossover.
+   **/
+  int countDeadGens(Genpool &pool, int minSize);
   void removeZeroPAs(Genpool &pool);
   void removeZeroPAs(genome &gen);
   // genome calMeanGen(Genpool& pool, int maxActionSize);
