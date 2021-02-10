@@ -834,6 +834,7 @@ void op::Optimizer::optimizePath(bool display){
     clearZeroPAs(pool, eConf);
     logAndSnapshotPool(eConf, deadGens);
     printRunInformation(eConf, deadGens, display);
+    assertm(pool.size() - deadGens > 0, "Population died!");
 
     // Selection
     select->uniformSelectionWithoutReplacement(pool, fPool, eConf);

@@ -17,7 +17,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 100
+clearZeros: 1000
 
 # Map
 mapType: 1
@@ -26,7 +26,7 @@ mapHeight: 10
 mapResolution: 0.3
 
 # Initialization
-initActions: 20
+initActions: 25
 initIndividuals: 100
 
 # Selection
@@ -36,7 +36,7 @@ tournamentSize: 15
 
 # Crossover
 crossoverProba: 0.8
-crossLength: 0.3
+crossLength: 0.2
 # 0 - local
 # 1 - global
 # 2 - both
@@ -48,7 +48,7 @@ mutaRandAngleProba: 0.0
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.0
-mutaReplaceGen: 0.0
+mutaReplaceGen: 0.3
 
 # Lastest conf
 # mutaOrtoAngleProba: 0.02

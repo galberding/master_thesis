@@ -149,6 +149,7 @@ namespace op {
     // private:
     //   Optimizer()
     void printRunInformation(executionConfig& eConf, float zeroPercent, bool display);
+    
     void optimizePath(bool display = false);
     void optimizePath_s_tourn_c_dp(bool display = false);
     void optimizePath_s_roulette_c_dp(bool display);
