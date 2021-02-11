@@ -42,6 +42,7 @@ namespace conf {
     bool printInfo = true;
     int scenario = 0;
     int clearZeros = 0;
+    bool penalizeZeroActions = true;
 
     // Snapshots
     bool restore = false;
@@ -54,6 +55,9 @@ namespace conf {
     float actionLenMin = 0;
     float actionLenMax = 0;
     float actionLenAvg = 0;
+
+    float zeroActionPercent = 0;
+    float deadGensCount = 0;
 
     // If parameter is set we want to store it under this filename
     string fitnessName = "vv";

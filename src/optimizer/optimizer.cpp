@@ -17,17 +17,17 @@ void op::InitStrategy::operator()(Genpool& pool, executionConfig& eConf){
 }
 
 void op::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){
-  PAs actions;
-  // gen.actions.clear();
+  // PAs actions;
+  gen.actions.clear();
   uniform_int_distribution<> angleDist(0,360);
   uniform_real_distribution<float> distanceDist(0,50);
-  actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
+  gen.actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
     for(int i=0; i<len; i++){
       PA_config config{{PAP::Angle,angleDist(eConf.generator)}, {PAP::Distance, distanceDist(eConf.generator)}};
-      actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
     }
-    actions.push_back(make_shared<EndAction>(EndAction(eConf.ends)));
-    gen.actions = actions;
+    gen.actions.push_back(make_shared<EndAction>(EndAction(eConf.ends)));
+    // gen.actions = actions;
 }
 
 void op::InitStrategy::replaceZeroGensWithRandom(Genpool& pool){
@@ -455,10 +455,15 @@ bool op::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eCo
 
 bool op::MutationStrategy::randomReplaceGen(genome& gen, executionConfig& eConf) {
 
-  if(!applyAction(eConf.mutaReplaceGen, eConf)) return false;
-  // debug("Insert Random!");
+  // Apply mutation if a apply action is true or if a gen is dead
+  if(not(applyAction(eConf.mutaReplaceGen, eConf) or gen.actions.size() < eConf.getMinGenLen())) return false;
   InitStrategy init;
-  init(gen, eConf.getMinGenLen() + 10, eConf);
+
+  // Check if average length if bigger than minimal allowed length
+  // if(eConf.actionLenAvg < eConf.getMinGenLen())
+  init(gen, eConf.getMinGenLen() * 2, eConf);
+  // else
+    // init(gen, eConf.actionLenAvg, eConf);
   validateGen(gen);
   return true;
 }
@@ -614,45 +619,48 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // gen.fitness = (pow(x, 5)*pow(y, 4));
   // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
+  // Panelty for zero actions
+  if(eConf.penalizeZeroActions)
+    gen.fitness *= 1 - calZeroActionPercent(gen);
   return gen.fitness;
 }
 
-float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig& eConf){
-assert(cdist >= crossed);
+// float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig& eConf){
+// assert(cdist >= crossed);
 
-  float actual_time = cdist + dist;
-  float optimal_time = (cdist - crossed);
-  float final_time = optimal_time / actual_time;
-
-
-  // Calculate the final occ based on the
-  // TODO: rename fitness parameter, sth like crossFactor or overlapping
-  float actual_occ = cdist - crossed;
-  // if (current_occ < 0){
-  //   current_occ = crossed;
-  // }
-  float optimal_occ = cdist + crossed;
-
-  float final_occ = actual_occ / optimal_occ ;
-
-  // Area coverage
-  float final_coverage = actual_occ / freeSpace;
-  assertm(freeSpace >= actual_occ , "No space to cover");
-  // Ensure that the gen is not selected for crossover by setting the fitness to 0
-  if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
-
-  eConf.fitnessAvgTime += final_time;
-  eConf.fitnessAvgOcc += final_occ;
-  eConf.fitnessAvgCoverage += final_coverage;
+//   float actual_time = cdist + dist;
+//   float optimal_time = (cdist - crossed);
+//   float final_time = optimal_time / actual_time;
 
 
-  float weight = eConf.fitnessWeight;
-  // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
-  float fitness = eConf.fitnessWeights[0]*final_time
-    + eConf.fitnessWeights[1]*final_occ
-    + eConf.fitnessWeights[2]*final_coverage;
-  return fitness;
-}
+//   // Calculate the final occ based on the
+//   // TODO: rename fitness parameter, sth like crossFactor or overlapping
+//   float actual_occ = cdist - crossed;
+//   // if (current_occ < 0){
+//   //   current_occ = crossed;
+//   // }
+//   float optimal_occ = cdist + crossed;
+
+//   float final_occ = actual_occ / optimal_occ ;
+
+//   // Area coverage
+//   float final_coverage = actual_occ / freeSpace;
+//   assertm(freeSpace >= actual_occ , "No space to cover");
+//   // Ensure that the gen is not selected for crossover by setting the fitness to 0
+//   if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
+
+//   eConf.fitnessAvgTime += final_time;
+//   eConf.fitnessAvgOcc += final_occ;
+//   eConf.fitnessAvgCoverage += final_coverage;
+
+
+//   float weight = eConf.fitnessWeight;
+//   // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
+//   float fitness = eConf.fitnessWeights[0]*final_time
+//     + eConf.fitnessWeights[1]*final_occ
+//     + eConf.fitnessWeights[2]*final_coverage;
+//   return fitness;
+// }
 
 
 
@@ -661,11 +669,11 @@ assert(cdist >= crossed);
 //                                Optimizer                                 //
 /////////////////////////////////////////////////////////////////////////////
 
-void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
+void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,Zeros,BestTime,BestCov\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -681,8 +689,8 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
 				    eConf.actionLenMin,
-				    zeros,
-				    // eConf.best.fitness,
+				    eConf.zeroActionPercent,
+				    eConf.deadGensCount,
 				    eConf.best.finalTime,
 				    eConf.best.finalCoverage
 				    );
@@ -696,14 +704,14 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf, float zeros){
     }
 }
 
-void op::Optimizer::printRunInformation(executionConfig& eConf, float zeroPercent, bool display){
+void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
   if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
 	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
-		      eConf.actionLenAvg, zeroPercent));
+		      eConf.actionLenAvg, eConf.zeroActionPercent, eConf.deadGensCount));
       if(eConf.visualize){
 	// cv::Mat src;
 	rob->evaluateActions(eConf.best.actions);
@@ -818,29 +826,43 @@ void op::Optimizer::optimizePath(bool display){
 
   // Main loop
   (*calFitness)(pool, *rob, eConf);
-  genome_tools::removeZeroPAs(pool);
-  // debug("Before while");
-  while(eConf.currentIter <= eConf.maxIterations){
-    // debug("Inside");
-    // Fitness calculation
-    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
-    getBestGen(pool, eConf);
-    adaptCrossover(eConf);
-    // resetLoggingFitnessParameter(eConf);
-    // genome_tools::removeZeroPAs(pool);
-    trackPoolFitness(pool, eConf);
-    float deadGens = countDeadGens(pool, eConf.getMinGenLen());
+    while(eConf.currentIter <= eConf.maxIterations){
 
+    getBestGen(pool, eConf);
+
+    trackPoolFitness(pool, eConf);
+
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    eConf.zeroActionPercent = calZeroActionPercent(pool);
     clearZeroPAs(pool, eConf);
-    logAndSnapshotPool(eConf, deadGens);
-    printRunInformation(eConf, deadGens, display);
-    assertm(pool.size() - deadGens > 0, "Population died!");
+    logAndSnapshotPool(eConf);
+    printRunInformation(eConf, display);
+    if(pool.size() - eConf.deadGensCount == 0){
+      logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+      assertm(false, "Population died!");
+
+    }
 
     // Selection
     select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
     // Crossover
     (*cross)(fPool, pool, eConf);
+    // Mutate remaining individuals in pool
+    if (pool.size() > 2){
+      for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 2); ++it) {
+	bool mutated = mutate->randomReplaceGen(*it, eConf);
+	if(not mutated){
+	  mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	  mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	  mutated |= mutate->randomScaleDistance(*it, eConf);
+	}
+	if(mutated){
+	  calFitness->estimateGen(*it, *rob, eConf);
+	  it->trail = 1 * (*eConf.gmap)["map"];
+	}
+      }
+    }
     // Mutation
     (*mutate)(fPool, eConf);
     calFitness->estimateChildren(fPool, *rob, eConf);
@@ -848,18 +870,7 @@ void op::Optimizer::optimizePath(bool display){
     // Second mutation stage:
     sort(pool.begin(), pool.end());
 
-    for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 2); ++it) {
-      bool mutated = mutate->randomReplaceGen(*it, eConf);
-      if(not mutated){
-	mutated |= mutate->addRandomAngleOffset(*it, eConf);
-	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
-	mutated |= mutate->randomScaleDistance(*it, eConf);
-      }
-      if(mutated){
-	calFitness->estimateGen(*it, *rob, eConf);
-	it->trail = 1 * (*eConf.gmap)["map"];
-      }
-    }
+
 
     // Increase Iteration
     eConf.currentIter++;
@@ -886,31 +897,24 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
   }
   // Main loop
   (*calFitness)(pool, *rob, eConf);
-  // genome_tools::removeZeroPAs(pool);
-  // debug("Before while");
-  while(eConf.currentIter <= eConf.maxIterations){
-    // debug("Inside");
-    // Fitness calculation
-    // TODO: only useful for statistic evaluation -> all parameters are already recalculated
-    getBestGen(pool, eConf);
-    // resetLoggingFitnessParameter(eConf);
-    // genome_tools::removeZeroPAs(pool);
-    trackPoolFitness(pool, eConf);
-    float zeroPercent = calZeroActionPercent(pool);
 
-    clearZeroPAs(pool, eConf);
-    logAndSnapshotPool(eConf, zeroPercent);
-    printRunInformation(eConf, zeroPercent, display);
+  while(eConf.currentIter <= eConf.maxIterations){
+
+    // TODO: Calculate zeros and dead gens
+    // Logging and Snapshots
+    getBestGen(pool, eConf);
+    trackPoolFitness(pool, eConf);
+    float deadGens = countDeadGens(pool, eConf.getMinGenLen());
+    logAndSnapshotPool(eConf);
+    printRunInformation(eConf, display);
+
     // Selection
-    // (*select)(pool, sPool, eConf);
-    // select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
     tSelect(pool, sPool, eConf);
-    // TODO: introduce modified parameter to reduce useless recalculation of gens
-    // TODO: put the statistic calculation of the fitness outside, all values are already exposed due to the gens
 
     // Crossover
     (*cross)(sPool, pool, eConf);
 
+    // Mutation
     for (auto it = pool.begin(); it != pool.end(); ++it) {
       bool mutated = mutate->randomReplaceGen(*it, eConf);
       if(not mutated){
@@ -918,12 +922,12 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
-      // if(mutated){
       calFitness->estimateGen(*it, *rob, eConf);
-
-      // }
     }
+
+    // Keep best individual
     pool.push_back(eConf.best);
+
     // Increase Iteration
     eConf.currentIter++;
   }
@@ -953,11 +957,13 @@ void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
   while(eConf.currentIter <= eConf.maxIterations){
     getBestGen(pool, eConf);
     trackPoolFitness(pool, eConf);
+    //TODO: Calculate zero and dead gens
     float zeroPercent = calZeroActionPercent(pool);
 
+
     clearZeroPAs(pool, eConf);
-    logAndSnapshotPool(eConf, zeroPercent);
-    printRunInformation(eConf, zeroPercent, display);
+    logAndSnapshotPool(eConf);
+    printRunInformation(eConf, display);
     // Selection
     rSelect(pool, sPool, eConf);
     // Crossover

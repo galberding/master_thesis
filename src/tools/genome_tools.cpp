@@ -65,16 +65,14 @@ float genome_tools::calZeroActionPercent(genome &gen){
       res += 1;
     }
   }
-  return res / gen.actions.size();
+  return res / (gen.actions.size()-1);
 }
 
 float genome_tools::calZeroActionPercent(Genpool &pool){
   // TODO: Does nothing!!
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    // if(it->actions.size() < minSize){
-    //   res += 1;
-    // }
+    res += calZeroActionPercent(*it);
   }
   return res / pool.size();
 }

@@ -100,13 +100,13 @@ namespace op {
 
     virtual void estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf);
     virtual float calculation(genome& gen, int freeSpace, executionConfig &eConf);
-    virtual float calculation(float cdist,
-			      float dist,
-			      int crossed,
-			      float cSpeed_m_s,
-			      float speed_m_s,
-			      int freeSpace,
-			      executionConfig& eConf);
+    // virtual float calculation(float cdist,
+    // 			      float dist,
+    // 			      int crossed,
+    // 			      float cSpeed_m_s,
+    // 			      float speed_m_s,
+    // 			      int freeSpace,
+    // 			      executionConfig& eConf);
   };
 
   /////////////////////////////////////////////////////////////////////////////
@@ -148,15 +148,15 @@ namespace op {
       */
     // private:
     //   Optimizer()
-    void printRunInformation(executionConfig& eConf, float zeroPercent, bool display);
-    
+    void printRunInformation(executionConfig& eConf, bool display);
+
     void optimizePath(bool display = false);
     void optimizePath_s_tourn_c_dp(bool display = false);
     void optimizePath_s_roulette_c_dp(bool display);
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);
-    void logAndSnapshotPool(executionConfig& eConf, float zeros);
+    void logAndSnapshotPool(executionConfig& eConf);
   };
 }
 

@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
 
   string path;
-  debug(argc);
+  // debug(argc);
   if (argc == 2){
     path = argv[1];
   }else{
