@@ -59,6 +59,10 @@ namespace conf {
     float zeroActionPercent = 0;
     float deadGensCount = 0;
 
+    // Diversity:
+    float diversityMean = 0;
+    float diversityStd = 0;
+
     // If parameter is set we want to store it under this filename
     string fitnessName = "vv";
     float fitnessWeight = 0.5;

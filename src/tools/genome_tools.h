@@ -41,6 +41,8 @@ namespace genome_tools {
        Returns false if distance is 0 -> gen fitness does not need to be calculated
      */
     bool updateGenParameter();
+    void setPathSignature(shared_ptr<GridMap> gmap);
+
 
 
 
@@ -55,6 +57,7 @@ namespace genome_tools {
     float coverage = 0;
     float finalCoverage = 0;
     float finalTime = 0;
+    shared_ptr<Matrix> mat;
   };
 
   using Genpool = std::deque<genome>;
@@ -72,6 +75,8 @@ namespace genome_tools {
   int countDeadGens(Genpool &pool, int minSize);
   void removeZeroPAs(Genpool &pool);
   void removeZeroPAs(genome &gen);
+  void calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat);
+  void getDivMeanStd(Genpool &pool, float& mean, float& stdev);
   // genome calMeanGen(Genpool& pool, int maxActionSize);
 }
 

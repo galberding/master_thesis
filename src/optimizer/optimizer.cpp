@@ -563,6 +563,7 @@ void op::FitnessStrategy::estimateGen(genome &gen, path::Robot &rob, executionCo
     assertm(gen.actions.size() > 0, "Not enough actions");
     calculation(gen, rob.getFreeArea(), eConf);
     trackFitnessParameter(gen , eConf);
+
   }else{
     warn("Erase Gen!");
     assertm(false, "Attempt to erase a gen!!");
@@ -592,8 +593,12 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // Check if the gen is valid -> returns false if gen has distance 0
   if(!gen.updateGenParameter()){
     debug("Update: ", gen.updateGenParameter());
+    gen.fitness = 0;
     return 0;
   }
+  // Set calculated path
+  gen.setPathSignature(eConf.gmap);
+
   // Time parameter:
   float actualTime = gen.traveledDist;
   // debug(log(10 + gen.cross));
@@ -625,44 +630,6 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   return gen.fitness;
 }
 
-// float op::FitnessStrategy::calculation(float cdist, float dist, int crossed, float cSpeed_m_s, float speed_m_s, int freeSpace, executionConfig& eConf){
-// assert(cdist >= crossed);
-
-//   float actual_time = cdist + dist;
-//   float optimal_time = (cdist - crossed);
-//   float final_time = optimal_time / actual_time;
-
-
-//   // Calculate the final occ based on the
-//   // TODO: rename fitness parameter, sth like crossFactor or overlapping
-//   float actual_occ = cdist - crossed;
-//   // if (current_occ < 0){
-//   //   current_occ = crossed;
-//   // }
-//   float optimal_occ = cdist + crossed;
-
-//   float final_occ = actual_occ / optimal_occ ;
-
-//   // Area coverage
-//   float final_coverage = actual_occ / freeSpace;
-//   assertm(freeSpace >= actual_occ , "No space to cover");
-//   // Ensure that the gen is not selected for crossover by setting the fitness to 0
-//   if(isnan(final_time) || isnan(final_occ) || isnan(final_coverage)) return 0;
-
-//   eConf.fitnessAvgTime += final_time;
-//   eConf.fitnessAvgOcc += final_occ;
-//   eConf.fitnessAvgCoverage += final_coverage;
-
-
-//   float weight = eConf.fitnessWeight;
-//   // float fitness = ((1-weight)*(final_time + final_occ) + weight*final_coverage) / 3;
-//   float fitness = eConf.fitnessWeights[0]*final_time
-//     + eConf.fitnessWeights[1]*final_occ
-//     + eConf.fitnessWeights[2]*final_coverage;
-//   return fitness;
-// }
-
-
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -670,10 +637,10 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
-
+  getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,Dmean,Dstd\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -692,7 +659,9 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.zeroActionPercent,
 				    eConf.deadGensCount,
 				    eConf.best.finalTime,
-				    eConf.best.finalCoverage
+				    eConf.best.finalCoverage,
+				    eConf.diversityMean,
+				    eConf.diversityStd
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
@@ -711,7 +680,9 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
-		      eConf.actionLenAvg, eConf.zeroActionPercent, eConf.deadGensCount));
+		      eConf.actionLenAvg,
+		      eConf.zeroActionPercent,
+		      eConf.deadGensCount, " | ", eConf.diversityMean, eConf.diversityStd));
       if(eConf.visualize){
 	// cv::Mat src;
 	rob->evaluateActions(eConf.best.actions);

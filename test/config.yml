@@ -28,7 +28,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 40
-initIndividuals: 200
+initIndividuals: 100
 
 # Selection
 keep: 0
@@ -44,12 +44,12 @@ crossLength: 0.25
 crossChildSelector: 2
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.05
+mutaOrtoAngleProba: 0.0
 mutaRandAngleProba: 0.0
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.05
-mutaReplaceGen: 0.00
+mutaRandScaleDistProba: 0.0
+mutaReplaceGen: 0.001
 
 # Lastest conf
 # mutaOrtoAngleProba: 0.02

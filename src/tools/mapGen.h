@@ -19,6 +19,11 @@ namespace mapgen {
   std::shared_ptr<grid_map::GridMap> generateMapType(int with, int height, float res, int type, grid_map::Position& start);
 
   shared_ptr<GridMap> changeMapRes(shared_ptr<GridMap> gmap, float res);
+  /**
+   * Two stages:
+   * 1. Draw coverage pixel line, use the inc parameter for that -> inc == true
+   * 2. Draw black line -> inc == false
+   */
   void drawPathOnMap(shared_ptr<GridMap> gmap, vector<Position>& path, bool inc);
   /**
    * @brief      Generate OpenCV img from GridMap.

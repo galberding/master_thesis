@@ -293,6 +293,14 @@ catkin_add_executable_with_gtest(test-ga
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-eigen
+  test/test_eigen.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
+
 
 # if(TARGET test-path-tools)
 target_link_libraries(test-tools ${catkin_LIBRARIES} yaml-cpp)
@@ -300,4 +308,5 @@ target_link_libraries(test-tools ${catkin_LIBRARIES} yaml-cpp)
 # target_link_libraries(test-app ${catkin_LIBRARIES})
 # target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
 target_link_libraries(test-ga ${catkin_LIBRARIES} yaml-cpp)
+target_link_libraries(test-eigen ${catkin_LIBRARIES} yaml-cpp)
 # endif()

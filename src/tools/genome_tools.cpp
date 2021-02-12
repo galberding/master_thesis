@@ -20,6 +20,10 @@ bool genome_tools::genome::updateGenParameter(){
   return !(traveledDist == 0);
 }
 
+void genome_tools::genome::setPathSignature(shared_ptr<GridMap> gmap){
+  mat = make_shared<Matrix>(Matrix(gmap->get("map")));
+}
+
 void genome_tools::validateGen(genome &gen){
  for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
    // What is needed to validate the gens?
@@ -111,6 +115,33 @@ void genome_tools::removeZeroPAs(genome &gen){
     }
   }
   // gen.actions =
+}
+
+void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat){
+  int pSize = pool.size();
+  assert(D.cols() == pSize);
+  assert(D.rows() == pSize);
+  assert(pSize*(pSize +1)/2 == upperFlat.size());
+
+  int idx = 0;
+  for(int row=0; row < pSize; row++)
+    for(int col=row; col<pSize; col++){
+      upperFlat[idx] = D(row, col) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum() / ((*pool[row].mat).rows() * (*pool[row].mat).cols());
+      idx++;
+    }
+}
+
+
+void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev){
+  int pSize = pool.size();
+  Eigen::MatrixXf D(pSize, pSize);
+  Eigen::VectorXf upperFlat(pSize*(pSize +1)/2);
+  calDistanceMat(pool, D, upperFlat);
+  mean = upperFlat.mean();
+  
+  stdev = sqrt((upperFlat.array() - mean).square().sum()/(upperFlat.size()-1));
+
+  // std = D.triangularView<Eigen::Upper>().std();
 }
 
 // TODO: Put this in path tools

@@ -40,7 +40,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, in
   }
   case 2:{ // Center circle
 
-     map.add("obstacle", 1);
+    map.add("obstacle", 1);
     int h_offset = static_cast<int>(map.getSize()(0)*0.1);
     int w_offset = static_cast<int>(map.getSize()(1)*0.1);
 
@@ -89,9 +89,8 @@ shared_ptr<GridMap> mapgen::changeMapRes(shared_ptr<GridMap> gmap, float res) {
 
 void mapgen::drawPathOnMap(shared_ptr<GridMap> gmap, vector<Position>& path, bool inc) {
 
-  // Two stages:
-  // 1. Draw coverage pixel line, use the inc parameter for that -> inc == true
-  // 2. Draw black line -> inc == false
+  // if(not gmap->exists("map"))
+  gmap->add("map", 0);
 
   for (auto nWP = next(path.begin(),1); nWP != path.end(); ++nWP) {
     auto pWP = prev(nWP, 1);
