@@ -61,8 +61,14 @@ TEST(Eigen, diversity){
   cv::Mat img;
   cv::eigen2cv(D, img);
   cv::imshow("Distance", img);
-  cv::waitKey();
+  // cv::waitKey();
   debug("Mean: ", mean, " Std: ", stdev);
+}
+
+
+TEST(SaveImages, MapScenarios){
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  mapgen::saveMap(to_string(eConf.mapType), eConf.gmap, "obstacle", 1);
 }
 
 int main(int argc, char **argv) {

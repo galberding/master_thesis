@@ -43,6 +43,7 @@ namespace conf {
     int scenario = 0;
     int clearZeros = 0;
     bool penalizeZeroActions = true;
+    int funSelect = 3;
 
     // Snapshots
     bool restore = false;
