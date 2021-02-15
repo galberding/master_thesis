@@ -612,7 +612,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,Dmean,Dstd\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,BestLen,Dmean,Dstd\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -632,6 +632,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.deadGensCount,
 				    eConf.best.finalTime,
 				    eConf.best.finalCoverage,
+				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd
 				    );

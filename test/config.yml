@@ -1,13 +1,13 @@
 logDir: nonConvexRegion
 logName: run.log
-maxIterations: 2000
+maxIterations: 3000
 
 visualize: true
 printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 1
+scenario: 0
 
 # Snapshots
 restore: false
@@ -19,35 +19,35 @@ tSnap: pop.pas
 # Clear Zero action every X iteration
 clearZeros: 0
 penalizeZeroActions: true
-funSelect: 0
+funSelect: 3
 
 # Map
 mapType: 1
 mapWidth: 10
 mapHeight: 10
-mapResolution: 0.3
+mapResolution: 0.05
 
 # Initialization
-initActions: 20
-initIndividuals: 100
+initActions: 30
+initIndividuals: 50
 
 # Selection
-keep: 1
-select: 30
-tournamentSize: 20
+keep: 0
+select: 50
+tournamentSize: 2
 
 # Crossover
 crossoverProba: 0.7
-crossLength: 0.5
+crossLength: 0.4
 # 0 - local
 # 1 - global
 # 2 - both
 crossChildSelector: 2
 
 # Mutation stuff
-mutaOrtoAngleProba: 0.02
-mutaRandAngleProba: 0.02
+mutaOrtoAngleProba: 0.05
+mutaRandAngleProba: 0.0
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.02
-mutaReplaceGen: 0.0001
+mutaRandScaleDistProba: 0.05
+mutaReplaceGen: 0.000
