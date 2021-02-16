@@ -2,15 +2,41 @@
 
 int genome_tools::genome::gen_id = 0;
 
+// float calVectorAngle(Position a, Position b){
+//   float dot = a.dot(b);
+//   float norm = a.norm()*b.norm() + FLT_EPSILON;
+//   return acos(dot/norm);
+
+// }
+
+int angleDiff(int a, int b){
+  int diff = a - b;
+  return abs((diff + 180) % 360 - 180);
+}
 
 bool genome_tools::genome::updateGenParameter(){
   this->traveledDist = 0;
   this->cross = 0;
+  this->rotationCost = 0;
   // debug("Update");
   for (auto it = actions.begin(); it != actions.end(); ++it) {
     traveledDist += (*it)->c_config[Counter::StepCount];
     cross += (*it)->c_config[Counter::CrossCount];
+    auto it_next = next(it, 1);
+    if((it != actions.end()) and ((*it)->type != PAT::End) and (it_next != actions.end()) and ((*it)->type != PAT::Start)){
+      // Calculate rotation penalty
+      // debug("Angle: ", (*it_next)->mod_config[PAP::Angle]);
+
+      assert((*it)->wps.size() >= 2);
+      // debug((*it_next)->wps.size());
+      // assert((*it_next)->wps.size() >= 2);
+      // rotationCost += angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
+      int cost = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
+      if(cost > 90)
+	rotationCost += 1;
+    }
   }
+  // debug(rotationCost);
   auto end = actions.back();
   // Panilty if endpoint cannot be reached
   // increase the cross count because the same distance needs to be taken twice
@@ -138,7 +164,7 @@ void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev){
   Eigen::VectorXf upperFlat(pSize*(pSize +1)/2);
   calDistanceMat(pool, D, upperFlat);
   mean = upperFlat.mean();
-  
+
   stdev = sqrt((upperFlat.array() - mean).square().sum()/(upperFlat.size()-1));
 
   // std = D.triangularView<Eigen::Upper>().std();

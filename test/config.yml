@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 1
+scenario: 0
 
 # Snapshots
 restore: false
@@ -19,6 +19,7 @@ tSnap: pop.pas
 # Clear Zero action every X iteration
 clearZeros: 0
 penalizeZeroActions: true
+penalizeRotation: true
 funSelect: 3
 
 # Map
@@ -29,7 +30,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 30
-initIndividuals: 100
+initIndividuals: 200
 
 # Selection
 keep: 1
@@ -40,11 +41,11 @@ tournamentSize: 15
 adaptParameter: True
 crossUpper: 1
 crossLower: 0.5
-mutUpper: 0.1
+mutUpper: 0.4
 
 # Crossover
 crossoverProba: 0.7
-crossLength: 0.2
+crossLength: 0.5
 # 0 - local
 # 1 - global
 # 2 - both

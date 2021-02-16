@@ -43,6 +43,7 @@ namespace conf {
     int scenario = 0;
     int clearZeros = 0;
     bool penalizeZeroActions = true;
+    bool penalizeRotation = false;
     int funSelect = 3;
 
     // Snapshots
@@ -139,6 +140,7 @@ namespace conf {
     float crossLower = 0.5;
     float mutUpper = 0.1;
     float lastDmax = 0;
+
     // float mutUpperReplGen = 0.001;
 
     string config_to_string(){

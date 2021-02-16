@@ -505,6 +505,8 @@ void trackPoolFitness(Genpool& pool, executionConfig& eConf){
   }
 
   finalizeFitnessLogging(pool.size(), eConf);
+  if(eConf.currentIter == eConf.maxIterations / 2)
+    eConf.lastDmax = 0;
   eConf.adaptCrossover();
   eConf.adaptMutation();
 
@@ -568,6 +570,8 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
 
   // Time parameter:
   float actualTime = gen.traveledDist;
+  if(eConf.penalizeRotation)
+    actualTime += gen.rotationCost;
   // debug(log(10 + gen.cross));
   float optimalTime = gen.traveledDist - gen.cross;
   float finalTime = optimalTime / actualTime;
@@ -601,6 +605,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
+  
   return gen.fitness;
 }
 

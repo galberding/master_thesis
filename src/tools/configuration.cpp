@@ -26,6 +26,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     clearZeros = yConf["clearZeros"].as<float>();
   if(yConf["penalizeZeroActions"])
     penalizeZeroActions = yConf["penalizeZeroActions"].as<bool>();
+  if(yConf["penalizeRotation"])
+    penalizeRotation = yConf["penalizeRotation"].as<bool>();
   if(yConf["funSelect"])
     funSelect = yConf["funSelect"].as<float>();
   if(yConf["weights"]["time"])
