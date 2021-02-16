@@ -505,6 +505,8 @@ void trackPoolFitness(Genpool& pool, executionConfig& eConf){
   }
 
   finalizeFitnessLogging(pool.size(), eConf);
+  eConf.adaptCrossover();
+  eConf.adaptMutation();
 
 }
 
@@ -654,8 +656,13 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
 		      eConf.actionLenAvg,
-		      eConf.zeroActionPercent,
-		      eConf.deadGensCount, " | ", eConf.diversityMean, eConf.diversityStd));
+		      // eConf.zeroActionPercent,
+		      // eConf.deadGensCount,
+		      eConf.crossoverProba,
+		      eConf.mutaRandScaleDistProba,
+		      " | ",
+		      eConf.diversityMean,
+		      eConf.diversityStd));
       if(eConf.visualize){
 	// cv::Mat src;
 	rob->evaluateActions(eConf.best.actions);
