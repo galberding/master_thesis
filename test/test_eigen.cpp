@@ -4,6 +4,7 @@
 #include <opencv2/opencv.hpp>
 // #include "../src/optimizer/grid_search.h"
 #include "../src/optimizer/optimizer.h"
+#include "opencv2/imgproc.hpp"
 #include <yaml-cpp/yaml.h>
 
 
@@ -28,9 +29,11 @@ TEST(Eigen, test){
   debug("Sum2:", gen2.mat->sum());
 
   // cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
-  cv::Mat img, img2;
+  cv::Mat img, img2, hist;
    Matrix res = *gen.mat+*gen2.mat;
   cv::eigen2cv(res, img);
+
+
   // cv::eigen2cv(, img2);
 
   cv::imshow("Test", img);
@@ -58,10 +61,31 @@ TEST(Eigen, diversity){
   Eigen::VectorXf v(pool.size()*(pool.size()+1)/2);
   calDistanceMat(pool, D, v);
   genome_tools::getDivMeanStd(pool, mean, stdev);
-  cv::Mat img;
+  cv::Mat img, hist;
   cv::eigen2cv(D, img);
+
+  // Calculate histogram
+  int histSize = 10;
+  float range[] = { 0, 256 }; //the upper boundary is exclusive
+  const float* histRange = { range };
+  bool uniform = true, accumulate = false;
+  cv::calcHist(&img, 1, 0, cv::Mat(), hist, 1, &histSize, &histRange, uniform, accumulate);
+  int hist_w = 512, hist_h = 400;
+  int bin_w = cvRound( (double) hist_w/histSize );
+  cv::Mat histImage( hist_h, hist_w, CV_8UC1, cv::Scalar(0) );
+  normalize(hist, hist, 0, histImage.rows, cv::NORM_MINMAX, -1, cv::Mat());
+  for( int i = 1; i < histSize; i++ )
+    {
+      line( histImage, cv::Point( bin_w*(i-1), hist_h - cvRound(hist.at<float>(i-1)) ),
+	    cv::Point( bin_w*(i), hist_h - cvRound(hist.at<float>(i)) ),
+	    cv::Scalar(255), 2, 8, 0  );
+    }
   cv::imshow("Distance", img);
+  cv::imshow("Histogram", histImage);
+  cv::imshow("RealHist", hist);
   cv::waitKey();
+  cout << D << endl;
+
   debug("Mean: ", mean, " Std: ", stdev);
 }
 

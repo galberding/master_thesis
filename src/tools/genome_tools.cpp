@@ -126,7 +126,7 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
   int idx = 0;
   for(int row=0; row < pSize; row++)
     for(int col=row; col<pSize; col++){
-      upperFlat[idx] = D(row, col) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum() / ((*pool[row].mat).rows() * (*pool[row].mat).cols());
+      upperFlat[idx] = D(row, col) = D(col, row) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum() / ((*pool[row].mat).rows() * (*pool[row].mat).cols());
       idx++;
     }
 }
@@ -138,7 +138,7 @@ void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev){
   Eigen::VectorXf upperFlat(pSize*(pSize +1)/2);
   calDistanceMat(pool, D, upperFlat);
   mean = upperFlat.mean();
-  
+
   stdev = sqrt((upperFlat.array() - mean).square().sum()/(upperFlat.size()-1));
 
   // std = D.triangularView<Eigen::Upper>().std();
