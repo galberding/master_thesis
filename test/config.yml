@@ -32,6 +32,7 @@ mapResolution: 0.3
 initActions: 60
 initIndividuals: 200
 
+
 # Selection
 keep: 1
 select: 10
