@@ -120,6 +120,7 @@ namespace conf {
     // crossover
     // Length of the segment that will be transferred to the other gen
     float crossLength = 0.4;
+    float overallDMax = 0;
     float crossoverProba = 0.8;
     int crossAdapter = 0;
     float crossBestFit = 0;
@@ -138,6 +139,8 @@ namespace conf {
     bool adaptParameter = false;
     float crossUpper = 0.8;
     float crossLower = 0.5;
+    float cLenUpper = 0.5;
+    float cLenLower = 0.1;
     float mutUpper = 0.1;
     float lastDmax = 0;
 
@@ -157,6 +160,7 @@ namespace conf {
     int getMinGenLen(){return MIN_CROSS_LEN / crossLength;}
     void adaptCrossover();
     void adaptMutation();
+    void adaptCLen();
     // void adaptGenReplMutation();
   };
 

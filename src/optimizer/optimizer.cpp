@@ -505,10 +505,11 @@ void trackPoolFitness(Genpool& pool, executionConfig& eConf){
   }
 
   finalizeFitnessLogging(pool.size(), eConf);
-  if(eConf.currentIter == eConf.maxIterations / 2)
+  if(eConf.crossAdapter == 0)
     eConf.lastDmax = 0;
   eConf.adaptCrossover();
   eConf.adaptMutation();
+  eConf.adaptCLen();
 
 }
 
@@ -605,7 +606,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
-  
+
   return gen.fitness;
 }
 
@@ -664,7 +665,8 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 		      // eConf.zeroActionPercent,
 		      // eConf.deadGensCount,
 		      eConf.crossoverProba,
-		      eConf.mutaRandScaleDistProba,
+		      eConf.mutaReplaceGen,
+		      eConf.crossLength,
 		      " | ",
 		      eConf.diversityMean,
 		      eConf.diversityStd));
@@ -807,11 +809,11 @@ void op::Optimizer::optimizePath(bool display){
 
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
 	  bool mutated = mutate->randomReplaceGen(*it, eConf);
-	  if(not mutated){
-	    mutated |= mutate->addRandomAngleOffset(*it, eConf);
-	    mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
-	    mutated |= mutate->randomScaleDistance(*it, eConf);
-	  }
+	  // if(not mutated){
+	  //   mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	  //   mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	  //   mutated |= mutate->randomScaleDistance(*it, eConf);
+	  // }
 	  if(mutated){
 	    calFitness->estimateGen(*it, *rob, eConf);
 	    it->trail = 1 * (*eConf.gmap)["map"];

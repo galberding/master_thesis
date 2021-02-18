@@ -73,6 +73,10 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     crossLower = yConf["crossLower"].as<float>();
   if(yConf["mutUpper"])
     mutUpper = yConf["mutUpper"].as<float>();
+  if(yConf["cLenUpper"])
+    cLenUpper = yConf["cLenUpper"].as<float>();
+  if(yConf["cLenLower"])
+    cLenLower = yConf["cLenLower"].as<float>();
 
 
   // Snapshots
@@ -173,8 +177,24 @@ void conf::executionConfig::adaptMutation(){
   float mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;
   float muta = (mutaFit + mutaDiv) / 2;
 
-  mutaRandAngleProba = muta;
-  mutaRandScaleDistProba = muta;
-  mutaReplaceGen = muta * 0.1;
+  // mutaRandAngleProba = muta;
+  // mutaRandScaleDistProba = muta;
+  mutaReplaceGen = muta;
 }
+
+
+void conf::executionConfig::adaptCLen(){
+  // increase cLen over Time/diversity reduces
+  if(not adaptParameter or currentIter == 0) return;
+
+  float dMax = diversityMean + diversityStd;
+  if (dMax > overallDMax)
+    overallDMax = dMax;
+  else
+    dMax = overallDMax;
+
+  crossLength =  diversityMean / dMax * (cLenUpper - cLenLower) + cLenLower;
+
+}
+
 // void conf::executionConfig::adaptGenReplMutation(){}
