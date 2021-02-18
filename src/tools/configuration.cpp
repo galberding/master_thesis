@@ -168,10 +168,16 @@ void conf::executionConfig::adaptMutation(){
   if(not adaptParameter or currentIter == 0) return;
 
   float dMax = diversityMean + diversityStd;
-  if (dMax > lastDmax)
-    lastDmax = dMax;
+  // if (dMax > lastDmax)
+  //   lastDmax = dMax;
+  // else
+  //   dMax = lastDmax;
+
+  if (dMax > overallDMax)
+    overallDMax = dMax;
   else
-    dMax = lastDmax;
+    dMax = overallDMax;
+
 
   float mutaFit = (fitnessMax - fitnessAvg) / (fitnessMax - fitnessMin) * mutUpper;
   float mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;

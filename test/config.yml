@@ -18,9 +18,6 @@ tSnap: pop.pas
 
 # Clear Zero action every X iteration
 clearZeros: 0
-penalizeZeroActions: true
-penalizeRotation: false
-funSelect: 3
 
 # Map
 mapType: 1
@@ -29,22 +26,27 @@ mapHeight: 10
 mapResolution: 0.3
 
 # Initialization
-initActions: 60
-initIndividuals: 200
+initActions: 30
+initIndividuals: 60
+
+# Fitness
+penalizeZeroActions: true
+penalizeRotation: true
+funSelect: 3
 
 
 # Selection
-keep: 1
-select: 10
+keep: 150
+select: 50
 tournamentSize: 5
 
 # Adaptive parameter:
 adaptParameter: true
 crossUpper: 1
-crossLower: 0.8
-cLenUpper: 0.7
-cLenLower: 0.15
-mutUpper: 0.001
+crossLower: 0.7
+cLenUpper: 0.4
+cLenLower: 0.2
+mutUpper: 0.7
 
 # Crossover
 crossoverProba: 0.95

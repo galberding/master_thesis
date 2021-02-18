@@ -571,8 +571,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
 
   // Time parameter:
   float actualTime = gen.traveledDist;
-  if(eConf.penalizeRotation)
-    actualTime += gen.rotationCost;
+
   // debug(log(10 + gen.cross));
   float optimalTime = gen.traveledDist - gen.cross;
   float finalTime = optimalTime / actualTime;
@@ -606,7 +605,11 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
-
+  if(eConf.penalizeRotation){
+    assert(gen.rotationCost > 0);
+    // debug("Costs: ", 1.0/gen.rotationCost * gen.actions.size());
+    gen.fitness *=  (gen.actions.size() - 2) * 90 / gen.rotationCost;
+  }
   return gen.fitness;
 }
 
@@ -657,7 +660,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
   if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,") : ",
+	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage, ", ",eConf.best.actions.size(), ") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,

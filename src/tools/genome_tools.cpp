@@ -30,10 +30,10 @@ bool genome_tools::genome::updateGenParameter(){
       assert((*it)->wps.size() >= 2);
       // debug((*it_next)->wps.size());
       // assert((*it_next)->wps.size() >= 2);
-      // rotationCost += angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
-      int cost = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
-      if(cost > 90)
-	rotationCost += 1;
+      rotationCost += angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
+      // int cost = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
+      // if(cost > 45)
+      // 	rotationCost += 1;
     }
   }
   // debug(rotationCost);
