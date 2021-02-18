@@ -605,7 +605,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
-  
+
   return gen.fitness;
 }
 

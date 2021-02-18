@@ -30,7 +30,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 30
-initIndividuals: 200
+initIndividuals: 100
 
 # Selection
 keep: 1
@@ -41,7 +41,7 @@ tournamentSize: 15
 adaptParameter: True
 crossUpper: 1
 crossLower: 0.5
-mutUpper: 0.4
+mutUpper: 0.04
 
 # Crossover
 crossoverProba: 0.7
