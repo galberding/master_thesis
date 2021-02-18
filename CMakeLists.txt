@@ -225,14 +225,14 @@ set(OPTI_ENV
 # include_directories(  )
 
 
-add_executable(opti
-  src/main.cpp
-  # src/environment/robot.cpp
-  # src/environment/robot.hpp
-  ${OPTI_ENV}
-  )
+# add_executable(opti
+#   src/main.cpp
+#   # src/environment/robot.cpp
+#   # src/environment/robot.hpp
+#   ${OPTI_ENV}
+#   )
 
-target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
+# target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
 
 
 #############

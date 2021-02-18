@@ -54,6 +54,7 @@ namespace genome_tools {
     float spd = 0;
     int traveledDist = 0;
     int cross = 0;
+    int rotationCost = 0;
     float coverage = 0;
     float finalCoverage = 0;
     float finalTime = 0;

@@ -40,44 +40,6 @@ void op::InitStrategy::replaceZeroGensWithRandom(Genpool& pool){
 //                            SelectionStrategy                             //
 /////////////////////////////////////////////////////////////////////////////
 
-// void op::SelectionStrategy::operator()(Genpool& currentPool, FamilyPool& selPool, executionConfig& eConf){
-//   Genpool keep;
-//   selPool.clear();
-//   // Ensure population is not empty
-//   assert(currentPool.size() > 0);
-//   assert(eConf.selectKeepBest < currentPool.size());
-//   // Keep the best individuals in the population for the next generation
-//   sort(currentPool.begin(), currentPool.end());
-//   eConf.best = currentPool.back();
-//   keep.insert(keep.begin(),
-// 	      prev(currentPool.end(), eConf.selectKeepBest),
-// 	      currentPool.end());
-
-//   // Start selection process
-//   // TODO: Remember select individuals is now the value of the selected pairs!
-//   while(selPool.size() < eConf.selectIndividuals / 2){
-//     // Draw individuals
-//     vector<genome> couple = {selection(currentPool, eConf),
-// 	      selection(currentPool, eConf)};
-//     // Check if fitness is high enough
-//     // 0 fitness indicates a defect gen
-//     if(couple[0].fitness == 0
-//        || couple[1].fitness == 0){
-//       warn("Selection: skip gen with fitness 0");
-//       continue;
-//     }
-
-//     // Insert into the selection Pool
-//     selPool.push_back(couple);
-//   }
-
-//   currentPool.clear();
-//   // Insert preserved gens to the pool
-//   currentPool.insert(currentPool.begin(),
-// 		     keep.begin(),
-// 		     keep.end());
-
-// }
 
 void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf){
   Genpool keep;
@@ -234,6 +196,9 @@ void op::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , execu
     // mating(family[0], family[1], family, eConf);
     // assert(family.size() >= 4);
   }
+  if(pool.size() > 0)
+    sort(pool.begin(), pool.end());
+
 }
 
 
@@ -540,6 +505,10 @@ void trackPoolFitness(Genpool& pool, executionConfig& eConf){
   }
 
   finalizeFitnessLogging(pool.size(), eConf);
+  if(eConf.currentIter == eConf.maxIterations / 2)
+    eConf.lastDmax = 0;
+  eConf.adaptCrossover();
+  eConf.adaptMutation();
 
 }
 
@@ -601,6 +570,8 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
 
   // Time parameter:
   float actualTime = gen.traveledDist;
+  if(eConf.penalizeRotation)
+    actualTime += gen.rotationCost;
   // debug(log(10 + gen.cross));
   float optimalTime = gen.traveledDist - gen.cross;
   float finalTime = optimalTime / actualTime;
@@ -620,13 +591,21 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   float x = finalTime;
   float y = finalCoverage;
   // gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
-  gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
+  if(eConf.funSelect == 0)
+    gen.fitness = (pow(x, 2)*pow(y, 2));
+  else if(eConf.funSelect == 1)
+    gen.fitness = (pow(x, 5)*pow(y, 4));
+  else if(eConf.funSelect == 2)
+    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
+  else if(eConf.funSelect == 3)
+    gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
   // gen.fitness = (pow(x, 5)*pow(y, 4));
   // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
+  
   return gen.fitness;
 }
 
@@ -640,7 +619,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,Dmean,Dstd\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,BestLen,Dmean,Dstd\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -660,6 +639,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.deadGensCount,
 				    eConf.best.finalTime,
 				    eConf.best.finalCoverage,
+				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd
 				    );
@@ -681,8 +661,13 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
 		      eConf.actionLenAvg,
-		      eConf.zeroActionPercent,
-		      eConf.deadGensCount, " | ", eConf.diversityMean, eConf.diversityStd));
+		      // eConf.zeroActionPercent,
+		      // eConf.deadGensCount,
+		      eConf.crossoverProba,
+		      eConf.mutaRandScaleDistProba,
+		      " | ",
+		      eConf.diversityMean,
+		      eConf.diversityStd));
       if(eConf.visualize){
 	// cv::Mat src;
 	rob->evaluateActions(eConf.best.actions);
@@ -799,52 +784,50 @@ void op::Optimizer::optimizePath(bool display){
   (*calFitness)(pool, *rob, eConf);
     while(eConf.currentIter <= eConf.maxIterations){
 
-    getBestGen(pool, eConf);
+      // Logging
+      getBestGen(pool, eConf);
+      trackPoolFitness(pool, eConf);
+      eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+      eConf.zeroActionPercent = calZeroActionPercent(pool);
+      clearZeroPAs(pool, eConf);
+      logAndSnapshotPool(eConf);
+      printRunInformation(eConf, display);
+      if(pool.size() - eConf.deadGensCount == 0){
+	logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+	assertm(false, "Population died!");
+      }
 
-    trackPoolFitness(pool, eConf);
+      // Selection
+      select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
-    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    eConf.zeroActionPercent = calZeroActionPercent(pool);
-    clearZeroPAs(pool, eConf);
-    logAndSnapshotPool(eConf);
-    printRunInformation(eConf, display);
-    if(pool.size() - eConf.deadGensCount == 0){
-      logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-      assertm(false, "Population died!");
+      // Crossover
+      (*cross)(fPool, pool, eConf);
+      // Mutate remaining individuals in pool
+      if (pool.size() > 2){
 
-    }
-
-    // Selection
-    select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
-
-    // Crossover
-    (*cross)(fPool, pool, eConf);
-    // Mutate remaining individuals in pool
-    if (pool.size() > 2){
-      for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 2); ++it) {
-	bool mutated = mutate->randomReplaceGen(*it, eConf);
-	if(not mutated){
-	  mutated |= mutate->addRandomAngleOffset(*it, eConf);
-	  mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
-	  mutated |= mutate->randomScaleDistance(*it, eConf);
-	}
-	if(mutated){
-	  calFitness->estimateGen(*it, *rob, eConf);
-	  it->trail = 1 * (*eConf.gmap)["map"];
+	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
+	  bool mutated = mutate->randomReplaceGen(*it, eConf);
+	  if(not mutated){
+	    mutated |= mutate->addRandomAngleOffset(*it, eConf);
+	    mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
+	    mutated |= mutate->randomScaleDistance(*it, eConf);
+	  }
+	  if(mutated){
+	    calFitness->estimateGen(*it, *rob, eConf);
+	    it->trail = 1 * (*eConf.gmap)["map"];
+	  }
 	}
       }
-    }
-    // Mutation
-    (*mutate)(fPool, eConf);
-    calFitness->estimateChildren(fPool, *rob, eConf);
-    select->elitistSelection(fPool, pool);
-    // Second mutation stage:
-    sort(pool.begin(), pool.end());
+      // Mutation
+      (*mutate)(fPool, eConf);
+      calFitness->estimateChildren(fPool, *rob, eConf);
+      select->elitistSelection(fPool, pool);
+      // Second mutation stage:
+      sort(pool.begin(), pool.end());
 
 
-
-    // Increase Iteration
-    eConf.currentIter++;
+      // Increase Iteration
+      eConf.currentIter++;
   }
   // Log Fitnessvalues for all iterations
   logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
@@ -859,6 +842,7 @@ void op::Optimizer::optimizePath(bool display){
 void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 
   TournamentSelection tSelect;
+  Genpool mPool;
 
   if(!eConf.restore){
     (*init)(pool, eConf);
@@ -871,22 +855,26 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 
   while(eConf.currentIter <= eConf.maxIterations){
 
-    // TODO: Calculate zeros and dead gens
-    // Logging and Snapshots
+
+    // Logging
     getBestGen(pool, eConf);
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    eConf.zeroActionPercent = calZeroActionPercent(pool);
+    clearZeroPAs(pool, eConf);
     trackPoolFitness(pool, eConf);
-    float deadGens = countDeadGens(pool, eConf.getMinGenLen());
     logAndSnapshotPool(eConf);
     printRunInformation(eConf, display);
+
 
     // Selection
     tSelect(pool, sPool, eConf);
 
     // Crossover
-    (*cross)(sPool, pool, eConf);
+    mPool.clear();
+    (*cross)(sPool, mPool, eConf);
 
     // Mutation
-    for (auto it = pool.begin(); it != pool.end(); ++it) {
+    for (auto it = mPool.begin(); it != mPool.end(); ++it) {
       bool mutated = mutate->randomReplaceGen(*it, eConf);
       if(not mutated){
 	mutated |= mutate->addRandomAngleOffset(*it, eConf);
@@ -896,8 +884,9 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
       calFitness->estimateGen(*it, *rob, eConf);
     }
 
+    pool.insert(pool.end(), mPool.begin(), mPool.end());
     // Keep best individual
-    pool.push_back(eConf.best);
+    // pool.push_back(eConf.best);
 
     // Increase Iteration
     eConf.currentIter++;
@@ -912,9 +901,11 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 ///////////////////////////////////////////////////////////////////////////////
 
 
+
 void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
 
   RouletteWheelSelection rSelect;
+  Genpool mPool;
 
   if(!eConf.restore){
     (*init)(pool, eConf);
@@ -926,32 +917,39 @@ void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
   (*calFitness)(pool, *rob, eConf);
 
   while(eConf.currentIter <= eConf.maxIterations){
+
+
+    // Logging
     getBestGen(pool, eConf);
-    trackPoolFitness(pool, eConf);
-    //TODO: Calculate zero and dead gens
-    float zeroPercent = calZeroActionPercent(pool);
-
-
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    eConf.zeroActionPercent = calZeroActionPercent(pool);
     clearZeroPAs(pool, eConf);
+    trackPoolFitness(pool, eConf);
     logAndSnapshotPool(eConf);
     printRunInformation(eConf, display);
+
+
     // Selection
     rSelect(pool, sPool, eConf);
-    // Crossover
-    (*cross)(sPool, pool, eConf);
 
-    for (auto it = pool.begin(); it != pool.end(); ++it) {
+    // Crossover
+    mPool.clear();
+    (*cross)(sPool, mPool, eConf);
+
+    // Mutation
+    for (auto it = mPool.begin(); it != mPool.end(); ++it) {
       bool mutated = mutate->randomReplaceGen(*it, eConf);
       if(not mutated){
 	mutated |= mutate->addRandomAngleOffset(*it, eConf);
 	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
-      // if(mutated){
       calFitness->estimateGen(*it, *rob, eConf);
-      // }
     }
-    pool.push_back(eConf.best);
+
+    pool.insert(pool.end(), mPool.begin(), mPool.end());
+    // Keep best individual
+    // pool.push_back(eConf.best);
 
     // Increase Iteration
     eConf.currentIter++;

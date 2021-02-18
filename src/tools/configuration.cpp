@@ -14,6 +14,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     visualize = yConf["visualize"].as<bool>();
   if(yConf["printInfo"])
     printInfo = yConf["printInfo"].as<bool>();
+  if(yConf["adaptParameter"])
+    adaptParameter = yConf["adaptParameter"].as<bool>();
   if(yConf["scenario"])
     scenario = yConf["scenario"].as<float>();
   if(yConf["logName"])
@@ -24,6 +26,10 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     clearZeros = yConf["clearZeros"].as<float>();
   if(yConf["penalizeZeroActions"])
     penalizeZeroActions = yConf["penalizeZeroActions"].as<bool>();
+  if(yConf["penalizeRotation"])
+    penalizeRotation = yConf["penalizeRotation"].as<bool>();
+  if(yConf["funSelect"])
+    funSelect = yConf["funSelect"].as<float>();
   if(yConf["weights"]["time"])
     fitnessWeights[0] = yConf["weights"]["time"].as<float>();
   if(yConf["weights"]["occ"])
@@ -60,6 +66,15 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mutaPosDistMax = yConf["mutaPosDistMax"].as<float>();
   if(yConf["mutaReplaceGen"])
     mutaReplaceGen = yConf["mutaReplaceGen"].as<float>();
+  // Adaptive parameter:
+  if(yConf["crossUpper"])
+    crossUpper = yConf["crossUpper"].as<float>();
+  if(yConf["crossLower"])
+    crossLower = yConf["crossLower"].as<float>();
+  if(yConf["mutUpper"])
+    mutUpper = yConf["mutUpper"].as<float>();
+
+
   // Snapshots
   if(yConf["restore"])
     restore = yConf["restore"].as<bool>();
@@ -130,3 +145,36 @@ shared_ptr<GridMap> conf::executionConfig::generateMapType(int width, int height
 
   return make_shared<GridMap>(map);
 }
+
+void conf::executionConfig::adaptCrossover(){
+  //set crossover Proba
+  if(not adaptParameter or currentIter == 0) return;
+
+  float dMax = diversityMean + diversityStd;
+  if (dMax > lastDmax)
+    lastDmax = dMax;
+  else
+    dMax = lastDmax;
+
+  crossoverProba = diversityMean / dMax * (crossUpper -crossLower) + crossLower;
+}
+
+
+void conf::executionConfig::adaptMutation(){
+  if(not adaptParameter or currentIter == 0) return;
+
+  float dMax = diversityMean + diversityStd;
+  if (dMax > lastDmax)
+    lastDmax = dMax;
+  else
+    dMax = lastDmax;
+
+  float mutaFit = (fitnessMax - fitnessAvg) / (fitnessMax - fitnessMin) * mutUpper;
+  float mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;
+  float muta = (mutaFit + mutaDiv) / 2;
+
+  mutaRandAngleProba = muta;
+  mutaRandScaleDistProba = muta;
+  mutaReplaceGen = muta * 0.1;
+}
+// void conf::executionConfig::adaptGenReplMutation(){}

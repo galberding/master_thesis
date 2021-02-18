@@ -80,13 +80,19 @@ TEST(Eigen, diversity){
 	    cv::Point( bin_w*(i), hist_h - cvRound(hist.at<float>(i)) ),
 	    cv::Scalar(255), 2, 8, 0  );
     }
-  cv::imshow("Distance", img);
-  cv::imshow("Histogram", histImage);
-  cv::imshow("RealHist", hist);
-  cv::waitKey();
+  // cv::imshow("Distance", img);
+  // cv::imshow("Histogram", histImage);
+  // cv::imshow("RealHist", hist);
+  // cv::waitKey();
   cout << D << endl;
 
   debug("Mean: ", mean, " Std: ", stdev);
+}
+
+
+TEST(SaveImages, MapScenarios){
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  mapgen::saveMap(to_string(eConf.mapType), eConf.gmap, "obstacle", 1);
 }
 
 int main(int argc, char **argv) {

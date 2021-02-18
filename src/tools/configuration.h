@@ -43,6 +43,8 @@ namespace conf {
     int scenario = 0;
     int clearZeros = 0;
     bool penalizeZeroActions = true;
+    bool penalizeRotation = false;
+    int funSelect = 3;
 
     // Snapshots
     bool restore = false;
@@ -132,6 +134,15 @@ namespace conf {
     float mutaPosDistMax = 50;
     float mutaReplaceGen = 0.001;
 
+    // Adaptive Parameter
+    bool adaptParameter = false;
+    float crossUpper = 0.8;
+    float crossLower = 0.5;
+    float mutUpper = 0.1;
+    float lastDmax = 0;
+
+    // float mutUpperReplGen = 0.001;
+
     string config_to_string(){
 
       string str;
@@ -144,6 +155,9 @@ namespace conf {
     bool loadConfFromYaml(const string path);
     shared_ptr<GridMap> generateMapType(int width, int height, float res, int type, Position& start);
     int getMinGenLen(){return MIN_CROSS_LEN / crossLength;}
+    void adaptCrossover();
+    void adaptMutation();
+    // void adaptGenReplMutation();
   };
 
 }

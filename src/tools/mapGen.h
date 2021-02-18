@@ -35,6 +35,7 @@ namespace mapgen {
    * @return     return OpenCV image
    */
   cv::Mat gmapToImg(const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh=5);
+  void saveMap(const string name, const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh);
 }
 
 #endif /* MAPGEN_H */

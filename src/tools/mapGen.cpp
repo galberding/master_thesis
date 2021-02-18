@@ -108,3 +108,8 @@ cv::Mat mapgen::gmapToImg(const shared_ptr<GridMap> gmap, const string layer, ui
   GridMapCvConverter::toImage<unsigned char, 1>(*gmap, layer, CV_8U, 0.0, upperThresh, rob_map);
   return rob_map;
 }
+
+void mapgen::saveMap(const string name, const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh){
+  cv::Mat img = gmapToImg(gmap, layer, upperThresh);
+  cv::imwrite(name+".png", img);
+}
