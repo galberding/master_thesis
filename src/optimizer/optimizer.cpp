@@ -282,6 +282,13 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   int sIdx[2];
   int sIdx1 = sIdx[0] = dist1(eConf.generator);
   int sIdx2= sIdx[1] = dist2(eConf.generator);
+
+  // // Choose the same start index
+  // if (par1.actions.size() >= par2.actions.size())
+  //   sIdx1 = sIdx[0] = sIdx[1];
+  // else
+  //   sIdx2 = sIdx[1] = sIdx[0];
+
   vector<genome> loc, glob;
 
   // Calculate children for first parent
@@ -465,12 +472,18 @@ void resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.fitnessMax = 0;
   eConf.fitnessMin = 1;
   eConf.fitnessAvgTime = 0;
-  eConf.fitnessAvgOcc = 0;
+  eConf.fitnessMaxTime = 0;
+  eConf.fitnessMinTime = 1;
+
   eConf.fitnessAvgCoverage = 0;
+  eConf.fitnessMaxCoverage = 0;
+  eConf.fitnessMinCoverage = 1;
   eConf.actionLenMax = 0;
   eConf.actionLenMin = 100000;
   eConf.actionLenAvg = 0;
 }
+
+
 
 
 void trackFitnessParameter(genome& gen, executionConfig& eConf){
@@ -481,6 +494,16 @@ void trackFitnessParameter(genome& gen, executionConfig& eConf){
   auto size = gen.actions.size();
   if(size > eConf.actionLenMax) eConf.actionLenMax = size;
   if(size < eConf.actionLenMin) eConf.actionLenMin = size;
+  if(gen.finalTime > eConf.fitnessMaxTime)
+    eConf.fitnessMaxTime = gen.finalTime;
+  if(gen.finalTime < eConf.fitnessMaxTime)
+    eConf.fitnessMaxTime = gen.finalTime;
+  if(gen.finalCoverage > eConf.fitnessMaxCoverage)
+    eConf.fitnessMaxCoverage = gen.finalCoverage;
+  if(gen.finalCoverage < eConf.fitnessMinCoverage)
+    eConf.fitnessMinCoverage = gen.finalCoverage;
+
+
   eConf.fitnessAvg += fitness;
   eConf.actionLenAvg += gen.actions.size();
   eConf.fitnessAvgTime += gen.finalTime;
@@ -492,7 +515,7 @@ void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   assert(poolsize > 0);
   eConf.fitnessAvg /= poolsize;
   eConf.fitnessAvgTime /= poolsize;
-  eConf.fitnessAvgOcc /= poolsize;
+
   eConf.fitnessAvgCoverage /= poolsize;
   eConf.actionLenAvg /= poolsize;
 }
@@ -623,7 +646,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,AvgTime,AvgCoverage,ActionLenAvg,ActionLenMax,ActionLenMin,ZeroActionPercent,DeadGens,BestTime,BestCov,BestLen,Dmean,Dstd\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestLen,DivMean,DivStd\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -634,8 +657,12 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.fitnessMax,
 				    eConf.fitnessMin,
 				    eConf.fitnessAvgTime,
+				    eConf.fitnessMaxTime,
+				    eConf.fitnessMinTime,
 				    // eConf.fitnessAvgOcc,
 				    eConf.fitnessAvgCoverage,
+				    eConf.fitnessMaxCoverage,
+				    eConf.fitnessMinCoverage,
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
 				    eConf.actionLenMin,

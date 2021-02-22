@@ -21,13 +21,13 @@ clearZeros: 0
 
 # Map
 mapType: 1
-mapWidth: 10
-mapHeight: 10
+mapWidth: 11
+mapHeight: 11
 mapResolution: 0.3
 
 # Initialization
-initActions: 30
-initIndividuals: 60
+initActions: 50
+initIndividuals: 80
 
 # Fitness
 penalizeZeroActions: true
@@ -36,21 +36,21 @@ funSelect: 3
 
 
 # Selection
-keep: 150
-select: 50
+keep: 1
+select: 100
 tournamentSize: 5
 
 # Adaptive parameter:
-adaptParameter: true
-crossUpper: 1
-crossLower: 0.7
-cLenUpper: 0.4
+adaptParameter: True
+crossUpper: 0.9
+crossLower: 0.5
+cLenUpper: 0.1
 cLenLower: 0.2
-mutUpper: 0.7
+mutUpper: 0.01
 
 # Crossover
-crossoverProba: 0.95
-crossLength: 0.3
+crossoverProba: 1
+crossLength: 0.1
 # 0 - local
 # 1 - global
 # 2 - both
@@ -62,4 +62,4 @@ mutaRandAngleProba: 0.00
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.00
-mutaReplaceGen: 0.005
+mutaReplaceGen: 0.001

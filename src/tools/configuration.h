@@ -73,8 +73,11 @@ namespace conf {
     float fitnessMin = 0;
     float fitnessAvg = 0;
     float fitnessAvgTime = 0;
-    float fitnessAvgOcc = 0;
+    float fitnessMaxTime = 0;
+    float fitnessMinTime = 0;
     float fitnessAvgCoverage = 0;
+    float fitnessMaxCoverage = 0;
+    float fitnessMinCoverage = 0;
 
     shared_ptr<std::ostringstream> fitnessStr;
     shared_ptr<std::ostringstream> logStr;
