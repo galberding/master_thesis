@@ -10,8 +10,13 @@ int genome_tools::genome::gen_id = 0;
 // }
 
 int angleDiff(int a, int b){
-  int diff = a - b;
-  return abs((diff + 180) % 360 - 180);
+  int diff = (a % 360) - (b % 360);
+
+  // debug("A: ", a, " B: ", b, " d:", diff);
+  diff += (diff > 180) ? -360 : (diff < -180) ? 360 : 0;
+
+  // return abs((diff + 180) % 360 - 180);
+  return abs(diff);
 }
 
 bool genome_tools::genome::updateGenParameter(){
@@ -30,10 +35,10 @@ bool genome_tools::genome::updateGenParameter(){
       assert((*it)->wps.size() >= 2);
       // debug((*it_next)->wps.size());
       // assert((*it_next)->wps.size() >= 2);
-      rotationCost += angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
-      // int cost = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
-      // if(cost > 45)
-      // 	rotationCost += 1;
+      float diff = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
+      // debug("Diff: ", diff);
+      rotationCost +=  diff / 180.0;
+      // debug(rotationCost);
     }
   }
   // debug(rotationCost);

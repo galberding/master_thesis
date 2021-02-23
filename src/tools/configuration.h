@@ -78,6 +78,9 @@ namespace conf {
     float fitnessAvgCoverage = 0;
     float fitnessMaxCoverage = 0;
     float fitnessMinCoverage = 0;
+    float fitnessAvgAngleCost = 0;
+    float fitnessMaxAngleCost = 0;
+    float fitnessMinAngleCost = 0;
 
     shared_ptr<std::ostringstream> fitnessStr;
     shared_ptr<std::ostringstream> logStr;

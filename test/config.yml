@@ -1,4 +1,4 @@
-logDir: ConvexRegion
+logDir: ConvexRegion2
 logName: run.log
 maxIterations: 10000
 
@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 1
+scenario: 0
 
 # Snapshots
 restore: false
@@ -17,7 +17,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 0
+clearZeros: 10
 
 # Map
 mapType: 1
@@ -27,7 +27,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 50
-initIndividuals: 20
+initIndividuals: 60
 
 # Fitness
 penalizeZeroActions: true
@@ -36,17 +36,17 @@ funSelect: 3
 
 
 # Selection
-keep: 1
-select: 50
+keep: 5
+select: 20
 tournamentSize: 5
 
 # Adaptive parameter:
 adaptParameter: True
 crossUpper: 1
-crossLower: 0.8
-cLenUpper: 0.1
-cLenLower: 0.1
-mutUpper: 0.5
+crossLower: 0.45
+cLenUpper: 0.4
+cLenLower: 0.05
+mutUpper: 0.1
 
 # Crossover
 crossoverProba: 1
@@ -58,8 +58,8 @@ crossChildSelector: 2
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.00
+mutaRandAngleProba: 0.001
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.00
-mutaReplaceGen: 0.001
+mutaRandScaleDistProba: 0.001
+mutaReplaceGen: 0.00

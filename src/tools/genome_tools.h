@@ -54,10 +54,11 @@ namespace genome_tools {
     float spd = 0;
     int traveledDist = 0;
     int cross = 0;
-    int rotationCost = 0;
+    float rotationCost = 0;
     float coverage = 0;
     float finalCoverage = 0;
     float finalTime = 0;
+    float finalAngleCost = 0;
     shared_ptr<Matrix> mat;
   };
 

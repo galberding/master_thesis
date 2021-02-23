@@ -480,6 +480,9 @@ void resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.fitnessAvgCoverage = 0;
   eConf.fitnessMaxCoverage = 0;
   eConf.fitnessMinCoverage = 1;
+  eConf.fitnessAvgAngleCost = 0;
+  eConf.fitnessMaxAngleCost = 0;
+  eConf.fitnessMinAngleCost = 1;
   eConf.actionLenMax = 0;
   eConf.actionLenMin = 100000;
   eConf.actionLenAvg = 0;
@@ -504,12 +507,17 @@ void trackFitnessParameter(genome& gen, executionConfig& eConf){
     eConf.fitnessMaxCoverage = gen.finalCoverage;
   if(gen.finalCoverage < eConf.fitnessMinCoverage)
     eConf.fitnessMinCoverage = gen.finalCoverage;
+  if(gen.finalAngleCost > eConf.fitnessMaxAngleCost)
+    eConf.fitnessMaxAngleCost = gen.finalAngleCost;
+  if(gen.finalAngleCost < eConf.fitnessMinAngleCost)
+    eConf.fitnessMinAngleCost = gen.finalAngleCost;
 
 
   eConf.fitnessAvg += fitness;
   eConf.actionLenAvg += gen.actions.size();
   eConf.fitnessAvgTime += gen.finalTime;
   eConf.fitnessAvgCoverage += gen.finalCoverage;
+  eConf.fitnessAvgAngleCost += gen.finalAngleCost;
 }
 
 
@@ -519,6 +527,7 @@ void finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.fitnessAvgTime /= poolsize;
 
   eConf.fitnessAvgCoverage /= poolsize;
+  eConf.fitnessAvgAngleCost /= poolsize;
   eConf.actionLenAvg /= poolsize;
 }
 
@@ -624,20 +633,28 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
     gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   else if(eConf.funSelect == 3)
     gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
+  else if(eConf.funSelect == 4)
+    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
   // gen.fitness = (pow(x, 5)*pow(y, 4));
   // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
-  if(eConf.penalizeRotation){
-    assert(gen.rotationCost > 0);
-    // debug("Costs: ", 1.0/gen.rotationCost * gen.actions.size());
-    gen.fitness *=  (gen.actions.size() - 2) * 90 / gen.rotationCost;
+
+  gen.finalAngleCost =  gen.rotationCost / (gen.actions.size() - 1);
+  // debug("Costs: ", gen.rotationCost);
+  if(eConf.penalizeRotation and gen.rotationCost > 0){
+    // assert(gen.rotationCost > 0);
+    gen.fitness *=  (1 - gen.finalAngleCost);
   }
   return gen.fitness;
 }
 
+
+void resizePool(Genpool &pool, executionConfig &eConf){
+  if(eConf)
+}
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -648,7 +665,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestLen,DivMean,DivStd\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -665,6 +682,9 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.fitnessAvgCoverage,
 				    eConf.fitnessMaxCoverage,
 				    eConf.fitnessMinCoverage,
+				    eConf.fitnessAvgAngleCost,
+				    eConf.fitnessMaxAngleCost,
+				    eConf.fitnessMinAngleCost,
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
 				    eConf.actionLenMin,
@@ -672,6 +692,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.deadGensCount,
 				    eConf.best.finalTime,
 				    eConf.best.finalCoverage,
+				    eConf.best.finalAngleCost,
 				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd
@@ -689,7 +710,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
   if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage, ", ",eConf.best.actions.size(), ") : ",
+	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,",  ", eConf.best.finalAngleCost,", ",eConf.best.actions.size(), ") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
@@ -826,10 +847,10 @@ void op::Optimizer::optimizePath(bool display){
       clearZeroPAs(pool, eConf);
       logAndSnapshotPool(eConf);
       printRunInformation(eConf, display);
-      if(pool.size() - eConf.deadGensCount == 0){
-	logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-	assertm(false, "Population died!");
-      }
+      // if(pool.size() - eConf.deadGensCount == 0){
+      // 	logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
+      // 	assertm(false, "Population died!");
+      // }
 
       // Selection
       select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
