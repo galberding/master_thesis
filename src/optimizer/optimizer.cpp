@@ -56,17 +56,19 @@ void op::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selP
 
   // Start selection process
   // TODO: Remember select individuals is now the value of the selected pairs!
+  // int timeout = 0;
   while(selPool.size() < eConf.selectIndividuals){
     // Draw individuals
     auto couple = make_pair(selection(currentPool, eConf),
 	      selection(currentPool, eConf));
     // Check if fitness is high enough
     // 0 fitness indicates a defect gen
-    if(couple.first.fitness == 0
-       || couple.second.fitness == 0){
-      warn("Selection: skip gen with fitness 0");
-      continue;
-    }
+    // if((couple.first.fitness == 0
+    //    || couple.second.fitness == 0) and timeout < SEL_TIMEOUT){
+    //   warn("Selection: skip gen with fitness 0");
+    //   timeout++;
+    //   // continue;
+    // }
     // Insert into the selection Pool
     selPool.push_back(couple);
   }

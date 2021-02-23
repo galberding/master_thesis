@@ -11,6 +11,7 @@
 #include <opencv2/core/eigen.hpp>
 // using namespace ga;
 #define MIN_CROSS_LEN 4
+#define SEL_TIMEOUT 5
 using namespace conf;
 
 

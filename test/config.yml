@@ -1,4 +1,4 @@
-logDir: nonConvexRegion
+logDir: ConvexRegion
 logName: run.log
 maxIterations: 10000
 
@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 0
+scenario: 1
 
 # Snapshots
 restore: false
@@ -27,7 +27,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 50
-initIndividuals: 80
+initIndividuals: 20
 
 # Fitness
 penalizeZeroActions: true
@@ -37,16 +37,16 @@ funSelect: 3
 
 # Selection
 keep: 1
-select: 100
+select: 50
 tournamentSize: 5
 
 # Adaptive parameter:
 adaptParameter: True
-crossUpper: 0.9
-crossLower: 0.5
+crossUpper: 1
+crossLower: 0.8
 cLenUpper: 0.1
-cLenLower: 0.2
-mutUpper: 0.01
+cLenLower: 0.1
+mutUpper: 0.5
 
 # Crossover
 crossoverProba: 1
