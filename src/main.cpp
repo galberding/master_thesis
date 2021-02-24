@@ -27,12 +27,8 @@ int main(int argc, char *argv[])
 		     eConf);
   if(eConf.scenario == 0)  // elitist selection
     opti.optimizePath(eConf.printInfo);
-  else if(eConf.scenario == 1) // tournament selection
-    opti.optimizePath_s_tourn_c_dp(eConf.printInfo);
-  else if(eConf.scenario == 2) // roulette selection
-    opti.optimizePath_s_roulette_c_dp(eConf.printInfo);
   else
-    warn("No valid scenario selected!");
+    opti.optimizePath_Turn_RWS(eConf.printInfo);
 
 
   return 0;

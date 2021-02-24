@@ -46,7 +46,11 @@ namespace op {
     // void tournamentSelection(Genpool &pool, FamilyPool &fPool, executionConfig &eConf);
   };
 
-  struct RouletteWheelSelection : SelectionStrategy{
+  struct RWS : SelectionStrategy{
+    virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) override;
+  };
+
+  struct RankedRWS : SelectionStrategy{
     virtual genome selection(Genpool &currentPopulation, executionConfig& eConf) override;
   };
 
@@ -152,8 +156,7 @@ namespace op {
     void printRunInformation(executionConfig& eConf, bool display);
 
     void optimizePath(bool display = false);
-    void optimizePath_s_tourn_c_dp(bool display = false);
-    void optimizePath_s_roulette_c_dp(bool display);
+    void optimizePath_Turn_RWS(bool display = false);
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);

@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 0
+scenario: 4
 
 # Snapshots
 restore: false
@@ -17,7 +17,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 10
+clearZeros: 0
 
 # Map
 mapType: 1
@@ -31,25 +31,26 @@ initIndividuals: 60
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: true
-funSelect: 3
+penalizeRotation: false
+funSelect: 5
 
 
 # Selection
 keep: 5
-select: 20
+select: 30
 tournamentSize: 5
+selPressure: 2
 
 # Adaptive parameter:
-adaptParameter: True
+adaptParameter: true
 crossUpper: 1
-crossLower: 0.45
-cLenUpper: 0.4
-cLenLower: 0.05
+crossLower: 0.5
+cLenUpper: 0.1
+cLenLower: 0.2
 mutUpper: 0.1
 
 # Crossover
-crossoverProba: 1
+crossoverProba: 0.8
 crossLength: 0.1
 # 0 - local
 # 1 - global
@@ -58,8 +59,8 @@ crossChildSelector: 2
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.001
+mutaRandAngleProba: 0.00
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.001
-mutaReplaceGen: 0.00
+mutaRandScaleDistProba: 0.00
+mutaReplaceGen: 0.001

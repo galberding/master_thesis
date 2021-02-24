@@ -97,6 +97,7 @@ void op::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, Fa
   pool.clear();
 }
 
+// TODO: Move to own selection procedure class
 genome op::SelectionStrategy::tournamentSelection(Genpool &pool, executionConfig &eConf){
 
   assert(pool.size() > eConf.tournamentSize);
@@ -127,11 +128,10 @@ genome op::SelectionStrategy::selection(Genpool &currentPopulation,
 					executionConfig &eConf) {return genome();}
 
 
-genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executionConfig &eConf){
+genome op::RWS::selection(Genpool &currentPopulation, executionConfig &eConf){
   // Calculate the total fitness value
 
   float totalFitness = eConf.fitnessAvg * currentPopulation.size();
-  //TODO: Test if the above formula holds true
   float testSum = 0;
   for (auto it = currentPopulation.begin(); it != currentPopulation.end(); ++it) {
     testSum += it->fitness;
@@ -154,6 +154,29 @@ genome op::RouletteWheelSelection::selection(Genpool &currentPopulation, executi
     }
   }
   return gen;
+}
+
+genome op::RankedRWS::selection(Genpool &currentPopulation, executionConfig &eConf){
+  // debug("Ranked!");
+  float SP = eConf.selPressure;
+  assert(SP >= 1);
+  assert(SP <= 2);
+  // genome gen;
+  float totalSum = 0;
+  int idx = 0;
+  std::uniform_real_distribution<float> rouletteWheel(2-SP, currentPopulation.size());
+  float wheelValue = rouletteWheel(eConf.generator);
+  for(int i=0; i<currentPopulation.size(); i++){
+    float rank = 2.0-SP+2.0*(SP-1.0)*((i-1.0) / (currentPopulation.size()-1.0));
+    // debug("Rank: ", rank);
+    totalSum += rank;
+    // debug(totalSum, "--", wheelValue);
+    if(wheelValue <= totalSum){
+      idx = i;
+      break;
+    }
+  }
+  return currentPopulation.at(idx);
 }
 
 genome op::TournamentSelection::selection(Genpool &currentPopulation, executionConfig &eConf) {
@@ -625,6 +648,7 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   float x = finalTime;
   float y = finalCoverage;
   // gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
+  gen.finalAngleCost =  gen.rotationCost / (gen.actions.size() - 1);
   if(eConf.funSelect == 0)
     gen.fitness = (pow(x, 2)*pow(y, 2));
   else if(eConf.funSelect == 1)
@@ -635,6 +659,8 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
     gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
   else if(eConf.funSelect == 4)
     gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
+  else if(eConf.funSelect == 5)
+    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalAngleCost))*(pow(x, 4)*pow(y, 4));
   // gen.fitness = (pow(x, 5)*pow(y, 4));
   // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
@@ -642,19 +668,18 @@ float op::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConf
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
 
-  gen.finalAngleCost =  gen.rotationCost / (gen.actions.size() - 1);
   // debug("Costs: ", gen.rotationCost);
   if(eConf.penalizeRotation and gen.rotationCost > 0){
     // assert(gen.rotationCost > 0);
-    gen.fitness *=  (1 - gen.finalAngleCost);
+    gen.fitness = 0.8*gen.fitness + 0.2*(1 - gen.finalAngleCost);
   }
   return gen.fitness;
 }
 
 
-void resizePool(Genpool &pool, executionConfig &eConf){
-  if(eConf)
-}
+// void resizePool(Genpool &pool, executionConfig &eConf){
+//   if(eConf)
+// }
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -894,9 +919,20 @@ void op::Optimizer::optimizePath(bool display){
 ///////////////////////////////////////////////////////////////////////////////
 
 
-void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
+void op::Optimizer::optimizePath_Turn_RWS(bool display){
 
-  TournamentSelection tSelect;
+  SelectionStrategy *selection;
+  TournamentSelection Tselection;
+  RWS Rselection;
+  RankedRWS RRselection;
+
+  if(eConf.scenario == 1)
+    selection = &Tselection;
+  else if(eConf.scenario == 2)
+    selection = &Rselection;
+  else
+    selection = &RRselection;
+
   Genpool mPool;
 
   if(!eConf.restore){
@@ -922,70 +958,7 @@ void op::Optimizer::optimizePath_s_tourn_c_dp(bool display){
 
 
     // Selection
-    tSelect(pool, sPool, eConf);
-
-    // Crossover
-    mPool.clear();
-    (*cross)(sPool, mPool, eConf);
-
-    // Mutation
-    for (auto it = mPool.begin(); it != mPool.end(); ++it) {
-      bool mutated = mutate->randomReplaceGen(*it, eConf);
-      if(not mutated){
-	mutated |= mutate->addRandomAngleOffset(*it, eConf);
-	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
-	mutated |= mutate->randomScaleDistance(*it, eConf);
-      }
-      calFitness->estimateGen(*it, *rob, eConf);
-    }
-
-    pool.insert(pool.end(), mPool.begin(), mPool.end());
-    // Keep best individual
-    // pool.push_back(eConf.best);
-
-    // Increase Iteration
-    eConf.currentIter++;
-  }
-  // Log Fitnessvalues for all iterations
-  logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//                      Roulettewheel Selection Scenario                     //
-///////////////////////////////////////////////////////////////////////////////
-
-
-
-void op::Optimizer::optimizePath_s_roulette_c_dp(bool display){
-
-  RouletteWheelSelection rSelect;
-  Genpool mPool;
-
-  if(!eConf.restore){
-    (*init)(pool, eConf);
-  } else {
-    pool.clear();
-    restorePopulationFromSnapshot(eConf.snapshot);
-  }
-  // Main loop
-  (*calFitness)(pool, *rob, eConf);
-
-  while(eConf.currentIter <= eConf.maxIterations){
-
-
-    // Logging
-    getBestGen(pool, eConf);
-    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    eConf.zeroActionPercent = calZeroActionPercent(pool);
-    clearZeroPAs(pool, eConf);
-    trackPoolFitness(pool, eConf);
-    logAndSnapshotPool(eConf);
-    printRunInformation(eConf, display);
-
-
-    // Selection
-    rSelect(pool, sPool, eConf);
+    (*selection)(pool, sPool, eConf);
 
     // Crossover
     mPool.clear();

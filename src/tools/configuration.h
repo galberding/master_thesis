@@ -119,6 +119,7 @@ namespace conf {
     int selectIndividuals = 10;
     int selectKeepBest = 0;
     int tournamentSize = 2;
+    float selPressure = 1.5;
     genome best;
     // Switch between roulettWheelSelection or best N selection
     bool toggleRoulettSelectionOn = false;
