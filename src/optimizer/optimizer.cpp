@@ -289,8 +289,8 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
       or par2.actions.size() < minActionCount)
     return false;
   PAs parent1, parent2, child1, child2, child3, child4;
-  int maxlen1 = static_cast<int>((par1.actions.size() - 2) * eConf.crossLength);
-  int maxlen2 = static_cast<int>((par2.actions.size() - 2) * eConf.crossLength);
+  int maxlen1 = static_cast<int>((par1.actions.size()) * eConf.crossLength);
+  int maxlen2 = static_cast<int>((par2.actions.size()) * eConf.crossLength);
   // debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
   assertm(maxlen1 > 2, "Cross length is too small!");
   assertm(maxlen2 > 2, "Cross length is too small!");
@@ -303,21 +303,29 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   // Ensure that the generated index in still in range
 
 
-  uniform_int_distribution<int> dist1(1,par1.actions.size() - (len1+1));
-  uniform_int_distribution<int> dist2(1,par2.actions.size() - (len2+1));
+  uniform_int_distribution<int> dist1(1,par1.actions.size() - (len1+2));
+  uniform_int_distribution<int> dist2(1,par2.actions.size() - (len2+2));
   // calculate the start Index
   int sIdx[2];
   int sIdx1 = sIdx[0] = dist1(eConf.generator);
   int sIdx2= sIdx[1] = dist2(eConf.generator);
 
+  debug("Idx: ", sIdx1, "-", sIdx2);
   // // Choose the same start index
 
   if (par1.actions.size() >= par2.actions.size()){
-    sIdx1 = sIdx[0] = sIdx[1];
+    sIdx1 = sIdx[1];
+    sIdx[0]= sIdx[1];
 
   }
-  else
-    sIdx2 = sIdx[1] = sIdx[0];
+  else{
+    sIdx2 = sIdx[0];
+    sIdx[1] = sIdx[0];
+  }
+
+
+  assert(sIdx[0] + len1 < par1.actions.size() -1);
+  assert(sIdx[1] + len2 < par2.actions.size() -1);
 
   vector<genome> loc, glob;
 
