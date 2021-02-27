@@ -301,8 +301,10 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   int len1 = len[0] = lendist1(eConf.generator);
   int len2 = len[1] = lendist2(eConf.generator);
   // Ensure that the generated index in still in range
-  uniform_int_distribution<int> dist1(2,par1.actions.size() - (len1+1));
-  uniform_int_distribution<int> dist2(2,par2.actions.size() - (len2+1));
+
+
+  uniform_int_distribution<int> dist1(1,par1.actions.size() - (len1+1));
+  uniform_int_distribution<int> dist2(1,par2.actions.size() - (len2+1));
   // calculate the start Index
   int sIdx[2];
   int sIdx1 = sIdx[0] = dist1(eConf.generator);

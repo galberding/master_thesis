@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 4
+scenario: 0
 
 # Snapshots
 restore: false
@@ -17,7 +17,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 0
+clearZeros: 100
 
 # Map
 mapType: 1

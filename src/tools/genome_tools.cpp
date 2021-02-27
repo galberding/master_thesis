@@ -68,7 +68,7 @@ void genome_tools::validateGen(genome &gen){
    // What about newly created actions? -> generate waypoints by adding!
    assertm((*it)->wps.size() >= 1, "Not enough gens to validate!");
    // Ensures that we can always access the previous action without segfault
-   assertm(!((*it)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
+   // assertm(!((*it)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
    assertm(!((*it)->modified && ((*it)->type == PAT::End)), "Not allowed!, End points cannot be modified!");
 
 
@@ -80,7 +80,7 @@ void genome_tools::validateGen(genome &gen){
     auto it_next = next(it, 1);
     // debug("Type: ", int((*it_next)->type));
     while(!(*it_next)->mendConfig(*it_current)){
-      assertm(!((*it_current)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
+      // assertm(!((*it_current)->modified && ((*it)->type == PAT::Start)), "Not allowed!, Start points cannot be modified!");
       assertm(!((*it_next)->modified && ((*it)->type == PAT::End)), "Not allowed!, End points cannot be modified!");
       // warn("Validation: Remove Action ", (*it_next)->pa_id, " because no distance!");
       // Cannot mend means that the current changes are applied and we need to mend the consecutive action
