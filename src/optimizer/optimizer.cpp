@@ -311,10 +311,13 @@ bool op::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation
   int sIdx2= sIdx[1] = dist2(eConf.generator);
 
   // // Choose the same start index
-  // if (par1.actions.size() >= par2.actions.size())
-  //   sIdx1 = sIdx[0] = sIdx[1];
-  // else
-  //   sIdx2 = sIdx[1] = sIdx[0];
+
+  if (par1.actions.size() >= par2.actions.size()){
+    sIdx1 = sIdx[0] = sIdx[1];
+
+  }
+  else
+    sIdx2 = sIdx[1] = sIdx[0];
 
   vector<genome> loc, glob;
 

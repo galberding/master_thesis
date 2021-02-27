@@ -9,11 +9,11 @@ add_compile_options(-std=c++17)
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
 
 # Add -O0 to remove optimizations when using gcc
-# IF(CMAKE_COMPILER_IS_GNUCC)
-#     set(CMAKE_BUILD_TYPE Debug)
-#     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-#     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-# ENDIF(CMAKE_COMPILER_IS_GNUCC)
+IF(CMAKE_COMPILER_IS_GNUCC)
+    set(CMAKE_BUILD_TYPE Debug)
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
+ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -170,7 +170,7 @@ catkin_package(
 ###########
 
 find_package(Eigen3 REQUIRED)
-find_package( OpenCV 3.3.1 REQUIRED )
+find_package(OpenCV REQUIRED )
 find_package(yaml-cpp REQUIRED)
 # include_directories(HEADERS_EXECUTABLE
 #     ${YAML_INCLUDE_DIRS}
