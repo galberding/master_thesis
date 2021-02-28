@@ -97,8 +97,7 @@ genome cross::DualPointCrossover::getChild(PAs par1, PAs par2, int sIdx[2], int 
   return child_gen;
 }
 
-template <typename T>
-bool cross::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulation, executionConfig& eConf){
+bool cross::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf){
   // mate two parents
   // estimate the individual Length
   int minActionCount = eConf.getMinGenLen();

@@ -193,20 +193,18 @@ ${YAML_INCLUDE_DIRS}
 
 
 set(OPTI_ENV
-  src/environment/robot.cpp
-  src/environment/robot.hpp
-  src/environment/ocm.hpp
-  src/environment/ocm.cpp
-  # src/optimizer/optimizer.hpp
-  # src/optimizer/optimizer.cpp
-  # src/pool.hpp
-  # src/pool.cpp
+  src/tools/debug.h
+  src/tools/debug.cpp
   src/tools/path_tools.h
   src/tools/path_tools.cpp
-  # src/optimizer/ga_path_generator.h
-  # src/optimizer/ga_path_generator.cpp
-  # src/optimizer/grid_search.h
-  # src/optimizer/grid_search.cpp
+  src/tools/mapGen.h
+  src/tools/mapGen.cpp
+  src/tools/pa_serializer.h
+  src/tools/pa_serializer.cpp
+  src/tools/genome_tools.h
+  src/tools/genome_tools.cpp
+  src/tools/configuration.h
+  src/tools/configuration.cpp
   src/optimizer/optimizer.h
   src/optimizer/optimizer.cpp
   src/optimizer/ga/init.h
@@ -219,17 +217,6 @@ set(OPTI_ENV
   src/optimizer/ga/mutation.cpp
   src/optimizer/ga/fitness.h
   src/optimizer/ga/fitness.cpp
-  src/tools/debug.h
-  src/tools/debug.cpp
-  src/tools/mapGen.h
-  src/tools/mapGen.cpp
-  src/tools/pa_serializer.h
-  src/tools/pa_serializer.cpp
-  src/tools/genome_tools.h
-  src/tools/genome_tools.cpp
-  src/tools/configuration.h
-  src/tools/configuration.cpp
-
 )
 
 # include_directories(  )

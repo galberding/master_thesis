@@ -65,7 +65,7 @@ namespace genome_tools {
   using Genpool = std::deque<genome>;
   using GenPair = pair<genome, genome>;
   using SelectionPool = list<GenPair>;
-  using FamilyPool = deque<vector<genome>>;
+  using FamilyPool = deque<Genpool>;
 
   void validateGen(genome &gen);
   float calZeroActionPercent(genome &gen);
