@@ -27,8 +27,6 @@ namespace cross {
     bool mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf);
     genome getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move);
   };
-
-
 }
 
 #endif /* CROSSOVER_H */
