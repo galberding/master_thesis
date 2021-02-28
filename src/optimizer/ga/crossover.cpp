@@ -126,20 +126,6 @@ bool cross::DualPointCrossover::mating(genome &par1, genome &par2, T& newPopulat
   int sIdx1 = sIdx[0] = dist1(eConf.generator);
   int sIdx2= sIdx[1] = dist2(eConf.generator);
 
-  // debug("Idx: ", sIdx1, "-", sIdx2);
-  // // // Choose the same start index
-
-  // if (par1.actions.size() >= par2.actions.size()){
-  //   sIdx1 = sIdx[1];
-  //   sIdx[0]= sIdx[1];
-
-  // }
-  // else{
-  //   sIdx2 = sIdx[0];
-  //   sIdx[1] = sIdx[0];
-  // }
-
-
   assert(sIdx[0] + len1 < par1.actions.size());
   assert(sIdx[1] + len2 < par2.actions.size());
 
