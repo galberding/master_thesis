@@ -1,12 +1,14 @@
 #include <gtest/gtest.h>
 // #include "../src/optimizer/ga_path_generator.h"
+#include "../src/optimizer/optimizer.h"
 #include "../src/tools/debug.h"
+#include <opencv2/core/eigen.hpp>
 #include <opencv2/opencv.hpp>
 // #include "../src/optimizer/grid_search.h"
-#include "../src/optimizer/optimizer.h"
 #include "opencv2/imgproc.hpp"
 #include <yaml-cpp/yaml.h>
 
+using namespace op;
 
 using Eigen::MatrixXd;
 using namespace path;
@@ -31,7 +33,7 @@ TEST(Eigen, test){
   // cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   cv::Mat img, img2, hist;
    Matrix res = *gen.mat+*gen2.mat;
-  cv::eigen2cv(res, img);
+  // cv::eigen2cv(res, img);
 
 
   // cv::eigen2cv(, img2);
@@ -62,7 +64,7 @@ TEST(Eigen, diversity){
   calDistanceMat(pool, D, v);
   genome_tools::getDivMeanStd(pool, mean, stdev);
   cv::Mat img, hist;
-  cv::eigen2cv(D, img);
+  // cv::eigen2cv(D, img);
 
   // Calculate histogram
   int histSize = 10;

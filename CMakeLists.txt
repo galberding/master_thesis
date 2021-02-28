@@ -209,6 +209,16 @@ set(OPTI_ENV
   # src/optimizer/grid_search.cpp
   src/optimizer/optimizer.h
   src/optimizer/optimizer.cpp
+  src/optimizer/ga/init.h
+  src/optimizer/ga/init.cpp
+  src/optimizer/ga/selection.h
+  src/optimizer/ga/selection.cpp
+  src/optimizer/ga/crossover.h
+  src/optimizer/ga/crossover.cpp
+  src/optimizer/ga/mutation.h
+  src/optimizer/ga/mutation.cpp
+  src/optimizer/ga/fitness.h
+  src/optimizer/ga/fitness.cpp
   src/tools/debug.h
   src/tools/debug.cpp
   src/tools/mapGen.h
