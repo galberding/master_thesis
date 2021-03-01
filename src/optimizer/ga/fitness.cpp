@@ -90,26 +90,13 @@ void fit::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, ex
   assert(currentPool.size() > 0);
   for(Genpool::iterator it = currentPool.begin(); it != currentPool.end(); ++it){
     estimateGen(*it, rob, eConf);
-    (*it).trail = 1 * (*eConf.gmap)["map"];
   }
+  applyPoolBias(currentPool, eConf);
   finalizeFitnessLogging(currentPool.size(), eConf);
-  // debug("After Finalize");
 }
 
-void fit::FitnessStrategy::estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf){
-  assertm(gen.actions.size() > 0, "Not enough actions");
-  if(rob.evaluateActions(gen.actions)){
-    assertm(gen.actions.size() > 0, "Not enough actions");
-    calculation(gen, rob.getFreeArea(), eConf);
-    trackFitnessParameter(gen , eConf);
 
-  }else{
-    warn("Erase Gen!");
-    assertm(false, "Attempt to erase a gen!!");
-  }
-}
-
-void fit::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf) {
+void fit::FitnessStrategy::operator()(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf) {
   // Deactivate logging -> recalculate with
   // resetLoggingFitnessParameter(eConf);
   for (auto &family : fPool) {
@@ -121,11 +108,23 @@ void fit::FitnessStrategy::estimateChildren(FamilyPool& fPool, path::Robot &rob,
         calculation(family[i], rob.getFreeArea(), eConf);
         // trackFitnessParameter(family[i] , eConf);
       }
+      applyPoolBias(family, eConf, true);
     }
   }
-  // finalizeFitnessLogging(currentPool.size(), eConf);
 }
 
+
+void fit::FitnessStrategy::estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf){
+  assertm(gen.actions.size() > 0, "Not enough actions");
+  if(rob.evaluateActions(gen.actions)){
+    assertm(gen.actions.size() > 0, "Not enough actions");
+    calculation(gen, rob.getFreeArea(), eConf);
+    trackFitnessParameter(gen , eConf);
+  }else{
+    warn("Erase Gen!");
+    assertm(false, "Attempt to erase a gen!!");
+  }
+}
 
 float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionConfig &eConf){
   // prepare parameters
@@ -139,13 +138,15 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.setPathSignature(eConf.gmap);
 
   // Time parameter:
+  // TODO: Actual time factor
   float actualTime = gen.traveledDist;
 
   // debug(log(10 + gen.cross));
-  float optimalTime = gen.traveledDist - gen.cross;
+  float optimalTime = gen.traveledDist - (gen.cross);
+  // debug("Optimal Time: ", optimalTime);
   float finalTime = optimalTime / actualTime;
 
-  float currentCoverage = gen.traveledDist - gen.cross;
+  float currentCoverage = (gen.traveledDist) - gen.cross;
   float totalCoverage = freeSpace;
   float finalCoverage = currentCoverage / totalCoverage;
 
@@ -154,19 +155,17 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   float weight = eConf.fitnessWeights[2];
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
-  eConf.fitnessAvgTime += finalTime;
-  eConf.fitnessAvgCoverage += finalCoverage;
-  // eConf.fitnessAvgOcc += final_occ;
   float x = finalTime;
   float y = finalCoverage;
-  // gen.fitness = (weight*finalTime + (1-weight)*finalCoverage) * (finalTime*finalCoverage);
-  gen.finalAngleCost =  gen.rotationCost / (gen.actions.size() - 1);
+  gen.finalAngleCost =  gen.rotationCost;
+
+
   if(eConf.funSelect == 0)
     gen.fitness = (pow(x, 2)*pow(y, 2));
   else if(eConf.funSelect == 1)
     gen.fitness = (pow(x, 5)*pow(y, 4));
   else if(eConf.funSelect == 2)
-    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
+    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
   else if(eConf.funSelect == 3)
     gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
   else if(eConf.funSelect == 4)
@@ -181,9 +180,34 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
     gen.fitness *= 1 - calZeroActionPercent(gen);
 
   // debug("Costs: ", gen.rotationCost);
-  if(eConf.penalizeRotation and gen.rotationCost > 0){
-    // assert(gen.rotationCost > 0);
-    gen.fitness = 0.8*gen.fitness + 0.2*(1 - gen.finalAngleCost);
-  }
+  // if(eConf.penalizeRotation and gen.rotationCost > 0){
+  //   // assert(gen.rotationCost > 0);
+  //   gen.fitness = 0.8*gen.fitness + 0.2*(1 - gen.finalAngleCost);
+  // }
+  // Genpool pool;
+  // applyPoolBias(pool);
   return gen.fitness;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                           Fittness Rotation Bias                          //
+///////////////////////////////////////////////////////////////////////////////
+
+
+void fit::FitnessRotationBias::applyPoolBias(Genpool &pool, executionConfig &eConf, bool useGlobal){
+  float rotMin = 1;
+  if(useGlobal){
+    rotMin = eConf.fitnessMinAngleCost;
+  }else{
+    for (auto it = pool.begin(); it != pool.end(); ++it) {
+      if(it->rotationCost < rotMin)
+	rotMin = it->rotationCost;
+    }
+  }
+
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    float RotBias = rotMin / it->rotationCost;
+    it->fitness *= RotBias;
+  }
 }

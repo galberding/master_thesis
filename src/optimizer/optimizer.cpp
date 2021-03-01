@@ -164,6 +164,19 @@ void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
 }
 
 
+void op::Optimizer::saveBest(Genpool& pool, executionConfig& eConf, bool sortPool){
+  elite.clear();
+  if(sortPool)
+    sort(pool.begin(), pool.end());
+  elite.insert(elite.begin(), prev(pool.end(), eConf.selectKeepBest), pool.end());
+}
+
+void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
+  if(elite.size() == 0) return;
+  sort(pool.begin(), pool.end());
+  pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
+  pool.insert(pool.end(), elite.begin(), elite.end());
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -171,6 +184,7 @@ void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
 ///////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::optimizePath(bool display){
+  FitnessRotationBias fitness;
   if(!eConf.restore){
     (*init)(pool, eConf);
   } else {
@@ -179,8 +193,8 @@ void op::Optimizer::optimizePath(bool display){
   }
 
   // Main loop
-  (*calFitness)(pool, *rob, eConf);
-    while(eConf.currentIter <= eConf.maxIterations){
+  fitness(pool, *rob, eConf);
+  while(eConf.currentIter <= eConf.maxIterations){
 
       // Logging
       getBestGen(pool, eConf);
@@ -190,39 +204,33 @@ void op::Optimizer::optimizePath(bool display){
       clearZeroPAs(pool, eConf);
       logAndSnapshotPool(eConf);
       printRunInformation(eConf, display);
-      // if(pool.size() - eConf.deadGensCount == 0){
-      // 	logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName, true);
-      // 	assertm(false, "Population died!");
-      // }
 
       // Selection
+
+      saveBest(pool, eConf);
       select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
       // Crossover
       (*cross)(fPool, pool, eConf);
       // Mutate remaining individuals in pool
       if (pool.size() > 2){
-
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
-	  bool mutated = mutate->randomReplaceGen(*it, eConf);
-	  // if(not mutated){
-	  //   mutated |= mutate->addRandomAngleOffset(*it, eConf);
-	  //   mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
-	  //   mutated |= mutate->randomScaleDistance(*it, eConf);
-	  // }
-	  if(mutated){
-	    calFitness->estimateGen(*it, *rob, eConf);
+	  // Replace worst gen with random
+	  if(mutate->randomReplaceGen(*it, eConf)){
+	    fitness.estimateGen(*it, *rob, eConf);
 	    it->trail = 1 * (*eConf.gmap)["map"];
 	  }
 	}
       }
       // Mutation
       (*mutate)(fPool, eConf);
-      calFitness->estimateChildren(fPool, *rob, eConf);
+      fitness(fPool, *rob, eConf);
+
       select->elitistSelection(fPool, pool);
+      replaceWithBest(pool, eConf);
       // Second mutation stage:
       sort(pool.begin(), pool.end());
-
+      // debug("Size:", pool.size());
 
       // Increase Iteration
       eConf.currentIter++;
@@ -244,6 +252,8 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
   RWS Rselection;
   RankedRWS RRselection;
 
+  FitnessRotationBias fitness;
+
   if(eConf.scenario == 1)
     selection = &Tselection;
   else if(eConf.scenario == 2)
@@ -260,7 +270,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     restorePopulationFromSnapshot(eConf.snapshot);
   }
   // Main loop
-  (*calFitness)(pool, *rob, eConf);
+  fitness(pool, *rob, eConf);
 
   while(eConf.currentIter <= eConf.maxIterations){
 
@@ -290,7 +300,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
-      calFitness->estimateGen(*it, *rob, eConf);
+      fitness.estimateGen(*it, *rob, eConf);
     }
 
     pool.insert(pool.end(), mPool.begin(), mPool.end());

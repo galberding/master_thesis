@@ -32,6 +32,7 @@ namespace op {
 
   void adaptCrossover(executionConfig& eConf);
   void clearZeroPAs(Genpool& pool, executionConfig& eConf);
+
   void getBestGen(Genpool& pool, executionConfig& eConf);
 
 
@@ -42,12 +43,12 @@ namespace op {
 
   struct Optimizer {
     executionConfig eConf;
-    shared_ptr<FitnessStrategy> calFitness;
+    shared_ptr<FitnessStrategy> fitnessStrat;
     shared_ptr<MutationStrategy> mutate;
     shared_ptr<CrossoverStrategy> cross;
     shared_ptr<SelectionStrategy> select;
     shared_ptr<InitStrategy> init;
-    Genpool pool, sel;
+    Genpool pool, sel, elite;
     SelectionPool sPool;
     FamilyPool fPool;
     shared_ptr<Robot> rob;
@@ -63,7 +64,7 @@ namespace op {
 		select(select),
 		cross(cross),
 		mutate(mutate),
-		calFitness(calFitness),
+		fitnessStrat(calFitness),
 		eConf(eConf){
       rob = make_shared<Robot>(Robot(eConf.rob_conf,
 				     eConf.gmap,
@@ -77,13 +78,14 @@ namespace op {
     // private:
     //   Optimizer()
     void printRunInformation(executionConfig& eConf, bool display);
-
     void optimizePath(bool display = false);
     void optimizePath_Turn_RWS(bool display = false);
+    void logAndSnapshotPool(executionConfig& eConf);
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);
-    void logAndSnapshotPool(executionConfig& eConf);
+    void saveBest(Genpool& pool, executionConfig& eConf, bool sortPool=false);
+    void replaceWithBest(Genpool& pool, executionConfig& eConf);
   };
 }
 

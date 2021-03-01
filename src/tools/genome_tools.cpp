@@ -23,10 +23,18 @@ bool genome_tools::genome::updateGenParameter(){
   this->traveledDist = 0;
   this->cross = 0;
   this->rotationCost = 0;
+  float continu = 0;
   // debug("Update");
   for (auto it = actions.begin(); it != actions.end(); ++it) {
+    // Distance:
+    continu += (*it)->mod_config[PAP::Distance];
+    // Given in cm
     traveledDist += (*it)->c_config[Counter::StepCount];
+    // Cross is given in cm^2
     cross += (*it)->c_config[Counter::CrossCount];
+
+
+
     auto it_next = next(it, 1);
     if((it != actions.end()) and ((*it)->type != PAT::End) and (it_next != actions.end()) and ((*it)->type != PAT::Start)){
       // Calculate rotation penalty
@@ -41,14 +49,17 @@ bool genome_tools::genome::updateGenParameter(){
       // debug(rotationCost);
     }
   }
+  debug("Dist: ", traveledDist, " Cross: ", cross, " Continu: ", continu, " Error: ", continu - traveledDist*0.3);
+  // Finalize rotation costs
+  rotationCost /= actions.size();
   // debug(rotationCost);
   auto end = actions.back();
   // Panilty if endpoint cannot be reached
   // increase the cross count because the same distance needs to be taken twice
   // (robot is driving backwards until it reaches the startpoint)
   if (end->wps.back() != end->endPoint)
-    cross += traveledDist;
-  return !(traveledDist == 0);
+    cross += cross;
+  return traveledDist > 0;
 }
 
 void genome_tools::genome::setPathSignature(shared_ptr<GridMap> gmap){
