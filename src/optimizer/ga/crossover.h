@@ -24,8 +24,12 @@ namespace cross {
   struct DualPointCrossover : CrossoverStrategy {
     virtual void operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf) override;
     virtual void operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf) override;
-    bool mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf);
-    genome getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move);
+    virtual bool mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf);
+    virtual genome getChild(PAs par1, PAs par2, int sIdx[2], int len[2], bool move);
+  };
+
+  struct SameStartDualPointCrossover : DualPointCrossover {
+    virtual bool mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf)override;
   };
 }
 

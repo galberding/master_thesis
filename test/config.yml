@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 0
+scenario: 1
 
 # Snapshots
 restore: false
@@ -27,7 +27,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 50
-initIndividuals: 30
+initIndividuals: 1000 #
 
 # Fitness
 penalizeZeroActions: true
@@ -36,17 +36,17 @@ funSelect: 2
 
 
 # Selection
-keep: 10
-select: 30
-tournamentSize: 15
-selPressure: 2
+keep: 20 #
+select: 40 #
+tournamentSize: 15 #
+selPressure: 2 #
 
 # Adaptive parameter:
 adaptParameter: true
 crossUpper: 1
 crossLower: 0.5
-cLenUpper: 0.1
-cLenLower: 0.5
+cLenUpper: 0.2 #
+cLenLower: 0.1 #
 mutUpper: 0.1
 
 # Crossover
@@ -59,8 +59,8 @@ crossChildSelector: 2
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.001
+mutaRandAngleProba: 0.00 #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.001
+mutaRandScaleDistProba: 0.00 #
 mutaReplaceGen: 0.001

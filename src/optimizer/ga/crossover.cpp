@@ -162,3 +162,68 @@ bool cross::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newP
   }
   return true;
 }
+
+
+bool cross::SameStartDualPointCrossover::mating(genome &par1, genome &par2, Genpool &newPopulation, executionConfig &eConf){
+  int minActionCount = eConf.getMinGenLen();
+
+  if (par1.actions.size() < minActionCount
+      or par2.actions.size() < minActionCount)
+    return false;
+  PAs parent1, parent2, child1, child2, child3, child4;
+  int maxlen1 = static_cast<int>((par1.actions.size() -1) * eConf.crossLength);
+  int maxlen2 = static_cast<int>((par2.actions.size() -1) * eConf.crossLength);
+  // debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
+  uniform_int_distribution<int> lendist1(1, maxlen1);
+  uniform_int_distribution<int> lendist2(1, maxlen2);
+
+  int len[2];
+  int len1 = len[0] = lendist1(eConf.generator);
+  int len2 = len[1] = lendist2(eConf.generator);
+  // Ensure that the generated index in still in range
+
+
+  uniform_int_distribution<int> dist1(1,par1.actions.size() - (len1+1));
+  uniform_int_distribution<int> dist2(1,par2.actions.size() - (len2+1));
+  // calculate the start Index
+  int sIdx[2];
+  int sIdx1 = sIdx[0] = dist1(eConf.generator);
+  int sIdx2= sIdx[1] = dist2(eConf.generator);
+
+  assert(sIdx[0] + len1 < par1.actions.size());
+  assert(sIdx[1] + len2 < par2.actions.size());
+
+  vector<genome> loc, glob;
+
+  // Calculate children for first parent
+  loc.push_back(getChild(par1.actions, par2.actions, sIdx, len, true));
+  glob.push_back(getChild(par1.actions, par2.actions, sIdx, len, false));
+  sIdx[0] = sIdx2;
+  sIdx[1] = sIdx1;
+  len[0] = len2;
+  len[1] = len1;
+  // Calculate children for second parent
+  loc.push_back(getChild(par2.actions, par1.actions, sIdx, len, true));
+  glob.push_back(getChild(par2.actions, par1.actions, sIdx, len, false));
+
+  // Insert to new Population
+  switch(eConf.crossChildSelector){
+  case 0:{
+    newPopulation.insert(newPopulation.end(), loc.begin(), loc.end());
+    break;
+  }
+  case 1:{
+    newPopulation.insert(newPopulation.end(), glob.begin(), glob.end());
+    break;
+  }
+  case 2:{
+    newPopulation.insert(newPopulation.end(), loc.begin(), loc.end());
+    newPopulation.insert(newPopulation.end(), glob.begin(), glob.end());
+    break;
+  }
+  default:{
+    assertm(false, "Wrong value for child selector");
+  }
+  }
+  return true;
+}
