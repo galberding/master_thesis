@@ -21,7 +21,7 @@ namespace fit {
 
     virtual void estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf);
     virtual float calculation(genome& gen, int freeSpace, executionConfig &eConf);
-    virtual void applyPoolBias(Genpool& pool, executionConfig &eConf, bool useGlobal=false){debug("Blub");return;};
+    virtual void applyPoolBias(Genpool& pool, executionConfig &eConf, bool useGlobal=false){;return;};
   };
 
   struct FitnessRotationBias : FitnessStrategy {

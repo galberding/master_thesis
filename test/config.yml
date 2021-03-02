@@ -27,11 +27,11 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 50
-initIndividuals: 1000 #
+initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: true
+penalizeRotation: false
 funSelect: 2
 
 
@@ -45,7 +45,7 @@ selPressure: 2 #
 adaptParameter: true
 crossUpper: 1
 crossLower: 0.5
-cLenUpper: 0.2 #
+cLenUpper: 0.5 #
 cLenLower: 0.1 #
 mutUpper: 0.1
 

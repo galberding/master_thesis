@@ -84,8 +84,9 @@ namespace op {
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);
-    void saveBest(Genpool& pool, executionConfig& eConf, bool sortPool=false);
+    void saveBest(Genpool& pool, executionConfig& eConf, bool sortPool=true);
     void replaceWithBest(Genpool& pool, executionConfig& eConf);
+    void insertBest(Genpool& pool, executionConfig& eConf);
   };
 }
 

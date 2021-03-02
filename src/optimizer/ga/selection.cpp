@@ -6,7 +6,7 @@
 
 
 void sel::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& selPool, executionConfig& eConf){
-  Genpool keep;
+  // Genpool keep;
   selPool.clear();
   // Ensure population is not empty
   assert(currentPool.size() > 0);
@@ -14,9 +14,9 @@ void sel::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& sel
   // Keep the best individuals in the population for the next generation
   sort(currentPool.begin(), currentPool.end());
   eConf.best = currentPool.back();
-  keep.insert(keep.begin(),
-	      prev(currentPool.end(), eConf.selectKeepBest),
-	      currentPool.end());
+  // keep.insert(keep.begin(),
+  // 	      prev(currentPool.end(), eConf.selectKeepBest),
+  // 	      currentPool.end());
 
   // Start selection process
   // TODO: Remember select individuals is now the value of the selected pairs!
@@ -38,9 +38,9 @@ void sel::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& sel
   }
   currentPool.clear();
   // Insert preserved gens to the pool
-  currentPool.insert(currentPool.begin(),
-		     keep.begin(),
-		     keep.end());
+  // currentPool.insert(currentPool.begin(),
+  // 		     keep.begin(),
+  // 		     keep.end());
 
 }
 

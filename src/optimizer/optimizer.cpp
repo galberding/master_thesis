@@ -178,6 +178,14 @@ void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
   pool.insert(pool.end(), elite.begin(), elite.end());
 }
 
+void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
+  if(elite.size() == 0) return;
+  // sort(pool.begin(), pool.end());
+  // pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
+  pool.insert(pool.end(), elite.begin(), elite.end());
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //                         Elitist Selection Scenario                        //
@@ -296,15 +304,17 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
     eConf.zeroActionPercent = calZeroActionPercent(pool);
+    saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
     trackPoolFitness(pool, eConf);
     logAndSnapshotPool(eConf);
     printRunInformation(eConf, display);
+    fs->applyPoolBias(pool, eConf);
 
 
     // Selection
     (*selection)(pool, sPool, eConf);
-
+    insertBest(pool, eConf);
     // Crossover
     mPool.clear();
     (*cross)(sPool, mPool, eConf);
