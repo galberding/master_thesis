@@ -12,6 +12,35 @@ namespace cross {
   /////////////////////////////////////////////////////////////////////////////
   //                            CrossoverStrategy                             //
   /////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @brief      Calculate start index based on given size and crossLength.
+   *
+   * @details    First the smaller of the two sizes passed is used to
+   *             calculate the interval for the start index. Finally a
+   *             uniform distribution is used to sample the start
+   *             Index
+   *
+   * @param      s1 size of first gen
+   * @param      s2 size of second gen
+   * @param      eConf configuration containing the crossLength
+   *
+   * @return     int the start Index
+   */
+  int getsIdx(int s1, int s2, executionConfig &eConf);
+
+  /**
+   * @brief      Get offset length for given sIdx.
+   *
+   * @details    
+   *
+   * @param      sIdx start index
+   * @param      s size of the sequence
+   * @param      eConf configuration
+   *
+   * @return     offset length for sIdx to perform crossover
+   */
+  int getRemainingLen(int sIdx, int s, executionConfig& eConf);
   struct CrossoverStrategy {
     // Conditions:
     // - Selection pools needs to be filled
@@ -30,6 +59,7 @@ namespace cross {
 
   struct SameStartDualPointCrossover : DualPointCrossover {
     virtual bool mating(genome &par1, genome &par2, Genpool& newPopulation, executionConfig& eConf)override;
+
   };
 }
 

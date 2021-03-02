@@ -164,31 +164,53 @@ bool cross::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newP
 }
 
 
+int cross::getsIdx(int s1, int s2, executionConfig &eConf){
+  int S;
+  int upper;
+  int lower = 1;
+  if (s1 > s2)
+    S = s2;
+  else
+    S = s1;
+  upper = floor(S - (S * eConf.crossLength));
+  assert (upper >= lower);
+  uniform_int_distribution<int> sIdx(lower, upper);
+  return sIdx(eConf.generator);
+}
+
+int cross::getRemainingLen(int sIdx, int s, executionConfig& eConf) {
+  int remain = s - sIdx;
+  int S = floor(s*eConf.crossLength) - 1;
+  // Exclude end and share at least two actions
+  int upper = sIdx + S;
+  if (S < 3){
+    upper = s - 1;
+  }
+  // if (remain < S)
+  //   upper = sremain;
+  debug("sidx: ", sIdx, " Len: ", s, " Remain: ", remain, " S: ", S, " upper: ", upper);
+  assert(remain > 3); 		// ensure
+  assert(upper < s);
+  assert(upper > sIdx + 1);
+  uniform_int_distribution<int> eIdx(sIdx + 1, upper);
+  return eIdx(eConf.generator) - sIdx;
+}
+
+
 bool cross::SameStartDualPointCrossover::mating(genome &par1, genome &par2, Genpool &newPopulation, executionConfig &eConf){
   int minActionCount = eConf.getMinGenLen();
-
+  PAs parent1, parent2, child1, child2, child3, child4;
+  int len[2], sIdx[2];
   if (par1.actions.size() < minActionCount
       or par2.actions.size() < minActionCount)
     return false;
-  PAs parent1, parent2, child1, child2, child3, child4;
-  int maxlen1 = static_cast<int>((par1.actions.size() -1) * eConf.crossLength);
-  int maxlen2 = static_cast<int>((par2.actions.size() -1) * eConf.crossLength);
-  // debug("Parent1: ", par1.actions.size(), " Parent2: ", par2.actions.size(), " ", maxlen1, " ", maxlen2, " ", minActionCount);
-  uniform_int_distribution<int> lendist1(1, maxlen1);
-  uniform_int_distribution<int> lendist2(1, maxlen2);
-
-  int len[2];
-  int len1 = len[0] = lendist1(eConf.generator);
-  int len2 = len[1] = lendist2(eConf.generator);
-  // Ensure that the generated index in still in range
 
 
-  uniform_int_distribution<int> dist1(1,par1.actions.size() - (len1+1));
-  uniform_int_distribution<int> dist2(1,par2.actions.size() - (len2+1));
-  // calculate the start Index
-  int sIdx[2];
-  int sIdx1 = sIdx[0] = dist1(eConf.generator);
-  int sIdx2= sIdx[1] = dist2(eConf.generator);
+  // Calculate start index:
+  sIdx[0] = sIdx[1] = getsIdx(par1.actions.size(), par2.actions.size(), eConf);
+  int len1 = len[0] = getRemainingLen(sIdx[0], par1.actions.size(), eConf);
+  int len2 = len[1] = getRemainingLen(sIdx[1], par2.actions.size(), eConf);
+
 
   assert(sIdx[0] + len1 < par1.actions.size());
   assert(sIdx[1] + len2 < par2.actions.size());
@@ -198,8 +220,8 @@ bool cross::SameStartDualPointCrossover::mating(genome &par1, genome &par2, Genp
   // Calculate children for first parent
   loc.push_back(getChild(par1.actions, par2.actions, sIdx, len, true));
   glob.push_back(getChild(par1.actions, par2.actions, sIdx, len, false));
-  sIdx[0] = sIdx2;
-  sIdx[1] = sIdx1;
+  // sIdx[0] = sIdx2;
+  // sIdx[1] = sIdx1;
   len[0] = len2;
   len[1] = len1;
   // Calculate children for second parent
