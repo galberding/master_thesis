@@ -222,17 +222,17 @@ set(OPTI_ENV
 # include_directories(  )
 
 
-# set(GRIDSEARCH_RUNNING TRUE)
+set(GRIDSEARCH_RUNNING FALSE)
 
-# if(NOT GRIDSEARCH_RUNNING)
-#   add_executable(opti
-#     src/main.cpp
-#     # src/environment/robot.cpp
-#     # src/environment/robot.hpp
-#     ${OPTI_ENV}
-#     )
-#   target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
-# endif()
+if(NOT GRIDSEARCH_RUNNING)
+  add_executable(opti
+    src/main.cpp
+    # src/environment/robot.cpp
+    # src/environment/robot.hpp
+    ${OPTI_ENV}
+    )
+  target_link_libraries(opti ${catkin_LIBRARIES} yaml-cpp)
+endif()
 
 
 #############

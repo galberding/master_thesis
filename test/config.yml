@@ -31,7 +31,7 @@ initIndividuals: 1000 #
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: false
+penalizeRotation: true
 funSelect: 2
 
 

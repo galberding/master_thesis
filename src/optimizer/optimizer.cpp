@@ -184,7 +184,17 @@ void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
 ///////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::optimizePath(bool display){
-  FitnessRotationBias fitness;
+
+  FitnessStrategy *fs;
+  FitnessStrategy fit_base;
+  FitnessRotationBias fit_rot;
+
+  if(eConf.penalizeRotation)
+    fs = &fit_rot;
+  else
+    fs = &fit_base;
+
+
   if(!eConf.restore){
     (*init)(pool, eConf);
   } else {
@@ -193,7 +203,7 @@ void op::Optimizer::optimizePath(bool display){
   }
 
   // Main loop
-  fitness(pool, *rob, eConf);
+  (*fs)(pool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
 
       // Logging
@@ -217,14 +227,14 @@ void op::Optimizer::optimizePath(bool display){
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
 	  // Replace worst gen with random
 	  if(mutate->randomReplaceGen(*it, eConf)){
-	    fitness.estimateGen(*it, *rob, eConf);
+	    fs->estimateGen(*it, *rob, eConf);
 	    it->trail = 1 * (*eConf.gmap)["map"];
 	  }
 	}
       }
       // Mutation
       (*mutate)(fPool, eConf);
-      fitness(fPool, *rob, eConf);
+      (*fs)(fPool, *rob, eConf);
 
       select->elitistSelection(fPool, pool);
       replaceWithBest(pool, eConf);
@@ -252,7 +262,14 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
   RWS Rselection;
   RankedRWS RRselection;
 
-  FitnessRotationBias fitness;
+  FitnessStrategy *fs;
+  FitnessStrategy fit_base;
+  FitnessRotationBias fit_rot;
+
+  if(eConf.penalizeRotation)
+    fs = &fit_rot;
+  else
+    fs = &fit_base;
 
   if(eConf.scenario == 1)
     selection = &Tselection;
@@ -270,7 +287,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     restorePopulationFromSnapshot(eConf.snapshot);
   }
   // Main loop
-  fitness(pool, *rob, eConf);
+  (*fs)(pool, *rob, eConf);
 
   while(eConf.currentIter <= eConf.maxIterations){
 
@@ -300,7 +317,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
-      fitness.estimateGen(*it, *rob, eConf);
+      fs->estimateGen(*it, *rob, eConf);
     }
 
     pool.insert(pool.end(), mPool.begin(), mPool.end());
