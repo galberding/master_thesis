@@ -209,7 +209,7 @@ void conf::executionConfig::adaptCLen(){
   else
     dMax = overallDMax;
 
-  crossStrategy =  diversityMean / dMax * (cLenUpper - cLenLower) + cLenLower;
+  crossLength =  diversityMean / dMax * (cLenUpper - cLenLower) + cLenLower;
 
 }
 

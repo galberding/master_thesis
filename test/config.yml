@@ -31,11 +31,11 @@ initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: true
+penalizeRotation: false
 funSelect: 2
 
 # Population
-popMin: 100
+popMin: 20
 
 
 # Selection
@@ -46,7 +46,7 @@ selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.9
-crossLength: 0.6
+crossLength: 0.4
 # 0 - local
 # 1 - global
 # 2 - both
@@ -68,6 +68,6 @@ mutaReplaceGen: 0.001
 adaptParameter: true
 crossUpper: 1
 crossLower: 0.5
-cLenUpper: 0.5 #
+cLenUpper: 0.1 #
 cLenLower: 0.1 #
 mutUpper: 0.1

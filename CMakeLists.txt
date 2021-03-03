@@ -222,7 +222,7 @@ set(OPTI_ENV
 # include_directories(  )
 
 
-set(GRIDSEARCH_RUNNING TRUE)
+set(GRIDSEARCH_RUNNING FALSE)
 
 if(NOT GRIDSEARCH_RUNNING)
   add_executable(opti
@@ -302,6 +302,14 @@ catkin_add_executable_with_gtest(test-eigen
   # ${catkin_LIBRARIES}
   )
 
+catkin_add_executable_with_gtest(test-gen
+  test/test_genome.cpp
+  ${OPTI_ENV}
+  # src/tools/path_tools.h
+  # src/tools/path_tools.cpp
+  # ${catkin_LIBRARIES}
+  )
+
 
 # if(TARGET test-path-tools)
 target_link_libraries(test-tools ${catkin_LIBRARIES} yaml-cpp)
@@ -310,4 +318,5 @@ target_link_libraries(test-tools ${catkin_LIBRARIES} yaml-cpp)
 # target_link_libraries(test-io ${catkin_LIBRARIES} yaml-cpp)
 target_link_libraries(test-ga ${catkin_LIBRARIES} yaml-cpp)
 target_link_libraries(test-eigen ${catkin_LIBRARIES} yaml-cpp)
+target_link_libraries(test-gen ${catkin_LIBRARIES} yaml-cpp)
 # endif()

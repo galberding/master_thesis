@@ -66,7 +66,7 @@ namespace op {
 		mutate(mutate),
 		fitnessStrat(calFitness),
 		eConf(eConf){
-      rob = make_shared<Robot>(Robot(eConf.rob_conf,
+       rob = make_shared<Robot>(Robot(eConf.rob_conf,
 				     eConf.gmap,
 				     eConf.obstacleName));
     }

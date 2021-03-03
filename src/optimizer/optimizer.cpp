@@ -177,7 +177,7 @@ void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
   if(elite.size() == 0) return;
   sort(pool.begin(), pool.end());
   pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
-  pool.insert(pool.end(), elite.begin(), elite.end());
+  pool.insert(pool.begin(), prev(elite.end(), eConf.selectKeepBest), elite.end());
 }
 
 void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
@@ -191,11 +191,13 @@ void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
 void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
   assert(elite.size() >= eConf.popMin);
   if(pool.size() < eConf.popMin){
+    // debug("Adjust Pop");
     int missing = eConf.popMin - pool.size();
     shuffle(elite.begin(), elite.end(), eConf.generator);
     pool.insert(pool.end(), elite.begin(), next(elite.begin(), missing));
     eConf.popFilled = missing;
   }
+    // debug("No population adjustment");
 }
 
 
@@ -231,6 +233,7 @@ void op::Optimizer::optimizePath(bool display){
   while(eConf.currentIter <= eConf.maxIterations){
 
       // Logging
+    // debug("Size: ", pool.size());
       getBestGen(pool, eConf);
       trackPoolFitness(pool, eConf);
       eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
@@ -261,9 +264,9 @@ void op::Optimizer::optimizePath(bool display){
       (*fs)(fPool, *rob, eConf);
 
       select->elitistSelection(fPool, pool);
-      replaceWithBest(pool, eConf);
       // Second mutation stage:
       sort(pool.begin(), pool.end());
+      replaceWithBest(pool, eConf);
       // debug("Size:", pool.size());
 
       // Increase Iteration
