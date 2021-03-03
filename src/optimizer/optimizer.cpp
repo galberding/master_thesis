@@ -8,7 +8,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,PopFilled\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,PopFilled,PopSize\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -39,7 +39,8 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd,
-				    eConf.popFilled
+				    eConf.popFilled,
+				    eConf.popSize
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
@@ -204,6 +205,10 @@ void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
 
 void op::Optimizer::optimizePath(bool display){
 
+  CrossoverStrategy *crossing;
+  SameStartDualPointCrossover sIdxCross;
+  crossing = &sIdxCross;
+
   FitnessStrategy *fs;
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
@@ -240,7 +245,7 @@ void op::Optimizer::optimizePath(bool display){
       select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
       // Crossover
-      (*cross)(fPool, pool, eConf);
+      (*crossing)(fPool, pool, eConf);
       // Mutate remaining individuals in pool
       if (pool.size() > 2){
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
@@ -275,6 +280,14 @@ void op::Optimizer::optimizePath(bool display){
 
 
 void op::Optimizer::optimizePath_Turn_RWS(bool display){
+
+  CrossoverStrategy *crossing;
+  DualPointCrossover DualCross;
+  SameStartDualPointCrossover sIdxCross;
+  if(eConf.crossStrategy == 0)
+    crossing = &DualCross;
+  else if(eConf.crossStrategy == 1)
+    crossing = &sIdxCross;
 
   SelectionStrategy *selection;
   TournamentSelection Tselection;
@@ -314,7 +327,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     // Logging
     getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
+    // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
@@ -329,7 +342,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     insertBest(pool, eConf);
     // Crossover
     mPool.clear();
-    (*cross)(sPool, mPool, eConf);
+    (*crossing)(sPool, mPool, eConf);
 
     // Mutation
     for (auto it = mPool.begin(); it != mPool.end(); ++it) {

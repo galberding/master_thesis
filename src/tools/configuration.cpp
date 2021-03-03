@@ -52,6 +52,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     crossoverProba = yConf["crossoverProba"].as<float>();
   if(yConf["crossLength"])
     crossLength = yConf["crossLength"].as<float>();
+  if(yConf["crossStrategy"])
+    crossStrategy = yConf["crossStrategy"].as<float>();
    if(yConf["crossChildSelector"])
     crossChildSelector = yConf["crossChildSelector"].as<float>();
   if(yConf["mutaRandAngleProba"])
@@ -207,7 +209,7 @@ void conf::executionConfig::adaptCLen(){
   else
     dMax = overallDMax;
 
-  crossLength =  diversityMean / dMax * (cLenUpper - cLenLower) + cLenLower;
+  crossStrategy =  diversityMean / dMax * (cLenUpper - cLenLower) + cLenLower;
 
 }
 

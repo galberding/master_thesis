@@ -222,7 +222,7 @@ set(OPTI_ENV
 # include_directories(  )
 
 
-set(GRIDSEARCH_RUNNING FALSE)
+set(GRIDSEARCH_RUNNING TRUE)
 
 if(NOT GRIDSEARCH_RUNNING)
   add_executable(opti

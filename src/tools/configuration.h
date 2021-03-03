@@ -71,6 +71,7 @@ namespace conf {
     int popMutated = 0;
     int popFilled = 0;
     int popMin = 20;
+    int popSize = 0;
 
     // If parameter is set we want to store it under this filename
     string fitnessName = "vv";
@@ -139,6 +140,7 @@ namespace conf {
     int crossAdapter = 0;
     float crossBestFit = 0;
     int crossChildSelector = 2;
+    int crossStrategy = 0;
 
     // Mutation functions, configurations
     float mutaOrtoAngleProba = 0.1;

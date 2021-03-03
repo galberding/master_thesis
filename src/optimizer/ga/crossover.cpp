@@ -190,7 +190,7 @@ int cross::getRemainingLen(int sIdx, int s, executionConfig& eConf) {
   }
   // if (remain < S)
   //   upper = sremain;
-  debug("sidx: ", sIdx, " Len: ", s, " Remain: ", remain, " S: ", S, " upper: ", upper);
+  // debug("sidx: ", sIdx, " Len: ", s, " Remain: ", remain, " S: ", S, " upper: ", upper);
   assert(remain > 3); 		// ensure
   assert(upper < s);
   assert(upper > sIdx + 1);

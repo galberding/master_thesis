@@ -69,6 +69,7 @@ void fit::finalizeFitnessLogging(int poolsize, executionConfig& eConf){
 
 void fit::trackPoolFitness(Genpool& pool, executionConfig& eConf){
   resetLoggingFitnessParameter(eConf);
+  eConf.popSize = pool.size();
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     trackFitnessParameter(*it, eConf);
   }
