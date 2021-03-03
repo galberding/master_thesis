@@ -132,7 +132,9 @@ void genome_tools::removeZeroPAs(Genpool &pool) {
 int genome_tools::countDeadGens(Genpool &pool, int minSize){
   int res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    res += it->actions.size() > minSize ? 0 : 1;
+    if (it->actions.size() < minSize or not it->updateGenParameter())
+      res++;
+    // res += it->actions.size() > minSize ? 0 : 1;
   }
   return res;
 }

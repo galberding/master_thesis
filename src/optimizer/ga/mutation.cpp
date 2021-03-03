@@ -40,6 +40,7 @@ bool mut::MutationStrategy::addOrthogonalAngleOffset(genome& gen, executionConfi
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator) ? 90 : -90;
   (*action)->modified = true;
+  gen.mutated = true;
   return true;
 }
 
@@ -52,6 +53,7 @@ bool mut::MutationStrategy::addRandomAngleOffset(genome& gen, executionConfig& e
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   (*action)->mod_config[PAP::Angle] += changeDistro(eConf.generator);
   (*action)->modified = true;
+  gen.mutated = true;
   return true;
 }
 
@@ -64,6 +66,7 @@ void mut::MutationStrategy::addPositiveDistanceOffset(genome& gen, executionConf
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   (*action)->mod_config[PAP::Distance] += changeDistro(eConf.generator);
   (*action)->modified = true;
+  gen.mutated = true;
 }
 
 void mut::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConfig& eConf) {
@@ -78,6 +81,7 @@ void mut::MutationStrategy::addNegativeDistanceOffset(genome& gen, executionConf
     (*action)->mod_config[PAP::Distance] -= offset;
     (*action)->modified = true;
   }
+  gen.mutated = true;
 }
 
 
@@ -98,6 +102,7 @@ bool mut::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eC
     gen.updateGenParameter();
     (*action)->mod_config[PAP::Distance] = (gen.traveledDist / gen.actions.size()) * offset;
   }
+  gen.mutated = true;
   return true;
 }
 
@@ -113,6 +118,7 @@ bool mut::MutationStrategy::randomReplaceGen(genome& gen, executionConfig& eConf
   // else
     // init(gen, eConf.actionLenAvg, eConf);
   validateGen(gen);
+  gen.mutated = true;
   return true;
 }
 

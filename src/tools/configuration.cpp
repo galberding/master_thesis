@@ -80,6 +80,10 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   if(yConf["cLenLower"])
     cLenLower = yConf["cLenLower"].as<float>();
 
+  // Population
+  if(yConf["popMin"])
+    popMin = yConf["popMin"].as<float>();
+
 
   // Snapshots
   if(yConf["restore"])
@@ -101,6 +105,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mapHeight = yConf["mapHeight"].as<float>();
   if(yConf["mapResolution"])
     mapResolution = yConf["mapResolution"].as<float>();
+
+  assert(popMin <= initIndividuals);
 
   return true;
 }

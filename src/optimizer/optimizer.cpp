@@ -8,7 +8,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,PopFilled\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -38,7 +38,8 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.best.finalAngleCost,
 				    eConf.best.actions.size(),
 				    eConf.diversityMean,
-				    eConf.diversityStd
+				    eConf.diversityStd,
+				    eConf.popFilled
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
@@ -168,7 +169,7 @@ void op::Optimizer::saveBest(Genpool& pool, executionConfig& eConf, bool sortPoo
   elite.clear();
   if(sortPool)
     sort(pool.begin(), pool.end());
-  elite.insert(elite.begin(), prev(pool.end(), eConf.selectKeepBest), pool.end());
+  elite.insert(elite.begin(), pool.begin(), pool.end());
 }
 
 void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
@@ -182,9 +183,19 @@ void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
   if(elite.size() == 0) return;
   // sort(pool.begin(), pool.end());
   // pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
-  pool.insert(pool.end(), elite.begin(), elite.end());
+  pool.insert(pool.end(), prev(elite.end(), eConf.selectKeepBest), elite.end());
 }
 
+
+void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
+  assert(elite.size() >= eConf.popMin);
+  if(pool.size() < eConf.popMin){
+    int missing = eConf.popMin - pool.size();
+    shuffle(elite.begin(), elite.end(), eConf.generator);
+    pool.insert(pool.end(), elite.begin(), next(elite.begin(), missing));
+    eConf.popFilled = missing;
+  }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -303,6 +314,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     // Logging
     getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
@@ -327,10 +339,12 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 	mutated |= mutate->addOrthogonalAngleOffset(*it, eConf);
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
+      it->mutated = mutated;
       fs->estimateGen(*it, *rob, eConf);
     }
 
     pool.insert(pool.end(), mPool.begin(), mPool.end());
+    balancePopulation(pool, eConf);
     // Keep best individual
     // pool.push_back(eConf.best);
 

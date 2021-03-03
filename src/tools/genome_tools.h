@@ -59,6 +59,9 @@ namespace genome_tools {
     float finalCoverage = 0;
     float finalTime = 0;
     float finalAngleCost = 0;
+    bool crossed = false;
+    bool mutated = false;
+    bool selected = false;
     shared_ptr<Matrix> mat;
   };
 

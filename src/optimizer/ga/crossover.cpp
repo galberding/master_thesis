@@ -101,6 +101,8 @@ bool cross::DualPointCrossover::mating(genome &par1, genome &par2, Genpool& newP
   // mate two parents
   // estimate the individual Length
   int minActionCount = eConf.getMinGenLen();
+  par1.crossed = true;
+  par2.crossed = true;
 
   if (par1.actions.size() < minActionCount
       or par2.actions.size() < minActionCount)

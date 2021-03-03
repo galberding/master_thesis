@@ -65,6 +65,13 @@ namespace conf {
     float diversityMean = 0;
     float diversityStd = 0;
 
+    // Population
+    int popSelected = 0;
+    int popCrossed = 0;
+    int popMutated = 0;
+    int popFilled = 0;
+    int popMin = 20;
+
     // If parameter is set we want to store it under this filename
     string fitnessName = "vv";
     float fitnessWeight = 0.5;

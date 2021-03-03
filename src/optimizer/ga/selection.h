@@ -10,6 +10,7 @@ namespace sel {
   /////////////////////////////////////////////////////////////////////////////
   //                            SelectionStrategy                             //
   /////////////////////////////////////////////////////////////////////////////
+  // TODO: Put selection strategies in correct struct
   struct SelectionStrategy {
     // Conditions:
     // - current Pool will be cleared here

@@ -13,7 +13,7 @@ void sel::SelectionStrategy::operator()(Genpool& currentPool, SelectionPool& sel
   assert(eConf.selectKeepBest < currentPool.size());
   // Keep the best individuals in the population for the next generation
   sort(currentPool.begin(), currentPool.end());
-  eConf.best = currentPool.back();
+  // eConf.best = currentPool.back();
   // keep.insert(keep.begin(),
   // 	      prev(currentPool.end(), eConf.selectKeepBest),
   // 	      currentPool.end());
@@ -69,7 +69,9 @@ genome sel::SelectionStrategy::tournamentSelection(Genpool &pool, executionConfi
   shuffle(pool.begin(), pool.end(), eConf.generator);
   turn.insert(turn.begin(), pool.begin(), next(pool.begin(), eConf.tournamentSize));
   sort(turn.begin(), turn.end());
-  return turn.back();
+  genome gen = turn.back();
+  gen.selected = true;
+  return gen;
 }
 
 
@@ -81,9 +83,11 @@ void sel::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
     if(family.size() == 2) continue;
     assert(family.size() >= 4);
     sort(family.begin(), family.end());
-    pool.push_back(family.back());
-    family.pop_back();
-    pool.push_back(family.back());
+    for(int i=2; i<family.size(); i++){
+      genome gen = family[i];
+      gen.selected = true;
+      pool.push_back(gen);
+    }
   }
 
 }
@@ -110,13 +114,14 @@ genome sel::RWS::selection(Genpool &currentPopulation, executionConfig &eConf){
   genome gen;
 
   for(auto it = currentPopulation.begin(); it != currentPopulation.end(); it++){
-    offset += it->fitness / totalFitness;
+    offset += it->fitness / testSum;
     if(rand < offset){
       gen = *it;
       // debug("ID: ", gen.id);
       break;
     }
   }
+  gen.selected = true;
   return gen;
 }
 
@@ -140,7 +145,9 @@ genome sel::RankedRWS::selection(Genpool &currentPopulation, executionConfig &eC
       break;
     }
   }
-  return currentPopulation.at(idx);
+  genome gen = currentPopulation.at(idx);
+  gen.selected = true;
+  return gen;
 }
 
 genome sel::TournamentSelection::selection(Genpool &currentPopulation, executionConfig &eConf) {

@@ -87,6 +87,8 @@ namespace op {
     void saveBest(Genpool& pool, executionConfig& eConf, bool sortPool=true);
     void replaceWithBest(Genpool& pool, executionConfig& eConf);
     void insertBest(Genpool& pool, executionConfig& eConf);
+    void balancePopulation(Genpool& pool, executionConfig& eConf);
+
   };
 }
 
