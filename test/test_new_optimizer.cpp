@@ -37,6 +37,7 @@ TEST(Crossover, idxCalculation){
 TEST(Optimizer, standardConfig){
 
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // executionConfig eConf("conf_test.yml");
   // executionConfig eConf("/homes/galberding/catkin_ws/src/ros_optimizer/test/config.yml");
   debug("Start opti");
   op::Optimizer opti(

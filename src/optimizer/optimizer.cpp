@@ -208,9 +208,12 @@ void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
 void op::Optimizer::optimizePath(bool display){
 
   CrossoverStrategy *crossing;
+  DualPointCrossover DualCross;
   SameStartDualPointCrossover sIdxCross;
-  crossing = &sIdxCross;
-
+  if(eConf.crossStrategy == 0)
+    crossing = &DualCross;
+  else if(eConf.crossStrategy == 1)
+    crossing = &sIdxCross;
   FitnessStrategy *fs;
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
@@ -233,7 +236,7 @@ void op::Optimizer::optimizePath(bool display){
   while(eConf.currentIter <= eConf.maxIterations){
 
       // Logging
-    // debug("Size: ", pool.size());
+    debug("Size: ", pool.size());
       getBestGen(pool, eConf);
       trackPoolFitness(pool, eConf);
       eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
@@ -249,6 +252,7 @@ void op::Optimizer::optimizePath(bool display){
 
       // Crossover
       (*crossing)(fPool, pool, eConf);
+      debug("After Cross: ", pool.size());
       // Mutate remaining individuals in pool
       if (pool.size() > 2){
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
@@ -266,7 +270,7 @@ void op::Optimizer::optimizePath(bool display){
       select->elitistSelection(fPool, pool);
       // Second mutation stage:
       sort(pool.begin(), pool.end());
-      replaceWithBest(pool, eConf);
+      // replaceWithBest(pool, eConf);
       // debug("Size:", pool.size());
 
       // Increase Iteration
@@ -330,7 +334,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     // Logging
     getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
+    debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
