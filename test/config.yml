@@ -27,7 +27,7 @@ mapResolution: 0.3
 
 # Initialization
 initActions: 50
-initIndividuals: 30 #
+initIndividuals: 40 #
 
 # Fitness
 penalizeZeroActions: true
@@ -39,7 +39,7 @@ popMin: 30
 
 
 # Selection
-keep: 1 #
+keep: 0 #
 select: 20 #
 tournamentSize: 5 #
 selPressure: 2 #
@@ -50,7 +50,7 @@ crossLength: 0.4
 # 0 - local
 # 1 - global
 # 2 - both
-crossChildSelector: 2
+crossChildSelector: 1
 # 0 - DualPointcrossover
 # 1 - Same Start idx
 crossStrategy: 0
