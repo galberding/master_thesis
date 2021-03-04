@@ -56,9 +56,15 @@ namespace genome_tools {
     float cross = 0;
     float rotationCost = 0;
     float coverage = 0;
+
+    float pixelCrossCoverage = 0;
+    float pathLengh = 0;	// [m]
+    float rotations = 0;	// [rad]
+    bool reachEnd = false;
+
     float finalCoverage = 0;
     float finalTime = 0;
-    float finalAngleCost = 0;
+    float finalRotationTime = 0;
     bool crossed = false;
     bool mutated = false;
     bool selected = false;

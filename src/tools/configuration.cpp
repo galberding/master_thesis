@@ -26,8 +26,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     clearZeros = yConf["clearZeros"].as<float>();
   if(yConf["penalizeZeroActions"])
     penalizeZeroActions = yConf["penalizeZeroActions"].as<bool>();
-  if(yConf["penalizeRotation"])
-    penalizeRotation = yConf["penalizeRotation"].as<bool>();
+  if(yConf["fitSselect"])
+    fitSselect = yConf["fitSselect"].as<float>();
   if(yConf["funSelect"])
     funSelect = yConf["funSelect"].as<float>();
   if(yConf["weights"]["time"])
@@ -85,6 +85,15 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   // Population
   if(yConf["popMin"])
     popMin = yConf["popMin"].as<float>();
+
+  // Robot
+  if(yConf["Rob_width"])
+    Rob_width = yConf["Rob_width"].as<float>();
+  if(yConf["Rob_speed"])
+    Rob_speed = yConf["Rob_speed"].as<float>();
+  if(yConf["Rob_RPM"])
+    Rob_RPM = yConf["Rob_RPM"].as<float>();
+
 
 
   // Snapshots

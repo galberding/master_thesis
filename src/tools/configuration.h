@@ -23,14 +23,18 @@ namespace conf {
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
       ends = {start};
+      warn("Robot properties are not set correctly!");
     }
     executionConfig(const string loadPath){
       loadConfFromYaml(loadPath);
+      mapResolution = Rob_width;
       gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, mapType, start);
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
       ends = {start};
+      Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
+
     }
 
 
@@ -44,7 +48,7 @@ namespace conf {
     int scenario = 0;
     int clearZeros = 0;
     bool penalizeZeroActions = true;
-    bool penalizeRotation = false;
+    int fitSselect = 0;
     int funSelect = 3;
 
     // Snapshots
@@ -97,6 +101,10 @@ namespace conf {
     // Robot Config
     // TODO: what to do with those parameter
     string obstacleName = "map";
+    float Rob_width = 0.3; // [m]
+    float Rob_speed = 0.2; // [m/s]
+    float Rob_RPM = 12; // Rotations per minute
+    float Rob_angleSpeed = 0; // 2*Pi * RPM * 1/60s [rad/s]
     rob_config rob_conf = {
       {RobotProperty::Width_cm, 1},
       {RobotProperty::Height_cm, 1},

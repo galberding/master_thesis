@@ -14,6 +14,7 @@ namespace fit {
   void trackFitnessParameter(genome& gen, executionConfig& eConf);
   void finalizeFitnessLogging(int poolsize, executionConfig& eConf);
   void trackPoolFitness(Genpool& pool, executionConfig& eConf);
+  void fitnessFun(genome& gen, float x, float y, executionConfig& eConf);
   struct FitnessStrategy {
 
     virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
@@ -39,8 +40,10 @@ namespace fit {
     virtual void applyPoolBias(Genpool &pool, executionConfig &eConf, bool useGlobal=false) override;
   };
 
-  struct FitnesFollowPoolBest : FitnessStrategy{
-
+  // Use continuous representation of traveled Distance
+  // The crossing path sections are still represented as pixel values
+  struct FitnesSemiContinuous : FitnessStrategy{
+    float calculation(genome &gen, int freeSpace, executionConfig &eConf) override;
   };
 
 }

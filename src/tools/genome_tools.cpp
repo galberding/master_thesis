@@ -20,20 +20,33 @@ int angleDiff(int a, int b){
 }
 
 bool genome_tools::genome::updateGenParameter(){
+  // TODO: Introduce new variables
+  // TODO: calculate coverage values
+  // TODO: Calculate cross cov
+  // Pixel coverage [Rw^2*m^2]
+
   this->traveledDist = 0;
   this->cross = 0;
   this->rotationCost = 0;
+
+  // New collection values
+  pixelCrossCoverage = 0;
+  pathLengh = 0;
+  rotations = 0;
+  reachEnd = true;
+
   float continu = 0;
   // debug("Update");
   for (auto it = actions.begin(); it != actions.end(); ++it) {
     // Distance:
-    continu += (*it)->mod_config[PAP::Distance];
+    pathLengh += (*it)->mod_config[PAP::Distance];
+    // Coverage in Pixel values
+    pixelCrossCoverage += (*it)->c_config[Counter::CrossCount];
+
     // Given in cm
     traveledDist += (*it)->c_config[Counter::StepCount];
     // Cross is given in cm^2
     cross += (*it)->c_config[Counter::CrossCount];
-
-
 
     auto it_next = next(it, 1);
     if((it != actions.end()) and ((*it)->type != PAT::End) and (it_next != actions.end()) and ((*it)->type != PAT::Start)){
@@ -46,6 +59,7 @@ bool genome_tools::genome::updateGenParameter(){
       float diff = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
       // debug("Diff: ", diff);
       rotationCost +=  diff/180;
+      rotations += diff;
       // debug(rotationCost);
     }
   }
@@ -57,9 +71,13 @@ bool genome_tools::genome::updateGenParameter(){
   // Panilty if endpoint cannot be reached
   // increase the cross count because the same distance needs to be taken twice
   // (robot is driving backwards until it reaches the startpoint)
-  if (end->wps.back() != end->endPoint)
+  if (end->wps.back() != end->endPoint){
     cross += cross;
-  return traveledDist > 0;
+    reachEnd = false;
+  }
+  // convert rotations from deg -> rad
+  rotations *= M_PI/180;
+  return pathLengh > 0;
 }
 
 void genome_tools::genome::setPathSignature(shared_ptr<GridMap> gmap){

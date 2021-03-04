@@ -35,7 +35,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.deadGensCount,
 				    eConf.best.finalTime,
 				    eConf.best.finalCoverage,
-				    eConf.best.finalAngleCost,
+				    eConf.best.finalRotationTime,
 				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd,
@@ -55,7 +55,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
   if(eConf.best.id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,",  ", eConf.best.finalAngleCost,", ",eConf.best.actions.size(), ") : ",
+	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,",  ", eConf.best.finalRotationTime,", ",eConf.best.actions.size(), ") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
@@ -217,12 +217,14 @@ void op::Optimizer::optimizePath(bool display){
   FitnessStrategy *fs;
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
+  fit::FitnesSemiContinuous fit_scont;
 
-  if(eConf.penalizeRotation)
+  if(eConf.fitSselect == 0)
+    fs = &fit_base;
+  else if(eConf.fitSselect == 1)
     fs = &fit_rot;
   else
-    fs = &fit_base;
-
+    fs = &fit_scont;
 
   if(!eConf.restore){
     (*init)(pool, eConf);
@@ -305,10 +307,14 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
 
-  if(eConf.penalizeRotation)
+  fit::FitnesSemiContinuous fit_scont;
+
+  if(eConf.fitSselect == 0)
+    fs = &fit_base;
+  else if(eConf.fitSselect == 1)
     fs = &fit_rot;
   else
-    fs = &fit_base;
+    fs = &fit_scont;
 
   if(eConf.scenario == 1)
     selection = &Tselection;

@@ -42,17 +42,17 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
     eConf.fitnessMaxCoverage = gen.finalCoverage;
   if(gen.finalCoverage < eConf.fitnessMinCoverage)
     eConf.fitnessMinCoverage = gen.finalCoverage;
-  if(gen.finalAngleCost > eConf.fitnessMaxAngleCost)
-    eConf.fitnessMaxAngleCost = gen.finalAngleCost;
-  if(gen.finalAngleCost < eConf.fitnessMinAngleCost)
-    eConf.fitnessMinAngleCost = gen.finalAngleCost;
+  if(gen.finalRotationTime > eConf.fitnessMaxAngleCost)
+    eConf.fitnessMaxAngleCost = gen.finalRotationTime;
+  if(gen.finalRotationTime < eConf.fitnessMinAngleCost)
+    eConf.fitnessMinAngleCost = gen.finalRotationTime;
 
 
   eConf.fitnessAvg += fitness;
   eConf.actionLenAvg += gen.actions.size();
   eConf.fitnessAvgTime += gen.finalTime;
   eConf.fitnessAvgCoverage += gen.finalCoverage;
-  eConf.fitnessAvgAngleCost += gen.finalAngleCost;
+  eConf.fitnessAvgAngleCost += gen.finalRotationTime;
 }
 
 
@@ -158,7 +158,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.finalTime = finalTime;
   float x = finalTime;
   float y = finalCoverage;
-  gen.finalAngleCost =  gen.rotationCost;
+  gen.finalRotationTime =  gen.rotationCost;
 
 
   if(eConf.funSelect == 0)
@@ -172,7 +172,9 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   else if(eConf.funSelect == 4)
     gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
   else if(eConf.funSelect == 5)
-    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalAngleCost))*(pow(x, 4)*pow(y, 4));
+    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
+
+  fitnessFun(gen, x, y, eConf);
   // gen.fitness = (pow(x, 5)*pow(y, 4));
   // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
   // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
@@ -195,6 +197,21 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 //                           Fittness Rotation Bias                          //
 ///////////////////////////////////////////////////////////////////////////////
 
+void fit::fitnessFun(genome& gen, float x, float y, executionConfig& eConf){
+  if(eConf.funSelect == 0)
+    gen.fitness = (pow(x, 2)*pow(y, 2));
+  else if(eConf.funSelect == 1)
+    gen.fitness = (pow(x, 5)*pow(y, 4));
+  else if(eConf.funSelect == 2)
+    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
+  else if(eConf.funSelect == 3)
+    gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
+  else if(eConf.funSelect == 4)
+    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
+  else if(eConf.funSelect == 5)
+    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
+}
+
 
 void fit::FitnessRotationBias::applyPoolBias(Genpool &pool, executionConfig &eConf, bool useGlobal){
   float rotMin = 1;
@@ -211,4 +228,53 @@ void fit::FitnessRotationBias::applyPoolBias(Genpool &pool, executionConfig &eCo
     float RotBias = rotMin / it->rotationCost;
     it->fitness *= RotBias;
   }
+}
+
+
+float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executionConfig &eConf){
+  // prepare parameters
+  // Check if the gen is valid -> returns false if gen has distance 0
+  if(!gen.updateGenParameter()){
+    debug("Update: ", gen.updateGenParameter());
+    gen.fitness = 0;
+    return 0;
+  }
+  // Set calculated path
+  gen.setPathSignature(eConf.gmap);
+
+  // Convert pixel values to [m²]
+  float cross_d = gen.pixelCrossCoverage *  pow(eConf.Rob_width, 2);
+  float area = freeSpace * pow(eConf.Rob_width, 2);
+
+  float cov = (gen.pathLengh * eConf.Rob_width) - cross_d;
+  float finalCoverage = cov / area;
+
+  // Time parameter:
+  float actualTime = gen.pathLengh * eConf.Rob_speed;
+  // Penalize if enpoint is not reached
+
+  float optimalTime = actualTime - (cross_d / eConf.Rob_width) * eConf.Rob_speed;
+
+  if (not gen.reachEnd)
+    actualTime *= 2;
+
+  // debug("Optimal Time: ", optimalTime);
+  float rotation_time = gen.rotations / eConf.Rob_angleSpeed;
+  float finalTime = optimalTime / (actualTime + rotation_time);
+
+
+  // ###
+  gen.finalCoverage = finalCoverage;
+  gen.finalTime = finalTime;
+  gen.finalRotationTime =  rotation_time;
+
+  float x = finalTime;
+  float y = finalCoverage;
+
+  fitnessFun(gen, x, y, eConf);
+  // debug(" cross_d: ",cross_d, " area: ",area," cov: ",cov," finalCoverage: ",finalCoverage," actualTime: ",actualTime," optimalTime: ",optimalTime," rotation_time: ",rotation_time, " genRot: ", gen.rotations, "finalTime: ",finalTime, " Fit: ", gen.fitness);
+  if(eConf.penalizeZeroActions)
+    gen.fitness *= 1 - calZeroActionPercent(gen);
+
+  return gen.fitness;
 }
