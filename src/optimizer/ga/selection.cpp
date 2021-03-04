@@ -84,7 +84,7 @@ void sel::SelectionStrategy::elitistSelection(FamilyPool& fPool, Genpool& pool){
     assert(family.size() >= 4);
     sort(family.begin(), family.end());
     for(int i=family.size()-2; i<family.size(); i++){
-      debug("Member: ", i, " Fsize: ", family.size());
+      // debug("Member: ", i, " Fsize: ", family.size());
       genome gen = family[i];
       gen.selected = true;
       pool.push_back(gen);

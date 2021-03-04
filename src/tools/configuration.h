@@ -4,6 +4,7 @@
 #include "path_tools.h"
 #include "genome_tools.h"
 #include "mapGen.h"
+#include <limits>
 #define MIN_CROSS_LEN 4
 using namespace genome_tools;
 

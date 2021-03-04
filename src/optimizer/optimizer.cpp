@@ -61,11 +61,11 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 		      eConf.fitnessAvgCoverage,
 		      eConf.actionLenAvg,
 		      // eConf.zeroActionPercent,
-		      // eConf.deadGensCount,
 		      eConf.crossoverProba,
 		      eConf.mutaReplaceGen,
 		      eConf.crossLength,
 		      " | ",
+		      eConf.deadGensCount,
 		      eConf.diversityMean,
 		      eConf.diversityStd));
       if(eConf.visualize){
@@ -236,7 +236,7 @@ void op::Optimizer::optimizePath(bool display){
   while(eConf.currentIter <= eConf.maxIterations){
 
       // Logging
-    debug("Size: ", pool.size());
+    // debug("Size: ", pool.size());
       getBestGen(pool, eConf);
       trackPoolFitness(pool, eConf);
       eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
@@ -252,7 +252,7 @@ void op::Optimizer::optimizePath(bool display){
 
       // Crossover
       (*crossing)(fPool, pool, eConf);
-      debug("After Cross: ", pool.size());
+      // debug("After Cross: ", pool.size());
       // Mutate remaining individuals in pool
       if (pool.size() > 2){
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
@@ -270,7 +270,7 @@ void op::Optimizer::optimizePath(bool display){
       select->elitistSelection(fPool, pool);
       // Second mutation stage:
       sort(pool.begin(), pool.end());
-      // replaceWithBest(pool, eConf);
+      replaceWithBest(pool, eConf);
       // debug("Size:", pool.size());
 
       // Increase Iteration
@@ -334,7 +334,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     // Logging
     getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
+    // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);

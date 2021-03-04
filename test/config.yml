@@ -39,7 +39,7 @@ popMin: 30
 
 
 # Selection
-keep: 0 #
+keep: 2 #
 select: 20 #
 tournamentSize: 5 #
 selPressure: 2 #
@@ -53,7 +53,7 @@ crossLength: 0.4
 crossChildSelector: 1
 # 0 - DualPointcrossover
 # 1 - Same Start idx
-crossStrategy: 0
+crossStrategy: 1
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0

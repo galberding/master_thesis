@@ -183,18 +183,25 @@ void conf::executionConfig::adaptMutation(){
   // else
   //   dMax = lastDmax;
 
-  if (dMax > overallDMax)
-    overallDMax = dMax;
-  else
-    dMax = overallDMax;
+  float muta, mutaFit, mutaDiv;
+  if (diversityMean > 0.001){
+    if (dMax > overallDMax)
+      overallDMax = dMax;
+    else
+      dMax = overallDMax;
+    if(fitnessMax - fitnessMin < std::numeric_limits<float>::min())
+      mutaFit = mutUpper;
+    else
+      mutaFit =  (fitnessMax - fitnessAvg) / (fitnessMax - fitnessMin) * mutUpper;
+    mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;
+    muta = (mutaFit + mutaDiv) / 2;
+  }else{
+    muta = mutUpper;
+  }
 
-
-  float mutaFit = (fitnessMax - fitnessAvg) / (fitnessMax - fitnessMin) * mutUpper;
-  float mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;
-  float muta = (mutaFit + mutaDiv) / 2;
-
-  // mutaRandAngleProba = muta;
-  // mutaRandScaleDistProba = muta;
+//   mutaRandAngleProba = muta;
+//   mutaRandScaleDistProba = muta;
+  assert(muta >= 0);
   mutaReplaceGen = muta;
 }
 
