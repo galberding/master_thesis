@@ -28,14 +28,16 @@ TEST(Crossover, idxCalculation){
 	    eConf.obstacleName);
 
   genome gen = pool.front();
-  gen.actions[1]->mod_config[PAP::Angle] = 225;
+  int startAngle = 180;
+  gen.actions[1]->mod_config[PAP::Angle] = startAngle;
 
   gen.actions.erase(next(gen.actions.begin(), 2));
-  for (int a=0; a <=45; a++){
-    msg << 255 + a << ",";
-    for(int i=1; i<100; i++){
+  float factor = 0.5;
+  for (int a=0; a <=90; a++){
+    msg << startAngle + a*factor << ",";
+    for(float i=0; i<50; i+=0.2){
       gen.actions[1]->mod_config[PAP::Distance] = i;
-      gen.actions[1]->mod_config[PAP::Angle] = 225 + a;
+      gen.actions[1]->mod_config[PAP::Angle] = startAngle + a*factor;
       gen.actions[1]->modified = true;
       // gen.actions[1]->applyModifications();
       rob.evaluateActions(gen.actions);
@@ -44,6 +46,9 @@ TEST(Crossover, idxCalculation){
       // debug("End: ", gen.actions[1]->wps[1][0],"|",gen.actions[1]->wps[1][1]);
       // debug("Dist: ", gen.traveledDist, " Cross: ", gen.cross, " Pdist: ", gen.traveledDist * 0.3, " Actual: ", i, " error: ", i - gen.traveledDist * 0.3);
       msg << i - gen.traveledDist * 0.3 << ",";
+      // cv::Mat img = rob.gridToImg("map");
+      // cv::imshow("Test", img);
+      // cv::waitKey(0.5);
     }
     msg << endl;
   }

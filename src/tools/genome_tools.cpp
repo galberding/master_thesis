@@ -45,7 +45,7 @@ bool genome_tools::genome::updateGenParameter(){
       // assert((*it_next)->wps.size() >= 2);
       float diff = angleDiff((*it)->mod_config[PAP::Angle], (*it_next)->mod_config[PAP::Angle]);
       // debug("Diff: ", diff);
-      rotationCost +=  diff / 180.0;
+      rotationCost +=  diff/180;
       // debug(rotationCost);
     }
   }

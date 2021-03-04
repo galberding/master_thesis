@@ -21,8 +21,8 @@ clearZeros: 10
 
 # Map
 mapType: 1
-mapWidth: 11
-mapHeight: 11
+mapWidth: 110
+mapHeight: 110
 mapResolution: 0.3
 
 # Initialization
