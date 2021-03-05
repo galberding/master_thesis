@@ -167,6 +167,18 @@ bool path::PathAction::applyModifications(){
   return true;
 }
 
+bool path::PathAction::intersect(shared_ptr<PathAction> pa){
+  //TODO: Conditions to intersect
+
+
+  // float D = (x1 - x2)*(y3 - y4)-(y1 -y2)*(x3-x4);
+
+  // Paralel case
+  // Coinede
+  return true;
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //                                AheadAction                                //
 ///////////////////////////////////////////////////////////////////////////////
@@ -463,4 +475,49 @@ int path::Robot::getFreeArea(){
   if (!(freeArea > 0))
     freeArea =  pmap->getSize().x()*pmap->getSize().y() - (pmap->get("obstacle").sum());
   return freeArea;
+}
+
+
+void path::Robot::initPAidx(int width, int height){
+  PA_idx.resize(height, vector<deque<shared_ptr<PathAction>>>(width));
+}
+
+void path::Robot::resetPAidx(){
+  int width = pmap->getSize().x();
+  int height = pmap->getSize().y();
+  for(int i=0; i<height; i++){
+    for(int j=0; j<width; j++){
+      PA_idx.at(i).at(j).clear();
+    }
+  }
+}
+
+void path::Robot::updatePaidx(shared_ptr<PathAction> pa, int x, int y){
+  PA_idx.at(y).at(x).push_back(pa);
+}
+
+void path::Robot::intersect(shared_ptr<PathAction> pa, int x, int y){
+  auto pas =  PA_idx.at(x).at(y);
+  Vec2 a(pa->wps.front()[0], pa->wps.front()[1]);
+  Vec2 b(pa->wps.back()[0], pa->wps.back()[1]);
+
+  Line2 A = Line2::Through(a, b);
+
+  for (auto ppa = pas.begin(); ppa != pas.end(); ++ppa) {
+    // pa.intersect(*ppa);
+
+
+    Vec2 c((*ppa)->wps.front()[0], pa->wps.front()[1]);
+    Vec2 d((*ppa)->wps.back()[0], pa->wps.back()[1]);
+
+
+    Line2 B = Line2::Through(c, d);
+    auto P = A.intersection(B);
+
+    debug("Intersection: ", P);
+    debug("Distance A: ", A.absDistance(P), " B: ", B.absDistance(P));
+    // Check distance of point to other Line
+
+
+  }
 }

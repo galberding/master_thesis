@@ -15,6 +15,7 @@
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include <cstring>
 #include "mapGen.h"
+#include <Eigen/Geometry>
 
 #define RESET   "\033[0m"
 #define RED     "\033[31m"      /* Red */
@@ -28,6 +29,8 @@
 // #define __DEBUG_WARN__ true
 
 #include "debug.h"
+using Vec2  = Eigen::Vector2f;
+using Line2 = Eigen::Hyperplane<float,2>;
 
 // #ifdef __DEBUG__
 #undef __DEBUG__
@@ -159,6 +162,7 @@ namespace path {
     virtual bool applyModifications();
 
     bool updateConf(PAP param, float val);
+    bool intersect(shared_ptr<PathAction> pa);
   };
 
 
@@ -250,6 +254,10 @@ For now we will just return the start point because the robot object should find
     bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
 
     cv::Mat gridToImg(string layer);
+    void initPAidx(int width, int height);
+    void resetPAidx();
+    void intersect(shared_ptr<PathAction> pa, int x, int y);
+    void updatePaidx(shared_ptr<PathAction> pa, int x, int y);
 
 
     rob_config getConfig(){return defaultConfig;};
@@ -267,6 +275,7 @@ For now we will just return the start point because the robot object should find
     direction lastDirection;
     Position currentPos;
     int freeArea = 0;
+    vector<vector<deque<shared_ptr<PathAction>>>> PA_idx;
   };
 }
 
