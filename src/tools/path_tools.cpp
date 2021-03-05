@@ -427,7 +427,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 	float mapVal = cmap->at(opName, *lit);
 	// debug("Map Val: ", mapVal);
 	if (mapVal > 0){
-	  action->c_config[Counter::CrossCount] +=  1;
+	  action->c_config[Counter::CrossCount] +=  cmap->at(opName, *lit);
 	}
 	action->c_config[Counter::StepCount] +=  1;
 	cmap->at(opName, *lit) += 1;

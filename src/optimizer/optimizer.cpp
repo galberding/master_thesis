@@ -236,7 +236,7 @@ void op::Optimizer::optimizePath(bool display){
   // Main loop
   (*fs)(pool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
-
+    // debug("test");
       // Logging
     // debug("Size: ", pool.size());
       getBestGen(pool, eConf);

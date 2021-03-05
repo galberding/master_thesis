@@ -14,8 +14,7 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     visualize = yConf["visualize"].as<bool>();
   if(yConf["printInfo"])
     printInfo = yConf["printInfo"].as<bool>();
-  if(yConf["adaptParameter"])
-    adaptParameter = yConf["adaptParameter"].as<bool>();
+
   if(yConf["scenario"])
     scenario = yConf["scenario"].as<float>();
   if(yConf["logName"])
@@ -71,6 +70,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
   if(yConf["mutaReplaceGen"])
     mutaReplaceGen = yConf["mutaReplaceGen"].as<float>();
   // Adaptive parameter:
+  if(yConf["adaptParameter"])
+    adaptParameter = yConf["adaptParameter"].as<bool>();
   if(yConf["crossUpper"])
     crossUpper = yConf["crossUpper"].as<float>();
   if(yConf["crossLower"])
@@ -81,6 +82,14 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     cLenUpper = yConf["cLenUpper"].as<float>();
   if(yConf["cLenLower"])
     cLenLower = yConf["cLenLower"].as<float>();
+
+  // Adapt Selection Pressure
+  if(yConf["adaptSP"])
+    adaptSP = yConf["adaptSP"].as<bool>();
+  if(yConf["adaptSPupper"])
+    adaptSPupper = yConf["adaptSPupper"].as<float>();
+  if(yConf["adaptSPlower"])
+    adaptSPlower = yConf["adaptSPlower"].as<float>();
 
   // Population
   if(yConf["popMin"])
@@ -230,3 +239,19 @@ void conf::executionConfig::adaptCLen(){
 }
 
 // void conf::executionConfig::adaptGenReplMutation(){}
+
+void conf::executionConfig::adaptSelPressure(){
+
+  if(not adaptSP) return;
+  assert(adaptSPupper >= adaptSPlower);
+  float pIter = static_cast<float>(currentIter) / maxIterations;
+  // debug("piter")
+  float rest = adaptSPupper - adaptSPlower;
+  float res = adaptSPlower + pIter*rest;
+  // debug("SP: ", res);
+  if(scenario == 1)		// Tournament Selection
+    tournamentSize = ceil(res);
+  else
+    selPressure = res;
+
+}

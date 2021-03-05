@@ -169,6 +169,10 @@ namespace conf {
     float mutUpper = 0.1;
     float lastDmax = 0;
 
+    bool  adaptSP = false;
+    float adaptSPupper = 2;
+    float adaptSPlower = 1;
+
     // float mutUpperReplGen = 0.001;
 
     string config_to_string(){
@@ -186,6 +190,7 @@ namespace conf {
     void adaptCrossover();
     void adaptMutation();
     void adaptCLen();
+    void adaptSelPressure();
     // void adaptGenReplMutation();
   };
 

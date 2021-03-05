@@ -1,6 +1,6 @@
 logDir: ConvexRegion2
 logName: run.log
-maxIterations: 10000
+maxIterations: 2000
 
 visualize: true
 printInfo: true
@@ -17,10 +17,10 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 0
+clearZeros: 100
 
 # Map
-mapType: 1
+mapType: 2
 mapWidth: 11
 mapHeight: 11
 
@@ -38,26 +38,26 @@ initIndividuals: 100 #
 penalizeZeroActions: true
 penalizeRotation: false
 funSelect: 2
-fitSselect: 3
+fitSselect: 0
 
 # Population
-popMin: 30
+popMin: 100
 
 
 
 # Selection
-keep: 2 #
+keep: 1 #
 select: 20 #
 tournamentSize: 5 #
 selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.9
-crossLength: 0.4
+crossLength: 0.2
 # 0 - local
 # 1 - global
 # 2 - both
-crossChildSelector: 1
+crossChildSelector: 2
 # 0 - DualPointcrossover
 # 1 - Same Start idx
 crossStrategy: 1
@@ -68,13 +68,17 @@ mutaRandAngleProba: 0.00 #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.00 #
-mutaReplaceGen: 0.1
+mutaReplaceGen: 0.001
 
 
 # Adaptive parameter:
-adaptParameter: true
+adaptParameter: false
 crossUpper: 1
 crossLower: 0.5
 cLenUpper: 0.1 #
-cLenLower: 0.1 #
-mutUpper: 0.1
+cLenLower: 0.5 #
+mutUpper: 0.001
+
+adaptSP: true
+adaptSPlower: 1
+adaptSPupper: 40

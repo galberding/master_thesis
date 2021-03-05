@@ -36,12 +36,13 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
   if(size < eConf.actionLenMin) eConf.actionLenMin = size;
   if(gen.finalTime > eConf.fitnessMaxTime)
     eConf.fitnessMaxTime = gen.finalTime;
-  if(gen.finalTime < eConf.fitnessMaxTime)
-    eConf.fitnessMaxTime = gen.finalTime;
+  if(gen.finalTime < eConf.fitnessMinTime)
+    eConf.fitnessMinTime = gen.finalTime;
   if(gen.finalCoverage > eConf.fitnessMaxCoverage)
     eConf.fitnessMaxCoverage = gen.finalCoverage;
   if(gen.finalCoverage < eConf.fitnessMinCoverage)
     eConf.fitnessMinCoverage = gen.finalCoverage;
+  
   if(gen.finalRotationTime > eConf.fitnessMaxAngleCost)
     eConf.fitnessMaxAngleCost = gen.finalRotationTime;
   if(gen.finalRotationTime < eConf.fitnessMinAngleCost)
@@ -80,6 +81,7 @@ void fit::trackPoolFitness(Genpool& pool, executionConfig& eConf){
   eConf.adaptCrossover();
   eConf.adaptMutation();
   eConf.adaptCLen();
+  eConf.adaptSelPressure();
 
 }
 
@@ -131,7 +133,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   // prepare parameters
   // Check if the gen is valid -> returns false if gen has distance 0
   if(!gen.updateGenParameter()){
-    debug("Update: ", gen.updateGenParameter());
+    debug("Dead Gen detected!");
     gen.fitness = 0;
     return 0;
   }
@@ -235,7 +237,7 @@ float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executi
   // prepare parameters
   // Check if the gen is valid -> returns false if gen has distance 0
   if(!gen.updateGenParameter()){
-    debug("Update: ", gen.updateGenParameter());
+    debug("Dead Gen detected!");
     gen.fitness = 0;
     return 0;
   }
@@ -246,8 +248,8 @@ float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executi
   float cross_d = gen.pixelCrossCoverage *  pow(eConf.Rob_width, 2);
   float area = freeSpace * pow(eConf.Rob_width, 2);
 
-  float cov = (gen.pathLengh * eConf.Rob_width) - cross_d;
-  float finalCoverage = cov / area;
+  float cov = (gen.pathLengh * eConf.Rob_width) ;
+  float finalCoverage = (cov- cross_d) / area;
 
   // Time parameter:
   float actualTime = gen.pathLengh * eConf.Rob_speed;
