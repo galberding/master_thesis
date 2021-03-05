@@ -34,6 +34,14 @@ namespace conf {
       generator.seed(42);
       ends = {start};
       Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
+      // TODO :Possible that values will be lost 
+      rob_conf = {
+	{RobotProperty::Width, Rob_width},
+	{RobotProperty::Height, Rob_width},
+	{RobotProperty::Dspeed, Rob_speed},
+	{RobotProperty::Cspeed, Rob_speed},
+	{RobotProperty::Rspeed, Rob_angleSpeed}
+      };
 
     }
 
@@ -105,11 +113,7 @@ namespace conf {
     float Rob_speed = 0.2; // [m/s]
     float Rob_RPM = 12; // Rotations per minute
     float Rob_angleSpeed = 0; // 2*Pi * RPM * 1/60s [rad/s]
-    rob_config rob_conf = {
-      {RobotProperty::Width_cm, 1},
-      {RobotProperty::Height_cm, 1},
-      {RobotProperty::Drive_speed_cm_s, 50},
-      {RobotProperty::Clean_speed_cm_s, 20}};
+    rob_config rob_conf;
 
     // Map
     std::mt19937 generator;

@@ -39,16 +39,14 @@ using Line2 = Eigen::Hyperplane<float,2>;
 namespace path {
 
   /*
-    Size parameter should be given in cm
-    Speed parameter should be given in cm/s
+
    */
   enum class RobotProperty{
-
-    Width_cm = 0,
-    Height_cm = 1,
-    Drive_speed_cm_s = 2,
-    Clean_speed_cm_s = 3,
-    // Rotation_speed = 4,
+    Width = 0,			// [m]
+    Height = 1,			// [m]
+    Dspeed = 2,			// [m/s]
+    Cspeed = 3,			// [m/s]
+    Rspeed = 4,			// [rad/s]
   };
 
   enum class PathActionParameter {
@@ -218,7 +216,9 @@ For now we will just return the start point because the robot object should find
   /////////////////////////////////////////////////////////////////////////////
   //                                  Robot                                  //
   /////////////////////////////////////////////////////////////////////////////
-
+  
+  using idxMap1D = vector<vector<shared_ptr<PathAction>>>;
+  using idxMap2D = vector<idxMap1D>;
 
   class Robot{
 
@@ -275,7 +275,7 @@ For now we will just return the start point because the robot object should find
     direction lastDirection;
     Position currentPos;
     int freeArea = 0;
-    vector<vector<deque<shared_ptr<PathAction>>>> PA_idx;
+    idxMap2D PA_idx;
   };
 }
 

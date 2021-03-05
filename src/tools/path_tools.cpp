@@ -251,14 +251,15 @@ path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperatio
    pmap(gmap),
    opName(mapOperationName){
   defaultConfig = {
-       {RobotProperty::Width_cm, 1},
-       {RobotProperty::Height_cm, 1},
-       {RobotProperty::Drive_speed_cm_s, 50},
-       {RobotProperty::Clean_speed_cm_s, 20}};
+       {RobotProperty::Width, 1},
+       {RobotProperty::Height, 1},
+       {RobotProperty::Dspeed, 50},
+       {RobotProperty::Cspeed, 20}};
 
   updateConfig(defaultConfig, conf);
   pmap->add(opName, 0);
   resetCounter();
+  initPAidx(pmap->getSize().x(), pmap->getSize().y());
 }
 
 
@@ -325,7 +326,7 @@ bool path::Robot::evaluateActions(PAs &pas){
 
   bool success = false;
   bool overrideChanges = true;
-
+  resetPAidx();
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     // debug("--------------------");
 
@@ -479,17 +480,22 @@ int path::Robot::getFreeArea(){
 
 
 void path::Robot::initPAidx(int width, int height){
-  PA_idx.resize(height, vector<deque<shared_ptr<PathAction>>>(width));
+  debug("Init");
+  PA_idx.resize(height, idxMap1D(width, vector<shared_ptr<PathAction>>(5)));
+  debug("End");
 }
 
 void path::Robot::resetPAidx(){
+  // debug("Rst");
   int width = pmap->getSize().x();
   int height = pmap->getSize().y();
-  for(int i=0; i<height; i++){
-    for(int j=0; j<width; j++){
-      PA_idx.at(i).at(j).clear();
+  for(int j=0; j<width; j++){
+    for(int i=0; i<height; i++){
+      if(PA_idx.at(i).at(j).size() > 0)
+	PA_idx.at(i).at(j).clear();
     }
   }
+  // debug("rstEnd");
 }
 
 void path::Robot::updatePaidx(shared_ptr<PathAction> pa, int x, int y){

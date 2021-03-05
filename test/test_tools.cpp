@@ -303,11 +303,11 @@ TEST_F(RobotTest, evaluateActionTestTooFewActions){
 
 TEST_F(RobotTest, mapBoundsTest){
   Position pos;
-  debug(cmap->getSize().x());
-  debug(cmap->getPosition(Index(cmap->getSize().x()-1, cmap->getSize().y()-1), pos));
-  debug(pos);
-  debug(cmap->getPosition(Index(0, 0), pos));
-  debug(pos);
+  // debug(cmap->getSize().x());
+  // debug(cmap->getPosition(Index(cmap->getSize().x()-1, cmap->getSize().y()-1), pos));
+  // debug(pos);
+  // debug(cmap->getPosition(Index(0, 0), pos));
+  // debug(pos);
 
 }
 
@@ -315,9 +315,9 @@ TEST_F(RobotTest, mapBoundsTest){
 TEST(ActionTest, EndActionMendingTest){
   Position start(42,42), end(42,42);
 
-  debug("Start: ", start);
-  debug("End: ", end);
-  debug("Distance: ", start - end);
+  // debug("Start: ", start);
+  // debug("End: ", end);
+  // debug("Distance: ", start - end);
 
   StartAction sa(start);
   EndAction ea({end});
@@ -336,7 +336,7 @@ TEST(ActionTest, EndActionMendingTest){
       make_shared<EndAction>(ea)
   };
 
-  debug("Execute Mending on end action");
+  // debug("Execute Mending on end action");
   act.back()->mendConfig(act.front());
 
   auto sta = act.begin();
@@ -344,13 +344,13 @@ TEST(ActionTest, EndActionMendingTest){
   (*nxt)->modified = true;
   (*nxt)->generateWPs((*sta)->wps.front());
   while(nxt != act.end()){
-    debug("Mend: ", int((*nxt)->type));
+    // debug("Mend: ", int((*nxt)->type));
     (*nxt)->mendConfig(*sta);
     sta = nxt;
     nxt++;
     if(nxt == act.end()) break;
     (*nxt)->generateWPs((*sta)->wps.front());
-    debug("Done!");
+    // debug("Done!");
   }
 }
 
@@ -503,10 +503,10 @@ TEST(GenTools, testErase){
   // };
 
   genome_tools::genome gen(act);
-  debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
+  // debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
   genome_tools::removeZeroPAs(gen);
   // genome_tools::genome gen(act);
-  debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
+  // debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
 }
 
 

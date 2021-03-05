@@ -14,6 +14,42 @@ namespace fs = std::filesystem;
 // using namespace gsearch;
 
 
+class RobTest : public ::testing::Test{
+protected:
+  void SetUp() override {
+    executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+    ostringstream msg;
+
+    // Genpool pool;
+    InitStrategy init;
+    eConf.initIndividuals = 1;
+    eConf.initActions = 4;
+    init(pool, eConf);
+    Robot rob(eConf.rob_conf,
+	      eConf.gmap,
+	      eConf.obstacleName);
+    this->rob = make_shared<Robot>(rob);
+    genome gen = pool.front();
+
+    // rob.evaluateActions(gen.actions);
+
+  }
+
+  shared_ptr<Robot> rob;
+  Genpool pool;
+};
+
+TEST_F(RobTest, initReset){
+
+}
+
+TEST_F(RobTest, consecutiveReset){
+      for (int i=0; i<100; i++)
+	rob->resetPAidx();
+}
+
+
+
 TEST(Crossover, idxCalculation){
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
   ostringstream msg;
@@ -60,6 +96,11 @@ TEST(Crossover, idxCalculation){
 }
 
 
+TEST(Robot, intersectionTest){
+
+
+
+}
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
