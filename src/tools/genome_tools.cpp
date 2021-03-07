@@ -39,6 +39,7 @@ bool genome_tools::genome::updateGenParameter(){
   // debug("Update");
   for (auto it = actions.begin(); it != actions.end(); ++it) {
     // Distance:
+    (*it)->mod_config[PAP::Distance] = ((*it)->wps.front() - (*it)->wps.back()).norm();
     pathLengh += (*it)->mod_config[PAP::Distance];
     // Coverage in Pixel values
     pixelCrossCoverage += (*it)->c_config[Counter::CrossCount];

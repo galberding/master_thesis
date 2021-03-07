@@ -217,9 +217,9 @@ void conf::executionConfig::adaptMutation(){
     muta = mutUpper;
   }
 
-//   mutaRandAngleProba = muta;
-//   mutaRandScaleDistProba = muta;
   assert(muta >= 0);
+  mutaRandAngleProba = muta;
+  mutaRandScaleDistProba = muta;
   mutaReplaceGen = muta;
 }
 

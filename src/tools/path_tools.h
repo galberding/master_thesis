@@ -216,7 +216,7 @@ For now we will just return the start point because the robot object should find
   /////////////////////////////////////////////////////////////////////////////
   //                                  Robot                                  //
   /////////////////////////////////////////////////////////////////////////////
-  
+
   using idxMap1D = vector<vector<shared_ptr<PathAction>>>;
   using idxMap2D = vector<idxMap1D>;
 
@@ -246,7 +246,7 @@ For now we will just return the start point because the robot object should find
       Given a list of endpoints we want to find the endpoint to which the path is shortest.
       TODO: use A* or similar to get the shortest path
      */
-    WPs findShortestEndpointPath(WPs endpoints);
+    // WPs findShortestEndpointPath(WPs endpoints);
 
     /*
       Mark points on the map and cal

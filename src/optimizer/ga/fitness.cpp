@@ -244,18 +244,20 @@ float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executi
   // Set calculated path
   gen.setPathSignature(eConf.gmap);
 
+  float cross_p = gen.cross / gen.traveledDist;
+
   // Convert pixel values to [m²]
-  float cross_d = gen.pixelCrossCoverage *  pow(eConf.Rob_width, 2);
   float area = freeSpace * pow(eConf.Rob_width, 2);
 
   float cov = (gen.pathLengh * eConf.Rob_width) ;
-  float finalCoverage = (cov- cross_d) / area;
+  float cross_d = cov * cross_p;
+  float finalCoverage = (cov - cross_d) / area;
 
   // Time parameter:
   float actualTime = gen.pathLengh * eConf.Rob_speed;
   // Penalize if enpoint is not reached
 
-  float optimalTime = actualTime - (cross_d / eConf.Rob_width) * eConf.Rob_speed;
+  float optimalTime = actualTime - (gen.pathLengh * cross_p) * eConf.Rob_speed;
 
   if (not gen.reachEnd)
     actualTime *= 2;

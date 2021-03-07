@@ -7,7 +7,7 @@ printInfo: true
 # 0: elitist selction
 # 1: Tournament selection
 # 2: Roulettwheel selection
-scenario: 1
+scenario: 3
 
 # Snapshots
 restore: false
@@ -17,17 +17,17 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 100
+clearZeros: 10000
 
 # Map
-mapType: 2
+mapType: 1
 mapWidth: 11
 mapHeight: 11
 
 # Robot:
 Rob_width: 0.3 # [m]
 Rob_speed: 0.2 # [m/s]
-Rob_RPM: 60    # rounds per minute
+Rob_RPM: 600    # rounds per minute
 
 
 # Initialization
@@ -37,8 +37,9 @@ initIndividuals: 100 #
 # Fitness
 penalizeZeroActions: true
 penalizeRotation: false
-funSelect: 2
-fitSselect: 0
+funSelect: 3
+fitSselect: 2
+
 
 # Population
 popMin: 100
@@ -46,9 +47,9 @@ popMin: 100
 
 
 # Selection
-keep: 1 #
+keep: 2 #
 select: 20 #
-tournamentSize: 5 #
+tournamentSize: 2 #
 selPressure: 2 #
 
 # Crossover
@@ -76,9 +77,9 @@ adaptParameter: false
 crossUpper: 1
 crossLower: 0.5
 cLenUpper: 0.1 #
-cLenLower: 0.5 #
-mutUpper: 0.001
+cLenLower: 0.4 #
+mutUpper: 0.005
 
 adaptSP: true
 adaptSPlower: 1
-adaptSPupper: 40
+adaptSPupper: 2

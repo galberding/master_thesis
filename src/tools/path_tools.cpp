@@ -326,7 +326,7 @@ bool path::Robot::evaluateActions(PAs &pas){
 
   bool success = false;
   bool overrideChanges = true;
-  resetPAidx();
+  // resetPAidx();
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     // debug("--------------------");
 
@@ -371,12 +371,12 @@ void path::Robot::resetCounter() {
   traveledDist = 0;
 }
 
-WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
-  WPs b;
-  b.push_back(endpoints.front());
+// WPs path::Robot::findShortestEndpointPath(WPs endpoints) {
+//   WPs b;
+//   b.push_back(endpoints.front());
 
-  return b;
-}
+//   return b;
+// }
 
 bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean) {
 
@@ -440,8 +440,12 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
 	float mapVal = cmap->at(opName, *lit);
 	// debug("Map Val: ", mapVal);
 	if (mapVal > 0){
-	  action->c_config[Counter::CrossCount] +=  cmap->at(opName, *lit);
+	  action->c_config[Counter::CrossCount] += 1; //cmap->at(opName, *lit);
+	  // if(action->c_config[Counter::StepCount] > 0){
+	  //   updatePaidx(action, (*lit).x(), (*lit).y());
+	  //   }
 	}
+
 	action->c_config[Counter::StepCount] +=  1;
 	cmap->at(opName, *lit) += 1;
 	// debug("Mark map");
@@ -489,8 +493,8 @@ void path::Robot::resetPAidx(){
   // debug("Rst");
   int width = pmap->getSize().x();
   int height = pmap->getSize().y();
-  for(int j=0; j<width; j++){
-    for(int i=0; i<height; i++){
+  for(int i=0; i<height; i++){
+    for(int j=0; j<width; j++){
       if(PA_idx.at(i).at(j).size() > 0)
 	PA_idx.at(i).at(j).clear();
     }
@@ -499,31 +503,43 @@ void path::Robot::resetPAidx(){
 }
 
 void path::Robot::updatePaidx(shared_ptr<PathAction> pa, int x, int y){
+  if(PA_idx.at(y).at(x).size() > 0){
+    intersect(pa, x, y);
+  }
   PA_idx.at(y).at(x).push_back(pa);
 }
 
 void path::Robot::intersect(shared_ptr<PathAction> pa, int x, int y){
+
   auto pas =  PA_idx.at(x).at(y);
+  auto res = pa->wps.back() - pa->wps.front();
+
+
   Vec2 a(pa->wps.front()[0], pa->wps.front()[1]);
   Vec2 b(pa->wps.back()[0], pa->wps.back()[1]);
 
-  Line2 A = Line2::Through(a, b);
 
+
+  Line2 A = Line2::Through(a, b);
+  debug("ACtion distance: ", pa->mod_config[PAP::Distance], " actural: ", res.norm());
+  debug("Line A: ", pa->wps.front()[0], "|",pa->wps.front()[1], "->", pa->wps.back()[0],"|", pa->wps.back()[1]);
   for (auto ppa = pas.begin(); ppa != pas.end(); ++ppa) {
     // pa.intersect(*ppa);
 
 
-    Vec2 c((*ppa)->wps.front()[0], pa->wps.front()[1]);
-    Vec2 d((*ppa)->wps.back()[0], pa->wps.back()[1]);
+    Vec2 c((*ppa)->wps.front()[0], (*ppa)->wps.front()[1]);
+    Vec2 d((*ppa)->wps.back()[0], (*ppa)->wps.back()[1]);
 
-
+    debug("Line B: ", (*ppa)->wps.front()[0], "|",(*ppa)->wps.front()[1], "->", (*ppa)->wps.back()[0],"|", (*ppa)->wps.back()[1]);
     Line2 B = Line2::Through(c, d);
     auto P = A.intersection(B);
+    Position pos, fin;
+    pmap->getPosition(Index(x,y), pos);
+    fin[0] = pos[0] - P[0];
+    fin[0] = pos[1] - P[1];
 
-    debug("Intersection: ", P);
+    debug("Intersection: ", P[0], "|", P[1], " expected: ", pos[0], "|", pos[1], " dev: ", fin.norm());
     debug("Distance A: ", A.absDistance(P), " B: ", B.absDistance(P));
     // Check distance of point to other Line
-
-
   }
 }
