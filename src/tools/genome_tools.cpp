@@ -92,7 +92,12 @@ void genome_tools::validateGen(genome &gen){
    // Gens need to be falidated after crossover to fix the crossing
    // Consequently each gen that is flagged as modified needs to be adapted or its changes need to be
    // propagated to the next Gen
-   if(!(*it)->modified) continue;
+   if(!(*it)->modified) {
+     // debug(((*it)->wps.front() - (*it)->wps.back()).norm(), " -- ", (*it)->mod_config[PAP::Distance]);
+     // assert(((*it)->wps.front() - (*it)->wps.back()).norm() - (*it)->mod_config[PAP::Distance] >= -0.001
+     // 	    and ((*it)->wps.front() - (*it)->wps.back()).norm() - (*it)->mod_config[PAP::Distance] <= 0.001);
+     continue;
+   }
 
    // Assumptions:
    // What about newly created actions? -> generate waypoints by adding!

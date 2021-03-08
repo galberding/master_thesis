@@ -27,35 +27,35 @@ mapHeight: 11
 # Robot:
 Rob_width: 0.3 # [m]
 Rob_speed: 0.3 # [m/s]
-Rob_RPM: 60000    # rounds per minute
+Rob_RPM: 600    # rounds per minute
 
 
 # Initialization
 initActions: 50
-initIndividuals: 100 #
+initIndividuals: 1000 #
 
 # Fitness
 penalizeZeroActions: true
 penalizeRotation: false
-funSelect: 0
-fitSselect: 2
+funSelect: 2
+fitSselect: 5
 
 
 # Population
-popMin: 100
+popMin: 120
 
 
 
 # Selection
-scenario: 2
-keep: 2 #
-select: 20 #
+scenario: 1
+keep: 20 #
+select: 30 #
 tournamentSize: 2 #
 selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.9
-crossLength: 0.2
+crossLength: 0.1
 # 0 - local
 # 1 - global
 # 2 - both
@@ -66,10 +66,10 @@ crossStrategy: 1
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.00 #
+mutaRandAngleProba: 0.001 #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.00 #
+mutaRandScaleDistProba: 0.001 #
 mutaReplaceGen: 0.001
 
 
@@ -78,9 +78,9 @@ adaptParameter: true
 crossUpper: 1
 crossLower: 0.7
 cLenUpper: 0.1 #
-cLenLower: 0.4 #
-mutUpper: 0.005
+cLenLower: 0.1 #
+mutUpper: 0.001
 
 adaptSP: true
 adaptSPlower: 1
-adaptSPupper: 40
+adaptSPupper: 50
