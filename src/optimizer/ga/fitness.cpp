@@ -42,7 +42,7 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
     eConf.fitnessMaxCoverage = gen.finalCoverage;
   if(gen.finalCoverage < eConf.fitnessMinCoverage)
     eConf.fitnessMinCoverage = gen.finalCoverage;
-  
+
   if(gen.finalRotationTime > eConf.fitnessMaxAngleCost)
     eConf.fitnessMaxAngleCost = gen.finalRotationTime;
   if(gen.finalRotationTime < eConf.fitnessMinAngleCost)
@@ -163,18 +163,19 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.finalRotationTime =  gen.rotationCost;
 
 
-  if(eConf.funSelect == 0)
-    gen.fitness = (pow(x, 2)*pow(y, 2));
-  else if(eConf.funSelect == 1)
-    gen.fitness = (pow(x, 5)*pow(y, 4));
-  else if(eConf.funSelect == 2)
-    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
-  else if(eConf.funSelect == 3)
-    gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
-  else if(eConf.funSelect == 4)
-    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
-  else if(eConf.funSelect == 5)
-    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
+  // if(eConf.funSelect == 0)
+  //   gen.fitness = (pow(x, 2)*pow(y, 2));
+  // else if(eConf.funSelect == 1)
+  //   gen.fitness = (pow(x, 5)*pow(y, 4));
+  // else if(eConf.funSelect == 2)
+  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
+  // else if(eConf.funSelect == 3)
+  //   gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
+  // else if(eConf.funSelect == 4)
+  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
+  // else if(eConf.funSelect == 5)
+  //   gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
+
 
   fitnessFun(gen, x, y, eConf);
   // gen.fitness = (pow(x, 5)*pow(y, 4));
@@ -199,20 +200,6 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 //                           Fittness Rotation Bias                          //
 ///////////////////////////////////////////////////////////////////////////////
 
-void fit::fitnessFun(genome& gen, float x, float y, executionConfig& eConf){
-  if(eConf.funSelect == 0)
-    gen.fitness = (pow(x, 2)*pow(y, 2));
-  else if(eConf.funSelect == 1)
-    gen.fitness = (pow(x, 5)*pow(y, 4));
-  else if(eConf.funSelect == 2)
-    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
-  else if(eConf.funSelect == 3)
-    gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
-  else if(eConf.funSelect == 4)
-    gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
-  else if(eConf.funSelect == 5)
-    gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
-}
 
 
 void fit::FitnessRotationBias::applyPoolBias(Genpool &pool, executionConfig &eConf, bool useGlobal){
@@ -281,4 +268,26 @@ float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executi
     gen.fitness *= 1 - calZeroActionPercent(gen);
 
   return gen.fitness;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                             Fitness Functions                             //
+///////////////////////////////////////////////////////////////////////////////
+
+void fit::fitnessFun(genome& gen, float x, float y, executionConfig& eConf){
+  if(eConf.funSelect == 0) 	// Linear case
+    gen.fitness = (0.5*x + 0.5*y);
+  else if(eConf.funSelect == 1) // Multiply
+    gen.fitness = x*y;
+  else if(eConf.funSelect == 2) // Weighted
+    gen.fitness = (0.5*x + 0.5*y)*x*y;
+  else if(eConf.funSelect == 3)	// Sqrt
+    gen.fitness = sqrt((0.5*x + 0.5*y)*x*y);
+  else
+    assert(false);
+  // else if(eConf.funSelect == 4)
+  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
+  // else if(eConf.funSelect == 5)
+  //   gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
 }
