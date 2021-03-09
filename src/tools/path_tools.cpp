@@ -259,7 +259,7 @@ path::Robot::Robot(rob_config conf, shared_ptr<GridMap> gmap, string mapOperatio
   updateConfig(defaultConfig, conf);
   pmap->add(opName, 0);
   resetCounter();
-  initPAidx(pmap->getSize().x(), pmap->getSize().y());
+  // initPAidx(pmap->getSize().x(), pmap->getSize().y());
 }
 
 
@@ -425,6 +425,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
       // debug("Collision detected!");
       if(action->c_config[Counter::StepCount] == 0){
 	warn("Fail in first round!!");
+	assert(false);
 	// TODO: This is a problem because the position seems to be outside
 	//  so some control mechanism allows for point creation in obstacles!
 	return false;
@@ -484,9 +485,9 @@ int path::Robot::getFreeArea(){
 
 
 void path::Robot::initPAidx(int width, int height){
-  debug("Init");
+  // debug("Init");
   PA_idx.resize(height, idxMap1D(width, vector<shared_ptr<PathAction>>(5)));
-  debug("End");
+  // debug("End");
 }
 
 void path::Robot::resetPAidx(){

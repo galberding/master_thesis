@@ -11,6 +11,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, in
   switch(type){
   case 0:{ // empty
     map.add("obstacle", 0);
+    throw 42;
     assertm(map.getPosition(Index(0,0), start), "Cannot get position by index while map generation type 0");
     break;
   }
@@ -29,12 +30,19 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, in
 
     for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
       !iterator.isPastEnd(); ++iterator) {
-      if(!startSet){
-	startSet = true;
-	assertm(map.getPosition(*iterator, start), "Cannot get position by index while map generation type 1");
-      }
       map.at("obstacle", *iterator) = 0;
+      if(!startSet){
+        if (map.getPosition(*iterator, start)) {
+	  startSet = true;
+          if (map.atPosition("obstacle", start) > 0)
+            startSet = false;
+        }
+      }
 
+    }
+    if(not startSet){
+      warn("No startpoint is set!");
+      throw 42;
     }
     break;
   }
@@ -53,15 +61,22 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, in
 
 
     for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
-      !iterator.isPastEnd(); ++iterator) {
-      if(!startSet){
-	startSet = true;
-	assertm(map.getPosition(*iterator, start), "Cannot get position by index while map generation type 1");
-      }
+	 !iterator.isPastEnd(); ++iterator) {
       map.at("obstacle", *iterator) = 0;
+      if(!startSet){
+	if(map.getPosition(*iterator, start)){
+	  startSet = true;
+	  if(map.atPosition("obstacle", start) > 0)
+	    startSet = false;
+	}
+	// assertm(map.getPosition(*iterator, start), "Cannot get position by index while map generation type 1");
+      }
 
     }
-
+    if(not startSet){
+      warn("No startpoint is set!");
+      throw 42;
+    }
     for(grid_map::CircleIterator iter(map, Position(0,0), h_offset); !iter.isPastEnd(); ++iter){
       map.at("obstacle", *iter) = 1;
     }

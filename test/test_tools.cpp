@@ -13,13 +13,13 @@ using namespace path;
 using namespace grid_map;
 
 
-TEST(HelperFunctions, updateConfig){
-  PA_config conf1 = {{PAP::Angle, 40}};
-  PA_config conf2 = {{PAP::Angle, 42}};
+// TEST(HelperFunctions, updateConfig){
+//   PA_config conf1 = {{PAP::Angle, 40}};
+//   PA_config conf2 = {{PAP::Angle, 42}};
 
-  updateConfig(conf1, conf2);
-  EXPECT_EQ(conf1[PAP::Angle], 42);
-}
+//   updateConfig(conf1, conf2);
+//   EXPECT_EQ(conf1[PAP::Angle], 42);
+// }
 
 
 TEST(HelperFunctions, copyAction){
