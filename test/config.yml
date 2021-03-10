@@ -39,7 +39,7 @@ initIndividuals: 200 #
 penalizeZeroActions: true
 penalizeRotation: false
 funSelect: 0
-fitSselect: 2
+fitSselect: 0
 
 
 # Population

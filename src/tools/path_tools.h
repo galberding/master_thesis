@@ -282,6 +282,7 @@ For now we will just return the start point because the robot object should find
   };
 
   struct PolyRobot : Robot{
+    using Robot::Robot;
     // virtual bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map) override;
     // virtual bool evaluateActions(PAs &pas) override;
     virtual bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true) override;

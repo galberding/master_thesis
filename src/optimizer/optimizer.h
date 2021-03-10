@@ -66,9 +66,13 @@ namespace op {
 		mutate(mutate),
 		fitnessStrat(calFitness),
 		eConf(eConf){
-       rob = make_shared<Robot>(Robot(eConf.rob_conf,
+       // rob = make_shared<Robot>(Robot(eConf.rob_conf,
+       // 				     eConf.gmap,
+       // 				     eConf.obstacleName));
+       rob = make_shared<PolyRobot>(PolyRobot(eConf.rob_conf,
 				     eConf.gmap,
 				     eConf.obstacleName));
+
     }
     /**
        Continously optimize the path.
