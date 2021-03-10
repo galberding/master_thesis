@@ -437,18 +437,15 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
       // Update last position
       lastIdx = *lit;
       if (clean){
-	// TODO: Not prepared for pure Ahead action
+
 	float mapVal = cmap->at(opName, *lit);
-	// debug("Map Val: ", mapVal);
+
 	if (mapVal > 0){
-	  action->c_config[Counter::CrossCount] += 1; //cmap->at(opName, *lit);
-	  // if(action->c_config[Counter::StepCount] > 0){
-	  //   updatePaidx(action, (*lit).x(), (*lit).y());
-	  //   }
+	  action->c_config[Counter::CrossCount]++;
 	}
 
-	action->c_config[Counter::StepCount] +=  1;
-	cmap->at(opName, *lit) += 1;
+	action->c_config[Counter::StepCount]++;
+	cmap->at(opName, *lit)++;
 	// debug("Mark map");
       }
       steps++;
@@ -543,4 +540,61 @@ void path::Robot::intersect(shared_ptr<PathAction> pa, int x, int y){
     debug("Distance A: ", A.absDistance(P), " B: ", B.absDistance(P));
     // Check distance of point to other Line
   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//                                 Poly Robot                                //
+///////////////////////////////////////////////////////////////////////////////
+
+bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean){
+  bool adapted = false;
+
+  // Generate Waypoints
+
+  WPs waypoints = action->generateWPs(currentPos);
+
+  // Reset counter values
+  resetConfParameter(action->c_config, Counter::CrossCount);
+  resetConfParameter(action->c_config, Counter::StepCount);
+  resetConfParameter(action->c_config, Counter::ObjCount);
+
+  // Check if waypoints are in range
+  if(not cmap->isInside(currentPos))
+    throw 42;
+  else if (not cmap->isInside(waypoints.back())){
+    adapted = true;
+    waypoints.back() = cmap->getClosestPositionInMap(waypoints.back());
+  }
+
+  if(action->mod_config[PAP::Distance] == 0){
+    debug("Action has 0 distance");
+    return false;
+  }
+
+  // Create polygon path object
+  Polygon poly;
+  poly.addVertex(currentPos);
+  poly.addVertex(waypoints.back());
+  poly.thickenLine(defaultConfig[RP::Width]);
+
+  // Get layers of grid map (for efficiency)
+  grid_map::Matrix& data = (*cmap)[opName];
+  grid_map::Matrix& obj = (*cmap)["obstacle"];
+
+  // Iterate over all pixel, covered by the polygon
+  for (grid_map::PolygonIterator it(*cmap, poly);
+      !it.isPastEnd(); ++it) {
+    const Index idx(*it);
+    if(obj(idx(0), idx(1)) > 0){
+      action->c_config[Counter::ObjCount]++;
+    }else{
+      if(data(idx(0), idx(1)) > 0)
+	action->c_config[Counter::CrossCount]++;
+      action->c_config[Counter::StepCount]++;
+      data(idx(0), idx(1))++;
+    }
+  }
+
+  return not adapted;
 }

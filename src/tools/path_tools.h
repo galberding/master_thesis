@@ -69,7 +69,8 @@ namespace path {
 
   enum class Counter{
     CrossCount = 0,
-    StepCount = 1
+    StepCount = 1,
+    ObjCount = 2
   };
   struct PathAction;
 
@@ -132,7 +133,9 @@ namespace path {
       type(type),
       c_config{
 	{Counter::StepCount, 0},
-	{Counter::CrossCount, 0}}{
+	{Counter::CrossCount, 0},
+	{Counter::ObjCount, 0},
+      }{
       id++;
     };
 
@@ -279,8 +282,8 @@ For now we will just return the start point because the robot object should find
   };
 
   struct PolyRobot : Robot{
-    virtual bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map) override;
-    virtual bool evaluateActions(PAs &pas) override;
+    // virtual bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map) override;
+    // virtual bool evaluateActions(PAs &pas) override;
     virtual bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true) override;
   };
 }

@@ -89,7 +89,7 @@ void genome_tools::validateGen(genome &gen){
  for(auto it = gen.actions.begin(); it != gen.actions.end(); it++){
    // What is needed to validate the gens?
    // Gens are not validated after initialization!
-   // Gens need to be falidated after crossover to fix the crossing
+   // Gens need to be validated after crossover to fix the crossing
    // Consequently each gen that is flagged as modified needs to be adapted or its changes need to be
    // propagated to the next Gen
    if(!(*it)->modified) {
