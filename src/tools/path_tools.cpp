@@ -315,7 +315,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, shared_ptr<grid_map::Gr
     // action->modified = true;
     // action->generateWPs(action->wps.front());
     action->applyModifications();
-    assertm(map->isInside(action->wps.back()), "Generated point outside the map");
+    // assertm(map->isInside(action->wps.back()), "Generated point outside the map");
   }
 
   // When initializing we do not want to modify the next action
@@ -401,7 +401,7 @@ bool path::Robot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> actio
   // debug("MapMove from: ", start[0], "|", start[1], " to ", lastPos[0] , "|", lastPos[1]);
 
   // Check if points are in range
-  assertm(cmap->isInside(start), "Start-point is not in map range!");
+  // assertm(cmap->isInside(start), "Start-point is not in map range!");
   assertm(cmap->atPosition("obstacle", start) == 0, "Start Position is inside obstacle!!");
   if(action->mod_config[PAP::Distance] == 0){
     // Action is not doing anything, delete it!!
@@ -560,9 +560,10 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   resetConfParameter(action->c_config, Counter::ObjCount);
 
   // Check if waypoints are in range
-  if(not cmap->isInside(currentPos))
-    throw 42;
-  else if (not cmap->isInside(waypoints.back())){
+  // if(not cmap->isInside(currentPos))
+  //   throw 42;
+  // TODO: Fix check!
+  if (not cmap->isInside(waypoints.back())){
     adapted = true;
     waypoints.back() = cmap->getClosestPositionInMap(waypoints.back());
   }
@@ -595,6 +596,8 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
       data(idx(0), idx(1))++;
     }
   }
+
+  currentPos = waypoints.back();
 
   return not adapted;
 }
