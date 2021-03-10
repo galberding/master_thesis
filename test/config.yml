@@ -17,44 +17,45 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 10
+clearZeros: 1000
 
 # Map
-mapType: 2
+mapType: 1
 mapWidth: 11
 mapHeight: 11
+mapResolution: 0.1
 
 # Robot:
 Rob_width: 0.3 # [m]
 Rob_speed: 0.3 # [m/s]
-Rob_RPM: 60    # rounds per minute
+Rob_RPM: 60000    # rounds per minute
 
 
 # Initialization
 initActions: 50
-initIndividuals: 1000 #
+initIndividuals: 200 #
 
 # Fitness
 penalizeZeroActions: true
 penalizeRotation: false
-funSelect: 2
+funSelect: 0
 fitSselect: 2
 
 
 # Population
-popMin: 1000
+popMin: 200
 
 
 
 # Selection
-scenario: 3
-keep: 40 #
-select: 30 #
+scenario: 0
+keep: 0 #
+select: 0 #
 tournamentSize: 10 #
 selPressure: 2 #
 
 # Crossover
-crossoverProba: 0.9
+crossoverProba: 0.8
 crossLength: 0.4
 # 0 - local
 # 1 - global
@@ -70,7 +71,7 @@ mutaRandAngleProba: 0.001 #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.001 #
-mutaReplaceGen: 0.001
+mutaReplaceGen: 0.01
 
 
 # Adaptive parameter:
@@ -81,6 +82,6 @@ cLenUpper: 0.1 #
 cLenLower: 0.1 #
 mutUpper: 0.001
 
-adaptSP: true
+adaptSP: false
 adaptSPlower: 1.5
 adaptSPupper: 2

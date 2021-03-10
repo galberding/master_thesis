@@ -330,7 +330,7 @@ bool path::Robot::evaluateActions(PAs &pas){
   for(PAs::iterator it = begin(pas); it != end(pas); it++){
     // debug("--------------------");
 
-    bool init = ((*it)->wps.size() == 0 ) && !(*it)->modified;
+    bool init = ((*it)->wps.size() == 0 ) and !(*it)->modified;
     // assertm()
     assertm(!((*it)->type == PAT::Start && init), "Init should be skipped if start action appeared!");
     if(init){

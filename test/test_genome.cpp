@@ -43,10 +43,10 @@ TEST_F(RobTest, initReset){
 
 }
 
-TEST_F(RobTest, consecutiveReset){
-      for (int i=0; i<100; i++)
-	rob->resetPAidx();
-}
+// TEST_F(RobTest, consecutiveReset){
+//       for (int i=0; i<100; i++)
+// 	rob->resetPAidx();
+// }
 
 
 
@@ -97,9 +97,28 @@ TEST(Crossover, idxCalculation){
 
 
 TEST(Robot, intersectionTest){
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // grid_map::Polygon polygon;
+  // polygon.addVertex(Position(-1,-1));
+  // polygon.addVertex(Position(1,1));
+  Polygon polygon = Polygon::convexHullOfTwoCircles(Position(-1,-1), Position(1,1), eConf.Rob_width/2);
 
 
+  // polygon.thickenLine(0.5);
 
+  eConf.gmap->add("map", 0);
+  GridMap &map_ = *eConf.gmap;
+  for (grid_map::PolygonIterator iterator(*eConf.gmap, polygon);
+      !iterator.isPastEnd(); ++iterator) {
+    // debug(*iterator);
+    map_.at("map", *iterator) = 255.0;
+  }
+ // Robot rob(eConf.rob_conf,
+ // 	    eConf.gmap,
+ // 	    eConf.obstacleName);
+ cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
+  cv::imshow("Test", img);
+  cv::waitKey();
 }
 
 int main(int argc, char **argv) {

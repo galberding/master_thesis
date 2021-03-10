@@ -27,14 +27,14 @@ namespace conf {
     }
     executionConfig(const string loadPath){
       loadConfFromYaml(loadPath);
-      mapResolution = Rob_width;
+      // mapResolution = Rob_width;
       gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, mapType, start);
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
       generator.seed(42);
       ends = {start};
       Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
-      // TODO :Possible that values will be lost 
+      // TODO :Possible that values will be lost
       rob_conf = {
 	{RobotProperty::Width, Rob_width},
 	{RobotProperty::Height, Rob_width},

@@ -220,9 +220,9 @@ For now we will just return the start point because the robot object should find
   using idxMap1D = vector<vector<shared_ptr<PathAction>>>;
   using idxMap2D = vector<idxMap1D>;
 
-  class Robot{
+  struct Robot{
 
-  public:
+
     const map<PathActionType, int> get_typeCount() const { return typeCount; }
 
     const WPs get_traveledPath() const { return traveledPath; }
@@ -236,9 +236,9 @@ For now we will just return the start point because the robot object should find
       Execute an action on the given grid map.
       Return false if execution was not successful (object was in the way)
     */
-    bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map);
+    virtual bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map);
 
-    bool evaluateActions(PAs &pas);
+    virtual bool evaluateActions(PAs &pas);
 
     void resetCounter();
 
@@ -251,7 +251,7 @@ For now we will just return the start point because the robot object should find
     /*
       Mark points on the map and cal
      */
-    bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
+    virtual bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true);
 
     cv::Mat gridToImg(string layer);
     void initPAidx(int width, int height);
@@ -263,7 +263,7 @@ For now we will just return the start point because the robot object should find
     rob_config getConfig(){return defaultConfig;};
 
     int getFreeArea();
-  private:
+
     grid_map::GridMap cMap;
     shared_ptr<GridMap> pmap;
     string opName;
@@ -277,7 +277,15 @@ For now we will just return the start point because the robot object should find
     int freeArea = 0;
     idxMap2D PA_idx;
   };
+
+  struct PolyRobot : Robot{
+    virtual bool execute(shared_ptr<PathAction> action, shared_ptr<GridMap> map) override;
+    virtual bool evaluateActions(PAs &pas) override;
+    virtual bool mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> action, int &steps, Position &currentPos, WPs &path, bool clean=true) override;
+  };
 }
+
+
 
 
 #endif // __PATH_TOOLS__
