@@ -28,6 +28,7 @@ namespace conf {
     executionConfig(const string loadPath){
       loadConfFromYaml(loadPath);
       // mapResolution = Rob_width;
+      debug("Map Res: ", mapResolution);
       gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, mapType, start);
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
@@ -120,7 +121,7 @@ namespace conf {
     int mapType = 1;
     int mapWidth = 10;
     int mapHeight = 10;
-    float mapResolution = 0.3;
+    float mapResolution = 0.01;
 
 
     shared_ptr<GridMap> gmap;

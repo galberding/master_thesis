@@ -34,7 +34,7 @@ bool genome_tools::genome::updateGenParameter(){
   pathLengh = 0;
   rotations = 0;
   reachEnd = true;
-
+  p_obj = 0;
   float continu = 0;
   // debug("Update");
   for (auto it = actions.begin(); it != actions.end(); ++it) {
@@ -43,6 +43,7 @@ bool genome_tools::genome::updateGenParameter(){
     pathLengh += (*it)->mod_config[PAP::Distance];
     // Coverage in Pixel values
     pixelCrossCoverage += (*it)->c_config[Counter::CrossCount];
+    p_obj += (*it)->c_config[Counter::ObjCount];
 
     // Given in cm
     traveledDist += (*it)->c_config[Counter::StepCount];

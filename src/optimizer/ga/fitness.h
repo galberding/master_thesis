@@ -42,9 +42,14 @@ namespace fit {
 
   // Use continuous representation of traveled Distance
   // The crossing path sections are still represented as pixel values
-  struct FitnesSemiContinuous : FitnessStrategy{
+  struct FitnessSemiContinuous : FitnessStrategy{
     float calculation(genome &gen, int freeSpace, executionConfig &eConf) override;
   };
+
+  struct FitnessPoly : FitnessStrategy{
+    float calculation(genome &gen, int freeSpace, executionConfig &eConf) override;
+  };
+
 
 }
 

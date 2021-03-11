@@ -20,37 +20,37 @@ tSnap: pop.pas
 clearZeros: 1000
 
 # Map
-mapType: 1
+mapType: 2
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.1
+mapResolution: 0.3
 
 # Robot:
 Rob_width: 0.3 # [m]
 Rob_speed: 0.3 # [m/s]
-Rob_RPM: 60000    # rounds per minute
+Rob_RPM: 60    # rounds per minute
 
 
 # Initialization
 initActions: 50
-initIndividuals: 200 #
+initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
 penalizeRotation: false
-funSelect: 0
-fitSselect: 0
+funSelect: 1
+fitSselect: 1
 
 
 # Population
-popMin: 200
+popMin: 100
 
 
 
 # Selection
 scenario: 0
 keep: 0 #
-select: 0 #
+select: 10 #
 tournamentSize: 10 #
 selPressure: 2 #
 

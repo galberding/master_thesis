@@ -138,61 +138,30 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
     gen.fitness = 0;
     return 0;
   }
-  // Set calculated path
+  // Set calculated path --> Diversity estimation
   gen.setPathSignature(eConf.gmap);
 
   // Time parameter:
-  // TODO: Actual time factor
-  float actualTime = gen.traveledDist;
-
-  // debug(log(10 + gen.cross));
-  float optimalTime = gen.traveledDist - (gen.cross);
-  // debug("Optimal Time: ", optimalTime);
+  float actualTime = gen.pathLengh / eConf.Rob_speed;
+  float optimalTime = (gen.traveledDist - (gen.cross))*pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   float finalTime = optimalTime / actualTime;
 
-  float currentCoverage = (gen.traveledDist) - gen.cross;
-  float totalCoverage = freeSpace;
+  // Coverage
+  float currentCoverage = (gen.traveledDist - gen.cross)*pow(eConf.mapResolution, 2);
+  float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
 
-  // finalTime *= finalCoverage;
-
-  float weight = eConf.fitnessWeights[2];
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
   float x = finalTime;
   float y = finalCoverage;
-  gen.finalRotationTime =  gen.rotationCost;
-
-
-  // if(eConf.funSelect == 0)
-  //   gen.fitness = (pow(x, 2)*pow(y, 2));
-  // else if(eConf.funSelect == 1)
-  //   gen.fitness = (pow(x, 5)*pow(y, 4));
-  // else if(eConf.funSelect == 2)
-  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 3));
-  // else if(eConf.funSelect == 3)
-  //   gen.fitness = (0.25*(0.5*x + 0.5*y) + 0.25*x*y + 0.25*(pow(x, 2) * pow(y, 2)) + 0.25*(0.5*pow(x, 2) + 0.5*pow(y, 2)))*(pow(x, 5)*pow(y, 4));
-  // else if(eConf.funSelect == 4)
-  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
-  // else if(eConf.funSelect == 5)
-  //   gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
-
+  gen.finalRotationTime =  gen.rotations;
 
   fitnessFun(gen, x, y, eConf);
-  // gen.fitness = (pow(x, 5)*pow(y, 4));
-  // gen.fitness = (0.5*x + 0.5*y)*(pow(x, 3)*pow(y, 2));
-  // gen.fitness = 0.5*(0.5*x + 0.5*y) + 0.5*(x*y); // 370~600 -> turning point
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
 
-  // debug("Costs: ", gen.rotationCost);
-  // if(eConf.penalizeRotation and gen.rotationCost > 0){
-  //   // assert(gen.rotationCost > 0);
-  //   gen.fitness = 0.8*gen.fitness + 0.2*(1 - gen.finalAngleCost);
-  // }
-  // Genpool pool;
-  // applyPoolBias(pool);
   return gen.fitness;
 }
 
@@ -221,7 +190,7 @@ void fit::FitnessRotationBias::applyPoolBias(Genpool &pool, executionConfig &eCo
 }
 
 
-float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executionConfig &eConf){
+float fit::FitnessSemiContinuous::calculation(genome &gen, int freeSpace, executionConfig &eConf){
   // prepare parameters
   // Check if the gen is valid -> returns false if gen has distance 0
   if(!gen.updateGenParameter()){
@@ -271,6 +240,48 @@ float fit::FitnesSemiContinuous::calculation(genome &gen, int freeSpace, executi
   return gen.fitness;
 }
 
+
+float fit::FitnessPoly::calculation(genome &gen, int freeSpace, executionConfig &eConf){
+   // prepare parameters
+  // Check if the gen is valid -> returns false if gen has distance 0
+  if(!gen.updateGenParameter()){
+    debug("Dead Gen detected!");
+    gen.fitness = 0;
+    return 0;
+  }
+  // Set calculated path
+  gen.setPathSignature(eConf.gmap);
+  // TODO: Time calculation behaves weired!
+  // Time parameter:
+  float pixelContrib = (gen.traveledDist - (gen.cross) - gen.p_obj)*pow(eConf.mapResolution, 2);
+  debug("Obj: ", gen.p_obj, " Len: ", gen.pathLengh);
+
+  float actualTime = gen.pathLengh / eConf.Rob_speed;
+  float optimalTime = pixelContrib / eConf.Rob_speed;
+
+  float finalTime = optimalTime / actualTime;
+
+  // Coverage
+  float currentCoverage = pixelContrib;
+  float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
+  float finalCoverage = currentCoverage / totalCoverage;
+
+  gen.finalCoverage = finalCoverage;
+  gen.finalTime = finalTime;
+  float x = finalTime;
+  float y = finalCoverage;
+  gen.finalRotationTime =  gen.rotations;
+
+  fitnessFun(gen, x, y, eConf);
+  // Panelty for zero actions
+  if(eConf.penalizeZeroActions)
+    gen.fitness *= 1 - calZeroActionPercent(gen);
+
+
+
+  return gen.fitness;
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //                             Fitness Functions                             //

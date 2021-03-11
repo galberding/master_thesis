@@ -66,12 +66,25 @@ namespace op {
 		mutate(mutate),
 		fitnessStrat(calFitness),
 		eConf(eConf){
-       // rob = make_shared<Robot>(Robot(eConf.rob_conf,
-       // 				     eConf.gmap,
-       // 				     eConf.obstacleName));
-       rob = make_shared<PolyRobot>(PolyRobot(eConf.rob_conf,
+
+      if(eConf.fitSselect == 1){
+	// warn("Resolutions does not match!");
+	if(eConf.mapResolution > eConf.Rob_width){
+	  warn("Resolutions does not match!");
+	  exit(-1);
+	}
+	rob = make_shared<PolyRobot>(PolyRobot(eConf.rob_conf,
 				     eConf.gmap,
-				     eConf.obstacleName));
+				     eConf.obstacleName));}
+      else{
+	if(eConf.mapResolution != eConf.Rob_width){
+	  warn("Resolutions does not match!");
+	  exit(-1);
+	}
+	rob = make_shared<Robot>(Robot(eConf.rob_conf,
+				     eConf.gmap,
+				     eConf.obstacleName));}
+
 
     }
     /**

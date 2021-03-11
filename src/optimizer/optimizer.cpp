@@ -217,12 +217,13 @@ void op::Optimizer::optimizePath(bool display){
   FitnessStrategy *fs;
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
-  fit::FitnesSemiContinuous fit_scont;
+  fit::FitnessSemiContinuous fit_scont;
+  FitnessPoly fit_poly;
 
   if(eConf.fitSselect == 0)
     fs = &fit_base;
   else if(eConf.fitSselect == 1)
-    fs = &fit_rot;
+    fs = &fit_poly;
   else
     fs = &fit_scont;
 
@@ -307,7 +308,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
 
-  fit::FitnesSemiContinuous fit_scont;
+  fit::FitnessSemiContinuous fit_scont;
 
   if(eConf.fitSselect == 0)
     fs = &fit_base;
