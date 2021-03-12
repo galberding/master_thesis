@@ -20,10 +20,10 @@ tSnap: pop.pas
 clearZeros: 1000
 
 # Map
-mapType: 2
+mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.3
+mapResolution: 0.2
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -48,8 +48,8 @@ popMin: 100
 
 
 # Selection
-scenario: 0
-keep: 0 #
+scenario: 1
+keep: 1 #
 select: 10 #
 tournamentSize: 10 #
 selPressure: 2 #

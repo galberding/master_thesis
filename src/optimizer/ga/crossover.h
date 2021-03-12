@@ -32,7 +32,7 @@ namespace cross {
   /**
    * @brief      Get offset length for given sIdx.
    *
-   * @details    
+   * @details
    *
    * @param      sIdx start index
    * @param      s size of the sequence

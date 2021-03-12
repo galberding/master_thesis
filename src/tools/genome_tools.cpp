@@ -48,7 +48,7 @@ bool genome_tools::genome::updateGenParameter(){
     // Given in cm
     traveledDist += (*it)->c_config[Counter::StepCount];
     // Cross is given in cm^2
-    cross += (*it)->c_config[Counter::CrossCount];
+    cross += (*it)->c_config[Counter::CrossCount]; //+ (*it)->c_config[Counter::ObjCount];
 
     auto it_next = next(it, 1);
     if((it != actions.end()) and ((*it)->type != PAT::End) and (it_next != actions.end()) and ((*it)->type != PAT::Start)){

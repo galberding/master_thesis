@@ -143,12 +143,16 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   // Time parameter:
   float actualTime = gen.pathLengh / eConf.Rob_speed;
-  float optimalTime = (gen.traveledDist - (gen.cross))*pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  float optimalTime = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  if(optimalTime < 0)
+    optimalTime = 0;
   float finalTime = optimalTime / actualTime;
 
   // Coverage
-  float currentCoverage = (gen.traveledDist - gen.cross)*pow(eConf.mapResolution, 2);
-  float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
+  float currentCoverage = (gen.traveledDist - gen.cross - gen.p_obj)*pow(eConf.mapResolution, 2);
+  // if(currentCoverage < 0)
+  //   currentCoverage = 0;
+  float totalCoverage = freeSpace * pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
 
   gen.finalCoverage = finalCoverage;
@@ -241,47 +245,47 @@ float fit::FitnessSemiContinuous::calculation(genome &gen, int freeSpace, execut
 }
 
 
-float fit::FitnessPoly::calculation(genome &gen, int freeSpace, executionConfig &eConf){
-   // prepare parameters
-  // Check if the gen is valid -> returns false if gen has distance 0
-  if(!gen.updateGenParameter()){
-    debug("Dead Gen detected!");
-    gen.fitness = 0;
-    return 0;
-  }
-  // Set calculated path
-  gen.setPathSignature(eConf.gmap);
-  // TODO: Time calculation behaves weired!
-  // Time parameter:
-  float pixelContrib = (gen.traveledDist - (gen.cross) - gen.p_obj)*pow(eConf.mapResolution, 2);
-  debug("Obj: ", gen.p_obj, " Len: ", gen.pathLengh);
+// float fit::FitnessPoly::calculation(genome &gen, int freeSpace, executionConfig &eConf){
+//    // prepare parameters
+//   // Check if the gen is valid -> returns false if gen has distance 0
+//   if(!gen.updateGenParameter()){
+//     debug("Dead Gen detected!");
+//     gen.fitness = 0;
+//     return 0;
+//   }
+//   // Set calculated path
+//   gen.setPathSignature(eConf.gmap);
+//   // TODO: Time calculation behaves weired!
+//   // Time parameter:
+//   float pixelContrib = (gen.traveledDist - (gen.cross) - gen.p_obj)*pow(eConf.mapResolution, 2);
+//   debug("Obj: ", gen.p_obj, " Len: ", gen.pathLengh);
 
-  float actualTime = gen.pathLengh / eConf.Rob_speed;
-  float optimalTime = pixelContrib / eConf.Rob_speed;
+//   float actualTime = gen.pathLengh / eConf.Rob_speed;
+//   float optimalTime = pixelContrib / eConf.Rob_speed;
 
-  float finalTime = optimalTime / actualTime;
+//   float finalTime = optimalTime / actualTime;
 
-  // Coverage
-  float currentCoverage = pixelContrib;
-  float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
-  float finalCoverage = currentCoverage / totalCoverage;
+//   // Coverage
+//   float currentCoverage = pixelContrib;
+//   float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
+//   float finalCoverage = currentCoverage / totalCoverage;
 
-  gen.finalCoverage = finalCoverage;
-  gen.finalTime = finalTime;
-  float x = finalTime;
-  float y = finalCoverage;
-  gen.finalRotationTime =  gen.rotations;
+//   gen.finalCoverage = finalCoverage;
+//   gen.finalTime = finalTime;
+//   float x = finalTime;
+//   float y = finalCoverage;
+//   gen.finalRotationTime =  gen.rotations;
 
-  fitnessFun(gen, x, y, eConf);
-  // Panelty for zero actions
-  if(eConf.penalizeZeroActions)
-    gen.fitness *= 1 - calZeroActionPercent(gen);
+//   fitnessFun(gen, x, y, eConf);
+//   // Panelty for zero actions
+//   if(eConf.penalizeZeroActions)
+//     gen.fitness *= 1 - calZeroActionPercent(gen);
 
 
 
-  return gen.fitness;
+//   return gen.fitness;
 
-}
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 //                             Fitness Functions                             //

@@ -47,7 +47,7 @@ namespace fit {
   };
 
   struct FitnessPoly : FitnessStrategy{
-    float calculation(genome &gen, int freeSpace, executionConfig &eConf) override;
+    // float calculation(genome &gen, int freeSpace, executionConfig &eConf) override;
   };
 
 
