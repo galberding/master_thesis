@@ -142,14 +142,18 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.setPathSignature(eConf.gmap);
 
   // Time parameter:
-  float actualTime = gen.pathLengh / eConf.Rob_speed;
+  float actualTime = gen.traveledDist* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   float optimalTime = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   if(optimalTime < 0)
     optimalTime = 0;
-  float finalTime = optimalTime / actualTime;
+  float finalTime = 0;
+  if (eConf.penalizeRotation)
+    finalTime = optimalTime / (actualTime + gen.rotations / eConf.Rob_angleSpeed);
+  else
+    finalTime = optimalTime / actualTime;
 
   // Coverage
-  float currentCoverage = (gen.traveledDist - gen.cross - gen.p_obj)*pow(eConf.mapResolution, 2);
+  float currentCoverage = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2);
   // if(currentCoverage < 0)
   //   currentCoverage = 0;
   float totalCoverage = freeSpace * pow(eConf.mapResolution, 2);
@@ -165,6 +169,9 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   // Panelty for zero actions
   if(eConf.penalizeZeroActions)
     gen.fitness *= 1 - calZeroActionPercent(gen);
+
+  if (gen.p_obj > 0)
+    gen.fitness *= 1 / gen.p_obj;
 
   return gen.fitness;
 }
@@ -239,7 +246,7 @@ float fit::FitnessSemiContinuous::calculation(genome &gen, int freeSpace, execut
   fitnessFun(gen, x, y, eConf);
   // debug(" cross_d: ",cross_d, " area: ",area," cov: ",cov," finalCoverage: ",finalCoverage," actualTime: ",actualTime," optimalTime: ",optimalTime," rotation_time: ",rotation_time, " genRot: ", gen.rotations, "finalTime: ",finalTime, " Fit: ", gen.fitness);
   if(eConf.penalizeZeroActions)
-    gen.fitness *= 1 - calZeroActionPercent(gen);
+    gen.fitness *= 1.0 - calZeroActionPercent(gen);
 
   return gen.fitness;
 }

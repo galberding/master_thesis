@@ -65,7 +65,7 @@ bool genome_tools::genome::updateGenParameter(){
       // debug(rotationCost);
     }
   }
-  // debug("Dist: ", traveledDist, " Cross: ", cross, " Continu: ", continu, " Error: ", continu - traveledDist*0.3);
+  // debug("Dist: ", traveledDist, " Cross: ", cross, " PathLen: ", pathLengh);
   // Finalize rotation costs
   rotationCost /= actions.size();
   // debug(rotationCost);

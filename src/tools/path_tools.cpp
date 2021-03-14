@@ -569,7 +569,7 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   }
 
   if(action->mod_config[PAP::Distance] == 0){
-    debug("Action has 0 distance");
+    // debug("Action has 0 distance");
     return false;
   }
 

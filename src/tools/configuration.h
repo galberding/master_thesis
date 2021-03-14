@@ -136,7 +136,7 @@ namespace conf {
 
     // Fitness
     vector<float> fitnessWeights = {0.3, 0.05, 0.65};
-
+    bool penalizeRotation = false;
     // Selection
     int selectIndividuals = 10;
     int selectKeepBest = 0;
