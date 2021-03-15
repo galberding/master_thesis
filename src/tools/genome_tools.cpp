@@ -203,22 +203,43 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
   assert(pSize*(pSize +1)/2 == upperFlat.size());
 
   int idx = 0;
-  for(int row=0; row < pSize; row++)
-    for(int col=row; col<pSize; col++){
+  for(int row=0; row < pSize-1; row++)
+    for(int col=row+1; col<pSize; col++){
       // TODO: Only possible pixel
-      upperFlat[idx] = D(row, col) = D(col, row) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum() / ((*pool[row].mat).rows() * (*pool[row].mat).cols());
+      upperFlat[idx] = D(row, col) = D(col, row) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum();
       idx++;
     }
 }
 
 
-void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev){
+void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min_, float &max_){
   int pSize = pool.size();
   Eigen::MatrixXf D(pSize, pSize);
-  Eigen::VectorXf upperFlat(pSize*(pSize +1)/2);
+  Eigen::VectorXf upperFlat((pSize-1)*(pSize)/2);
   calDistanceMat(pool, D, upperFlat);
-  mean = upperFlat.mean();
 
+  Eigen::VectorXi minIdx;
+  mean = upperFlat.mean();
+  min_ = upperFlat.minCoeff(&minIdx);
+  max_ = upperFlat.maxCoeff();
+
+  debug("Min: ", min_, " ", minIdx);
+  debug("Max: ", max_);
+  debug("Mean: ", mean);
+
+  // debug("Size: ", pSize);
+  // debug("Start");
+  // for(int i=0; i<pSize-1; i++){
+  //   for(int j=i+1; j<pSize; j++){
+  //     cout << D(j,i) << "|";
+  //   }
+  //   cout << endl;
+  // }
+  // debug("Min: ", min_, " Max: ", max_);
+
+  // debug(upperFlat);
+  // debug("End ---");
+  // debug(D);
   stdev = sqrt((upperFlat.array() - mean).square().sum()/(upperFlat.size()-1));
 
   // std = D.triangularView<Eigen::Upper>().std();

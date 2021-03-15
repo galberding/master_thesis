@@ -89,7 +89,7 @@ namespace genome_tools {
   void removeZeroPAs(Genpool &pool);
   void removeZeroPAs(genome &gen);
   void calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat);
-  void getDivMeanStd(Genpool &pool, float& mean, float& stdev);
+  void getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min, float &max);
   // genome calMeanGen(Genpool& pool, int maxActionSize);
 }
 

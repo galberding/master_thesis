@@ -57,12 +57,12 @@ TEST(Eigen, diversity){
 
   init(pool, eConf);
   fit(pool, *rob, eConf);
-  float mean, stdev;
+  float mean, stdev, min_, max_;
   mean = stdev = 0;
   Eigen::MatrixXf D(pool.size(), pool.size());
   Eigen::VectorXf v(pool.size()*(pool.size()+1)/2);
   calDistanceMat(pool, D, v);
-  genome_tools::getDivMeanStd(pool, mean, stdev);
+  genome_tools::getDivMeanStd(pool, mean, stdev, min_, max_);
   cv::Mat img, hist;
   // cv::eigen2cv(D, img);
 

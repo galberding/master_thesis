@@ -5,7 +5,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
-  getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd);
+  debug("Poolsize: ", pool.size());
+  getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
   // Write initial logfile
   if(eConf.currentIter == 0){
       *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,PopFilled,PopSize\n";

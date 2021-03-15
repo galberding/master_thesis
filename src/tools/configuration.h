@@ -78,6 +78,8 @@ namespace conf {
     // Diversity:
     float diversityMean = 0;
     float diversityStd = 0;
+    float diversityMin = 0;
+    float diversityMax = 0;
 
     // Population
     int popSelected = 0;
