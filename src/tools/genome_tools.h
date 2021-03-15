@@ -73,9 +73,10 @@ namespace genome_tools {
   };
 
   using Genpool = std::deque<genome>;
+  using Genpool_shr = std::deque<shared_ptr<genome>>;
   using GenPair = pair<genome, genome>;
   using SelectionPool = list<GenPair>;
-  using FamilyPool = deque<Genpool>;
+  using FamilyPool = deque<Genpool_shr>;
 
   void validateGen(genome &gen);
   int countZeroActions(genome &gen);
