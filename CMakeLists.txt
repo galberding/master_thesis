@@ -9,8 +9,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # -Wno-ignored-attributes
 # -Wno-ignored-attributes
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wno-ignored-attributes")
-set(CMAKE_BUILD_TYPE Release)
-# set(CMAKE_BUILD_TYPE Debug)
+# set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_BUILD_TYPE Debug)
 # Add -O0 to remove optimizations when using gcc
 # IF(CMAKE_COMPILER_IS_GNUCC)
 #     set(CMAKE_BUILD_TYPE Debug)

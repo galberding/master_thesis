@@ -184,7 +184,7 @@ void conf::executionConfig::adaptCrossover(){
   //set crossover Proba
   if(not adaptParameter or currentIter == 0) return;
 
-  float dMax = diversityMean + diversityStd;
+  float dMax = diversityMax;
   if (dMax > lastDmax)
     lastDmax = dMax;
   else
@@ -197,7 +197,7 @@ void conf::executionConfig::adaptCrossover(){
 void conf::executionConfig::adaptMutation(){
   if(not adaptParameter or currentIter == 0) return;
 
-  float dMax = diversityMean + diversityStd;
+  float dMax = diversityMax;
   // if (dMax > lastDmax)
   //   lastDmax = dMax;
   // else

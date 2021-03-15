@@ -23,7 +23,7 @@ clearZeros: 0
 mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.3
+mapResolution: 0.1
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -33,7 +33,7 @@ Rob_RPM: 60    # rounds per minute
 
 # Initialization
 initActions: 50
-initIndividuals: 10 #
+initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
@@ -80,7 +80,7 @@ crossUpper: 1
 crossLower: 0.5
 cLenUpper: 0.1 #
 cLenLower: 0.5 #
-mutUpper: 0.001
+mutUpper: 0.01
 
 adaptSP: true
 adaptSPlower: 1

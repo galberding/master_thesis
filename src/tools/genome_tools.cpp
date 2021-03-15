@@ -200,7 +200,7 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
   int pSize = pool.size();
   assert(D.cols() == pSize);
   assert(D.rows() == pSize);
-  assert(pSize*(pSize +1)/2 == upperFlat.size());
+  // assert(pSize*(pSize +1)/2 == upperFlat.size());
 
   int idx = 0;
   for(int row=0; row < pSize-1; row++)
@@ -218,12 +218,12 @@ void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float
   Eigen::VectorXf upperFlat((pSize-1)*(pSize)/2);
   calDistanceMat(pool, D, upperFlat);
 
-  Eigen::VectorXi minIdx;
+  // Eigen::VectorXi minIdx;
   mean = upperFlat.mean();
-  min_ = upperFlat.minCoeff(&minIdx);
+  min_ = upperFlat.minCoeff();
   max_ = upperFlat.maxCoeff();
 
-  debug("Min: ", min_, " ", minIdx);
+  debug("Min: ", min_);
   debug("Max: ", max_);
   debug("Mean: ", mean);
 
