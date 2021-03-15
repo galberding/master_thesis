@@ -78,6 +78,7 @@ namespace genome_tools {
   using FamilyPool = deque<Genpool>;
 
   void validateGen(genome &gen);
+  int countZeroActions(genome &gen);
   float calZeroActionPercent(genome &gen);
   float calZeroActionPercent(Genpool &pool);
   /**

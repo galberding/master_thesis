@@ -129,14 +129,24 @@ void genome_tools::validateGen(genome &gen){
   }
 }
 
-float genome_tools::calZeroActionPercent(genome &gen){
-  float res = 0;
+int genome_tools::countZeroActions(genome &gen){
+  int res = 0;
   for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
     if(compareF(it->get()->mod_config[PAP::Distance], 0, 0.000001)){
       res += 1;
     }
   }
-  return res / (gen.actions.size()-1);
+  return res;
+}
+
+float genome_tools::calZeroActionPercent(genome &gen){
+  // float res = 0;
+  // for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
+  //   if(compareF(it->get()->mod_config[PAP::Distance], 0, 0.000001)){
+  //     res += 1;
+  //   }
+  // }
+  return countZeroActions(gen) / (gen.actions.size()-1);
 }
 
 float genome_tools::calZeroActionPercent(Genpool &pool){

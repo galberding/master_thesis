@@ -247,6 +247,7 @@ void op::Optimizer::optimizePath(bool display){
       clearZeroPAs(pool, eConf);
       logAndSnapshotPool(eConf);
       printRunInformation(eConf, display);
+      assert(eConf.actionLenAvg < 300);
 
       // Selection
 

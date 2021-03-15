@@ -167,8 +167,9 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   fitnessFun(gen, x, y, eConf);
   // Panelty for zero actions
-  if(eConf.penalizeZeroActions)
-    gen.fitness *= 1 - calZeroActionPercent(gen);
+  int zeros = countZeroActions(gen);
+  if(eConf.penalizeZeroActions and zeros > 0)
+    gen.fitness *= 1.0 / zeros;
 
   if (gen.p_obj > 0)
     gen.fitness *= 1 / gen.p_obj;
