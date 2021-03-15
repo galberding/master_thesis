@@ -357,6 +357,8 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     logAndSnapshotPool(eConf);
     printRunInformation(eConf, display);
     fs->applyPoolBias(pool, eConf);
+    if (checkEndCondition())
+	break;
 
 
     // Selection
