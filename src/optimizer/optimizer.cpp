@@ -156,8 +156,13 @@ void op::adaptCrossover(executionConfig& eConf){
     // eConf.crossoverProba += 0.0005;
     eConf.crossLength -= 0.0003;
   }
+}
 
-
+bool op::Optimizer::checkEndCondition(){
+  bool res = false;
+  res |= eConf.actionLenAvg > 300;
+  res |= not (eConf.diversityMean + eConf.diversityStd > 0);
+  return res;
 }
 
 void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
@@ -247,6 +252,8 @@ void op::Optimizer::optimizePath(bool display){
       clearZeroPAs(pool, eConf);
       logAndSnapshotPool(eConf);
       printRunInformation(eConf, display);
+      if (checkEndCondition())
+	break;
       assert(eConf.actionLenAvg < 300);
 
       // Selection

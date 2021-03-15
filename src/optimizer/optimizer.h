@@ -105,7 +105,7 @@ namespace op {
     void replaceWithBest(Genpool& pool, executionConfig& eConf);
     void insertBest(Genpool& pool, executionConfig& eConf);
     void balancePopulation(Genpool& pool, executionConfig& eConf);
-
+    bool checkEndCondition();
   };
 }
 

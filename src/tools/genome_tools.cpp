@@ -205,6 +205,7 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
   int idx = 0;
   for(int row=0; row < pSize; row++)
     for(int col=row; col<pSize; col++){
+      // TODO: Only possible pixel
       upperFlat[idx] = D(row, col) = D(col, row) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum() / ((*pool[row].mat).rows() * (*pool[row].mat).cols());
       idx++;
     }
