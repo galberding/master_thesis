@@ -14,6 +14,8 @@ namespace init {
   struct InitStrategy {
     virtual void operator()(Genpool& pool, executionConfig& eConf);
     virtual void operator()(genome &gen, int len, executionConfig& eConf);
+    virtual void operator()(Genpool_shr& pool, executionConfig& eConf);
+    virtual void operator()(genome_shr &gen, int len, executionConfig& eConf);
     void replaceZeroGensWithRandom(Genpool& pool);
   };
 }

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 		     eConf);
   if(eConf.scenario == 0)  // elitist selection
     opti.optimizePath(eConf.printInfo);
-  else
+  else 
     opti.optimizePath_Turn_RWS(eConf.printInfo);
 
 

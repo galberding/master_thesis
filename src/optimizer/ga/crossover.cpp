@@ -25,21 +25,25 @@ void cross::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& next
   }
 }
 
-void cross::DualPointCrossover::operator()(FamilyPool& fPool, Genpool& pool , executionConfig& eConf){
+void cross::DualPointCrossover::operator()(FamilyPool& fPool, Genpool_shr& pool , executionConfig& eConf){
   assert(fPool.size() > 0);
+  Genpool offspring;
   for (auto &family : fPool) {
     assert(family.size() == 2);
     // Check if crossover can be performed
-    if(!applyAction(eConf.crossoverProba, eConf) or !mating(family[0], family[1], family, eConf)){
-      // Add gens to pool if they are not already inside
-      pool.push_back(family[0]);
-      pool.push_back(family[1]);
-	continue;
+    if (!applyAction(eConf.crossoverProba, eConf) or
+        !mating(*family[0], *family[1], offspring, eConf))
+      continue;
+    else {
+      // Create gen pointers and add to FamilyPool
+      for (auto gen_iter = offspring.begin(); gen_iter != offspring.end();
+           ++gen_iter) {
+        auto gen_ptr = make_shared<genome>(*gen_iter);
+	pool.push_back(gen_ptr);
+	family.push_back(gen_ptr);
+      }
+      offspring.clear();
     }
-    // assert(family[0].actions.size() > 3);
-    // assert(family[1].actions.size() > 3);
-    // mating(family[0], family[1], family, eConf);
-    // assert(family.size() >= 4);
   }
   if(pool.size() > 0)
     sort(pool.begin(), pool.end());

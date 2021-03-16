@@ -49,6 +49,7 @@ namespace op {
     shared_ptr<SelectionStrategy> select;
     shared_ptr<InitStrategy> init;
     Genpool pool, sel, elite;
+    Genpool_shr pPool;
     SelectionPool sPool;
     FamilyPool fPool;
     shared_ptr<Robot> rob;

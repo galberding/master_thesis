@@ -1,4 +1,5 @@
 #include "init.h"
+#include <memory>
 
 bool init::applyAction(float proba, executionConfig& eConf){
   uniform_real_distribution<float> probaDist(0,1);
@@ -14,6 +15,18 @@ void init::InitStrategy::operator()(Genpool& pool, executionConfig& eConf){
     (*this)(gen, eConf.initActions, eConf);
     pool.push_back(gen);
   }
+}
+
+void init::InitStrategy::operator()(Genpool_shr& pool, executionConfig& eConf){
+  for(int i=0; i<eConf.initIndividuals;i++){
+    genome gen;
+    (*this)(gen, eConf.initActions, eConf);
+    pool.push_back(make_shared<genome>(gen));
+  }
+}
+
+void init::InitStrategy::operator()(genome_shr &gen, int len, executionConfig& eConf){
+  (*this)(*gen, len, eConf);
 }
 
 void init::InitStrategy::operator()(genome &gen, int len, executionConfig& eConf){

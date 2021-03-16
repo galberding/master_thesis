@@ -73,7 +73,8 @@ namespace genome_tools {
   };
 
   using Genpool = std::deque<genome>;
-  using Genpool_shr = std::deque<shared_ptr<genome>>;
+  using genome_shr = shared_ptr<genome>;
+  using Genpool_shr = std::deque<genome_shr>;
   using GenPair = pair<genome, genome>;
   using SelectionPool = list<GenPair>;
   using FamilyPool = deque<Genpool_shr>;

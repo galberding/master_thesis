@@ -112,6 +112,8 @@ void op::Optimizer::snapshotPopulation(executionConfig& eConf){
   vector<PAs> pp;
   perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
 
+  //TODO: Add condition to check if shared pool is filled and use that instead.
+  // Otherwise use the normal flow
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     pp.push_back(it->actions);
     perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
@@ -175,7 +177,7 @@ void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
     genome_tools::removeZeroPAs(pool);
 }
 
-
+// WARN: Several calls of sort what potentially slow down the process if population is large!
 void op::Optimizer::saveBest(Genpool& pool, executionConfig& eConf, bool sortPool){
   elite.clear();
   if(sortPool)
@@ -217,6 +219,7 @@ void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
 
 void op::Optimizer::optimizePath(bool display){
 
+  // TODO: Adapt crossover to accept pointer pool
   CrossoverStrategy *crossing;
   DualPointCrossover DualCross;
   SameStartDualPointCrossover sIdxCross;
@@ -224,6 +227,9 @@ void op::Optimizer::optimizePath(bool display){
     crossing = &DualCross;
   else if(eConf.crossStrategy == 1)
     crossing = &sIdxCross;
+
+  // TODO: calculate fitness from pPool not use family pool for it
+  // Additional its possible to exclude gens if there was no change applied to them
   FitnessStrategy *fs;
   FitnessStrategy fit_base;
   FitnessRotationBias fit_rot;
@@ -238,47 +244,68 @@ void op::Optimizer::optimizePath(bool display){
     fs = &fit_scont;
 
   if(!eConf.restore){
-    (*init)(pool, eConf);
+    // Init pointer pool
+    (*init)(pPool, eConf);
   } else {
+    // TODO: Adapt restore to create and reload pointer pool
     pool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
 
   // Main loop
+  // TODO: Estimate pPool
   (*fs)(pool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
     // debug("test");
-      // Logging
+    // Logging
     // debug("Size: ", pool.size());
-      getBestGen(pool, eConf);
-      trackPoolFitness(pool, eConf);
-      eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-      eConf.zeroActionPercent = calZeroActionPercent(pool);
-      clearZeroPAs(pool, eConf);
-      logAndSnapshotPool(eConf);
-      printRunInformation(eConf, display);
-      if (checkEndCondition())
-	break;
-      assert(eConf.actionLenAvg < 300);
+    // TODO: Versions for pointer
+    getBestGen(pool, eConf);
+    // TODO: Versions for pointer
+    trackPoolFitness(pool, eConf);
+    // TODO: Versions for pointer
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    // TODO: Versions for pointer
+    eConf.zeroActionPercent = calZeroActionPercent(pool);
+    // TODO: Versions for pointer
+    clearZeroPAs(pool, eConf);
+    // TODO: Versions for pointer
+    logAndSnapshotPool(eConf);
+    // TODO: Adapt calculation of best gen for pointer
+    printRunInformation(eConf, display);
+    if (checkEndCondition())
+      break;
+    
 
       // Selection
+    // TODO: Versions for pointer
+    saveBest(pool, eConf);
+    // TODO: Remove and substitude with sharing function
+    select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
-      saveBest(pool, eConf);
-      select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
+    // Crossover
+    // TODO: Versions for pointer
+    // (*crossing)(fPool, pool, eConf);
+    // New Version:
+    (*crossing)(fPool, pPool, eConf);
+    // debug("After Cross: ", pool.size());
+    // Mutate Families with more than two individuals and expose those with two to reinitialization (the worst one in the family)
+    (*mutate)(fPool, eConf);
 
-      // Crossover
-      (*crossing)(fPool, pool, eConf);
-      // debug("After Cross: ", pool.size());
-      // Mutate remaining individuals in pool
-      if (pool.size() > 2){
-	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
-	  // Replace worst gen with random
-	  if(mutate->randomReplaceGen(*it, eConf)){
-	    fs->estimateGen(*it, *rob, eConf);
-	    it->trail = 1 * (*eConf.gmap)["map"];
-	  }
+    // Calculate all 
+    (*fs)(pPool, eConf);
+    (*select)(fPool, eConf);
+    // Mutate remaining individuals in pool
+    // TODO: 
+    if (pool.size() > 2){
+      for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
+	// Replace worst gen with random
+	if(mutate->randomReplaceGen(*it, eConf)){
+	  fs->estimateGen(*it, *rob, eConf);
+	  it->trail = 1 * (*eConf.gmap)["map"];
 	}
       }
+    }
       // Mutation
       (*mutate)(fPool, eConf);
       (*fs)(fPool, *rob, eConf);
