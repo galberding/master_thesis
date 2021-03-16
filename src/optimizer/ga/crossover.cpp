@@ -6,6 +6,7 @@
 /////////////////////////////////////////////////////////////////////////////
 void cross::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& nextPool , executionConfig& eConf){
   assert(selPool.size() > 0);
+  eConf.crossFailed = 0;
   for (auto it = selPool.begin(); it != selPool.end(); ++it) {
     if(!applyAction(eConf.crossoverProba, eConf) or !mating(it->first, it->second, nextPool, eConf)){
       // Add gens to pool if they are not already inside
@@ -15,7 +16,8 @@ void cross::DualPointCrossover::operator()(SelectionPool& selPool, Genpool& next
       if(std::find(nextPool.begin(), nextPool.end(), it->second)
 	 != nextPool.end())
 	nextPool.push_back(it->second);
-	continue;
+      eConf.crossFailed++;
+      continue;
     }
     assert(it->first.actions.size() > 3);
     assert(it->second.actions.size() > 3);

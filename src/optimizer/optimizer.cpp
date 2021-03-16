@@ -9,7 +9,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,PopFilled,PopSize\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -40,8 +40,12 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.best.actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd,
+				    eConf.diversityMax,
+				    eConf.diversityMin,
 				    eConf.popFilled,
-				    eConf.popSize
+				    eConf.popSize,
+				    eConf.crossFailed,
+				    eConf.mutaCount
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){
@@ -370,6 +374,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     (*crossing)(sPool, mPool, eConf);
 
     // Mutation
+    eConf.mutaCount = 0;
     for (auto it = mPool.begin(); it != mPool.end(); ++it) {
       bool mutated = mutate->randomReplaceGen(*it, eConf);
       if(not mutated){
@@ -378,6 +383,8 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 	mutated |= mutate->randomScaleDistance(*it, eConf);
       }
       it->mutated = mutated;
+      if(mutated)
+	eConf.mutaCount++;
       fs->estimateGen(*it, *rob, eConf);
     }
 
