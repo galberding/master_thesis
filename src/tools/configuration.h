@@ -157,6 +157,7 @@ namespace conf {
     float crossBestFit = 0;
     int crossChildSelector = 2;
     int crossStrategy = 0;
+    int crossFailed = 0;
 
     // Mutation functions, configurations
     float mutaOrtoAngleProba = 0.1;
@@ -166,6 +167,7 @@ namespace conf {
     float mutaRandScaleDistProba = 0.01;
     float mutaPosDistMax = 50;
     float mutaReplaceGen = 0.001;
+    int mutaCount = 0;
 
     // Adaptive Parameter
     bool adaptParameter = false;
