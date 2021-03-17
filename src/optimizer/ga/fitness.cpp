@@ -68,11 +68,11 @@ void fit::finalizeFitnessLogging(int poolsize, executionConfig& eConf){
 }
 
 
-void fit::trackPoolFitness(Genpool& pool, executionConfig& eConf){
+void fit::trackPoolFitness(Genpool_shr& pool, executionConfig& eConf){
   resetLoggingFitnessParameter(eConf);
   eConf.popSize = pool.size();
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    trackFitnessParameter(*it, eConf);
+    trackFitnessParameter(**it, eConf);
   }
 
   finalizeFitnessLogging(pool.size(), eConf);
@@ -82,9 +82,7 @@ void fit::trackPoolFitness(Genpool& pool, executionConfig& eConf){
   eConf.adaptMutation();
   eConf.adaptCLen();
   eConf.adaptSelPressure();
-
 }
-
 
 
 void fit::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf){
@@ -99,23 +97,18 @@ void fit::FitnessStrategy::operator()(Genpool &currentPool, path::Robot &rob, ex
 }
 
 
-void fit::FitnessStrategy::operator()(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf) {
-  // Deactivate logging -> recalculate with
-  // resetLoggingFitnessParameter(eConf);
-  for (auto &family : fPool) {
-    if(family.size() > 2){
-      for (int i = 2; i < family.size(); i++) {
-        assertm(family[i].actions.size() > 0, "Not enough actions");
-        bool eva = rob.evaluateActions(family[i].actions);
-	assert(eva);
-        // assertm(family[i].actions.size() > 0, "Not enough actions");
-        calculation(family[i], rob.getFreeArea(), eConf);
-        // trackFitnessParameter(family[i] , eConf);
-      }
-      applyPoolBias(family, eConf, true);
-    }
+void fit::FitnessStrategy::operator()(Genpool_shr &currentPool, path::Robot &rob, executionConfig& eConf){
+  resetLoggingFitnessParameter(eConf);
+  // debug("Before cal");
+  assert(currentPool.size() > 0);
+  for(auto it = currentPool.begin(); it != currentPool.end(); ++it){
+    if((*it)->changed)
+      estimateGen(**it, rob, eConf);
   }
+  // applyPoolBias(currentPool, eConf);
+  finalizeFitnessLogging(currentPool.size(), eConf);
 }
+
 
 
 void fit::FitnessStrategy::estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf){
@@ -252,49 +245,6 @@ float fit::FitnessSemiContinuous::calculation(genome &gen, int freeSpace, execut
   return gen.fitness;
 }
 
-
-// float fit::FitnessPoly::calculation(genome &gen, int freeSpace, executionConfig &eConf){
-//    // prepare parameters
-//   // Check if the gen is valid -> returns false if gen has distance 0
-//   if(!gen.updateGenParameter()){
-//     debug("Dead Gen detected!");
-//     gen.fitness = 0;
-//     return 0;
-//   }
-//   // Set calculated path
-//   gen.setPathSignature(eConf.gmap);
-//   // TODO: Time calculation behaves weired!
-//   // Time parameter:
-//   float pixelContrib = (gen.traveledDist - (gen.cross) - gen.p_obj)*pow(eConf.mapResolution, 2);
-//   debug("Obj: ", gen.p_obj, " Len: ", gen.pathLengh);
-
-//   float actualTime = gen.pathLengh / eConf.Rob_speed;
-//   float optimalTime = pixelContrib / eConf.Rob_speed;
-
-//   float finalTime = optimalTime / actualTime;
-
-//   // Coverage
-//   float currentCoverage = pixelContrib;
-//   float totalCoverage = freeSpace*pow(eConf.mapResolution, 2);
-//   float finalCoverage = currentCoverage / totalCoverage;
-
-//   gen.finalCoverage = finalCoverage;
-//   gen.finalTime = finalTime;
-//   float x = finalTime;
-//   float y = finalCoverage;
-//   gen.finalRotationTime =  gen.rotations;
-
-//   fitnessFun(gen, x, y, eConf);
-//   // Panelty for zero actions
-//   if(eConf.penalizeZeroActions)
-//     gen.fitness *= 1 - calZeroActionPercent(gen);
-
-
-
-//   return gen.fitness;
-
-// }
-
 ///////////////////////////////////////////////////////////////////////////////
 //                             Fitness Functions                             //
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,9 +260,4 @@ void fit::fitnessFun(genome& gen, float x, float y, executionConfig& eConf){
     gen.fitness = sqrt((0.5*x + 0.5*y)*x*y);
   else
     gen.fitness = pow(x,4)*pow(y,4);
-    // assert(false);
-  // else if(eConf.funSelect == 4)
-  //   gen.fitness = (0.5*x + 0.5*y)*(pow(x, 4)*pow(y, 4));
-  // else if(eConf.funSelect == 5)
-  //   gen.fitness = (0.45*x + 0.45*y + 0.1*(1-gen.finalRotationTime))*(pow(x, 4)*pow(y, 4));
 }

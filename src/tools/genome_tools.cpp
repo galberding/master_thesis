@@ -150,25 +150,25 @@ float genome_tools::calZeroActionPercent(genome &gen){
   return countZeroActions(gen) / (gen.actions.size()-1);
 }
 
-float genome_tools::calZeroActionPercent(Genpool &pool){
+float genome_tools::calZeroActionPercent(Genpool_shr &pool){
   // TODO: Does nothing!!
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    res += calZeroActionPercent(*it);
+    res += calZeroActionPercent(**it);
   }
   return res / pool.size();
 }
 
-void genome_tools::removeZeroPAs(Genpool &pool) {
-  for(auto &gen : pool){
-    removeZeroPAs(gen);
+void genome_tools::removeZeroPAs(Genpool_shr &pool) {
+  for(auto gen : pool){
+    removeZeroPAs(*gen);
   }
 }
 
-int genome_tools::countDeadGens(Genpool &pool, int minSize){
+int genome_tools::countDeadGens(Genpool_shr &pool, int minSize){
   int res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    if (it->actions.size() < minSize or not it->updateGenParameter())
+    if ((*it)->actions.size() < minSize or not (*it)->updateGenParameter())
       res++;
     // res += it->actions.size() > minSize ? 0 : 1;
   }
@@ -197,7 +197,7 @@ void genome_tools::removeZeroPAs(genome &gen){
   // gen.actions =
 }
 
-void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat){
+void genome_tools::calDistanceMat(Genpool_shr &pool, Eigen::VectorXf& upperFlat){
   int pSize = pool.size();
   assert(D.cols() == pSize);
   assert(D.rows() == pSize);
@@ -208,51 +208,28 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
     // pool[row].diversityFactor = 0;
     for(int col=row+1; col<pSize; col++){
       // TODO: Only possible pixel
-      float res = (*pool[row].mat - *pool[col].mat).norm();
+      float res = (*pool[row]->mat - *pool[col]->mat).norm();
       // debug("Row: ", row, " Col: ", col, " dist: ", res);
       // assert(res == (*pool[col].mat -*pool[row].mat).norm());
       upperFlat[row] += res;
       upperFlat[col] += res;
-      pool[row].diversityFactor += res;
-      pool[col].diversityFactor += res;
+      pool[row]->diversityFactor += res;
+      pool[col]->diversityFactor += res;
       idx++;
     }
   }
 }
 
 
-void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min_, float &max_){
+void genome_tools::getDivMeanStd(Genpool_shr &pool, float& mean, float& stdev, float &min_, float &max_){
   int pSize = pool.size();
-  Eigen::MatrixXf D(pSize, pSize);
   Eigen::VectorXf upperFlat(pSize);
   // debug("..", upperFlat);
   upperFlat.setZero();
   // debug("..", upperFlat);
-  calDistanceMat(pool, D, upperFlat);
-
-  // Eigen::VectorXi minIdx;
+  calDistanceMat(pool, upperFlat);
   mean = upperFlat.mean();
   min_ = upperFlat.minCoeff();
   max_ = upperFlat.maxCoeff();
-
-  debug("Min: ", min_);
-  debug("Max: ", max_);
-  debug("Mean: ", mean);
-
-  // debug("Size: ", pSize);
-  // debug("Start");
-  // for(int i=0; i<pSize-1; i++){
-  //   for(int j=i+1; j<pSize; j++){
-  //     cout << D(j,i) << "|";
-  //   }
-  //   cout << endl;
-  // }
-  // debug("Min: ", min_, " Max: ", max_);
-
-  // debug(upperFlat);
-  // debug("End ---");
-  // debug(D);
   stdev = sqrt((upperFlat.array() - mean).square().sum()/(upperFlat.size()-1));
-
-  // std = D.triangularView<Eigen::Upper>().std();
 }

@@ -70,6 +70,7 @@ namespace genome_tools {
     bool crossed = false;
     bool mutated = false;
     bool selected = false;
+    bool changed = true;
     shared_ptr<Matrix> mat;
   };
 
@@ -88,11 +89,11 @@ namespace genome_tools {
      Count how many gens have action length less than minSize.
      Those gens cannot participate on crossover.
    **/
-  int countDeadGens(Genpool &pool, int minSize);
-  void removeZeroPAs(Genpool &pool);
+  int countDeadGens(Genpool_shr &pool, int minSize);
+  void removeZeroPAs(Genpool_shr &pool);
   void removeZeroPAs(genome &gen);
-  void calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat);
-  void getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min, float &max);
+  void calDistanceMat(Genpool_shr &pool, Eigen::VectorXf& upperFlat);
+  void getDivMeanStd(Genpool_shr &pool, float& mean, float& stdev, float &min, float &max);
   // genome calMeanGen(Genpool& pool, int maxActionSize);
 }
 

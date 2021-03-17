@@ -18,6 +18,7 @@ namespace fit {
   struct FitnessStrategy {
 
     virtual void operator()(Genpool &currentPool, path::Robot &rob, executionConfig& eConf);
+    virtual void operator()(Genpool_shr &currentPool, path::Robot &rob, executionConfig& eConf);
     virtual void operator()(FamilyPool& fPool, path::Robot &rob, executionConfig& eConf);
 
     virtual void estimateGen(genome &gen, path::Robot &rob, executionConfig& eConf);
