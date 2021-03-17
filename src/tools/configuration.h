@@ -121,8 +121,8 @@ namespace conf {
     // Map
     std::mt19937 generator;
     int mapType = 1;
-    int mapWidth = 10;
-    int mapHeight = 10;
+    int mapWidth = 11;
+    int mapHeight = 11;
     float mapResolution = 0.01;
 
 

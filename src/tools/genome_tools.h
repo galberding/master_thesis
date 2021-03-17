@@ -52,6 +52,7 @@ namespace genome_tools {
     float fitness = -1;
     // Standard Population Diversity
     float spd = 0;
+    float diversityFactor = 0;
     float traveledDist = 0;
     float cross = 0;
     float p_obj = 0;
