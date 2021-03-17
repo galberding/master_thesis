@@ -31,9 +31,9 @@ namespace op {
 
 
   void adaptCrossover(executionConfig& eConf);
-  void clearZeroPAs(Genpool& pool, executionConfig& eConf);
+  void clearZeroPAs(Genpool_shr& pool, executionConfig& eConf);
 
-  void getBestGen(Genpool& pool, executionConfig& eConf);
+  void getBestGen(Genpool_shr& pool, executionConfig& eConf);
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -102,10 +102,10 @@ namespace op {
     void restorePopulationFromSnapshot(const string path);
     void snapshotPopulation(const string path);
     void snapshotPopulation(executionConfig& eConf);
-    void saveBest(Genpool& pool, executionConfig& eConf, bool sortPool=true);
-    void replaceWithBest(Genpool& pool, executionConfig& eConf);
-    void insertBest(Genpool& pool, executionConfig& eConf);
-    void balancePopulation(Genpool& pool, executionConfig& eConf);
+    void saveBest(Genpool_shr& pool, executionConfig& eConf, bool sortPool=true);
+    void replaceWithBest(Genpool_shr& pool, executionConfig& eConf);
+    void insertBest(Genpool_shr& pool, executionConfig& eConf);
+    void balancePopulation(Genpool_shr& pool, executionConfig& eConf);
     bool checkEndCondition();
   };
 }

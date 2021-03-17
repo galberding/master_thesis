@@ -12,8 +12,8 @@ namespace fit {
   /////////////////////////////////////////////////////////////////////////////
   void resetLoggingFitnessParameter(executionConfig& eConf);
   void trackFitnessParameter(genome& gen, executionConfig& eConf);
+  void trackPoolFitness(Genpool_shr& pool, executionConfig& eConf);
   void finalizeFitnessLogging(int poolsize, executionConfig& eConf);
-  void trackPoolFitness(Genpool& pool, executionConfig& eConf);
   void fitnessFun(genome& gen, float x, float y, executionConfig& eConf);
   struct FitnessStrategy {
 

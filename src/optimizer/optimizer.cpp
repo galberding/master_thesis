@@ -5,8 +5,8 @@
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
-  debug("Poolsize: ", pool.size());
-  getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
+  debug("Poolsize: ", pPool.size(), " old poolsize: ", pool.size());
+  getDivMeanStd(pPool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
   // Write initial logfile
   if(eConf.currentIter == 0){
       *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
@@ -34,10 +34,10 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.actionLenMin,
 				    eConf.zeroActionPercent,
 				    eConf.deadGensCount,
-				    eConf.best.finalTime,
-				    eConf.best.finalCoverage,
-				    eConf.best.finalRotationTime,
-				    eConf.best.actions.size(),
+				    eConf.best->finalTime,
+				    eConf.best->finalCoverage,
+				    eConf.best->finalRotationTime,
+				    eConf.best->actions.size(),
 				    eConf.diversityMean,
 				    eConf.diversityStd,
 				    eConf.diversityMax,
@@ -58,9 +58,9 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 }
 
 void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
-  if(eConf.best.id > 0 && display){
+  if(eConf.best->id > 0 && display){
       debug(eConf.currentIter, ", MaxFitness: ",
-	    eConf.best.fitness, " (", eConf.best.finalTime, ", ", eConf.best.finalCoverage,",  ", eConf.best.finalRotationTime,", ",eConf.best.actions.size(), ") : ",
+	    eConf.best->fitness, " (", eConf.best->finalTime, ", ", eConf.best->finalCoverage,",  ", eConf.best->finalRotationTime,", ",eConf.best->actions.size(), ") : ",
 	    argsToCsv(eConf.fitnessAvgTime,
 		      // eConf.fitnessAvgOcc,
 		      eConf.fitnessAvgCoverage,
@@ -75,9 +75,9 @@ void op::Optimizer::printRunInformation(executionConfig& eConf, bool display){
 		      eConf.diversityStd));
       if(eConf.visualize){
 	// cv::Mat src;
-	rob->evaluateActions(eConf.best.actions);
-	// eConf.best.trail = (*eConf.gmap)["map"];
-	// cv::eigen2cv(eConf.best.trail, src);
+	rob->evaluateActions(eConf.best->actions);
+	// eConf.best->trail = (*eConf.gmap)["map"];
+	// cv::eigen2cv(eConf.best->trail, src);
 	cv::imshow("Current Run ", rob->gridToImg("map"));
 	cv::waitKey(1);
       }
@@ -112,26 +112,24 @@ void op::Optimizer::snapshotPopulation(executionConfig& eConf){
   vector<PAs> pp;
   perform << argsToCsv("fitness", "traveledDist", "cross", "fTime", "fCoverage", "#actions");
 
-  //TODO: Add condition to check if shared pool is filled and use that instead.
-  // Otherwise use the normal flow
-  for (auto it = pool.begin(); it != pool.end(); ++it) {
-    pp.push_back(it->actions);
-    perform << argsToCsv(it->fitness, it->traveledDist, it->cross, it->finalTime, it->finalCoverage, it->actions.size());
+  for (auto it = pPool.begin(); it != pPool.end(); ++it) {
+    pp.push_back((*it)->actions);
+    perform << argsToCsv((*it)->fitness, (*it)->traveledDist, (*it)->cross, (*it)->finalTime, (*it)->finalCoverage, (*it)->actions.size());
   }
   logging::Logger(perform.str(), eConf.logDir, performanceName);
   pa_serializer::writeActionsToFile(pp, popName);
 }
 
 
-void op::getBestGen(Genpool& pool, executionConfig& eConf){
+void op::getBestGen(Genpool_shr& pool, executionConfig& eConf){
   eConf.best = pool.front();
   bool foundBest = false;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    if(it->fitness >  eConf.best.fitness){
-      eConf.best = *it;
+    if((*it)->fitness >  eConf.best->fitness){
+      eConf.best = (*it);
       // debug("New best");
-      if(it->fitness > eConf.crossBestFit){
-	eConf.crossBestFit = it->fitness;
+      if((*it)->fitness > eConf.crossBestFit){
+	eConf.crossBestFit = (*it)->fitness;
 	foundBest = true;
       }
     }
@@ -172,27 +170,27 @@ bool op::Optimizer::checkEndCondition(){
   return res;
 }
 
-void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
+void op::clearZeroPAs(Genpool_shr& pool, executionConfig& eConf){
   if(eConf.clearZeros > 0 and eConf.currentIter % eConf.clearZeros == 0)
     genome_tools::removeZeroPAs(pool);
 }
 
 // WARN: Several calls of sort what potentially slow down the process if population is large!
-void op::Optimizer::saveBest(Genpool& pool, executionConfig& eConf, bool sortPool){
+void op::Optimizer::saveBest(Genpool_shr& pool, executionConfig& eConf, bool sortPool){
   elite.clear();
   if(sortPool)
     sort(pool.begin(), pool.end());
   elite.insert(elite.begin(), pool.begin(), pool.end());
 }
 
-void op::Optimizer::replaceWithBest(Genpool& pool, executionConfig& eConf){
+void op::Optimizer::replaceWithBest(Genpool_shr& pool, executionConfig& eConf){
   if(elite.size() == 0) return;
   sort(pool.begin(), pool.end());
   pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
   pool.insert(pool.begin(), prev(elite.end(), eConf.selectKeepBest), elite.end());
 }
 
-void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
+void op::Optimizer::insertBest(Genpool_shr& pool, executionConfig& eConf){
   if(elite.size() == 0) return;
   // sort(pool.begin(), pool.end());
   // pool.erase(pool.begin(),next(pool.begin(), eConf.selectKeepBest));
@@ -200,7 +198,7 @@ void op::Optimizer::insertBest(Genpool& pool, executionConfig& eConf){
 }
 
 
-void op::Optimizer::balancePopulation(Genpool& pool, executionConfig& eConf){
+void op::Optimizer::balancePopulation(Genpool_shr& pool, executionConfig& eConf){
   assert(elite.size() >= eConf.popMin);
   if(pool.size() < eConf.popMin){
     // debug("Adjust Pop");
@@ -248,38 +246,38 @@ void op::Optimizer::optimizePath(bool display){
     (*init)(pPool, eConf);
   } else {
     // TODO: Adapt restore to create and reload pointer pool
-    pool.clear();
+    pPool.clear();
     restorePopulationFromSnapshot(eConf.snapshot);
   }
 
   // Main loop
   // TODO: Estimate pPool
-  (*fs)(pool, *rob, eConf);
+  (*fs)(pPool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
     // debug("test");
     // Logging
     // debug("Size: ", pool.size());
+
+    getBestGen(pPool, eConf);
     // TODO: Versions for pointer
-    getBestGen(pool, eConf);
-    // TODO: Versions for pointer
-    trackPoolFitness(pool, eConf);
-    // TODO: Versions for pointer
-    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    // TODO: Versions for pointer
+    trackPoolFitness(pPool, eConf);
+
+    eConf.deadGensCount = countDeadGens(pPool, eConf.getMinGenLen());
+
     eConf.zeroActionPercent = calZeroActionPercent(pool);
-    // TODO: Versions for pointer
-    clearZeroPAs(pool, eConf);
+
+    clearZeroPAs(pPool, eConf);
     // TODO: Versions for pointer
     logAndSnapshotPool(eConf);
     // TODO: Adapt calculation of best gen for pointer
     printRunInformation(eConf, display);
     if (checkEndCondition())
       break;
-    
+
 
       // Selection
     // TODO: Versions for pointer
-    saveBest(pool, eConf);
+    saveBest(pPool, eConf);
     // TODO: Remove and substitude with sharing function
     select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
@@ -292,11 +290,11 @@ void op::Optimizer::optimizePath(bool display){
     // Mutate Families with more than two individuals and expose those with two to reinitialization (the worst one in the family)
     (*mutate)(fPool, eConf);
 
-    // Calculate all 
-    (*fs)(pPool, eConf);
+    // Calculate all
+    (*fs)(pPool, *rob, eConf);
     (*select)(fPool, eConf);
     // Mutate remaining individuals in pool
-    // TODO: 
+    // TODO:
     if (pool.size() > 2){
       for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
 	// Replace worst gen with random
