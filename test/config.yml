@@ -23,7 +23,7 @@ clearZeros: 0
 mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.1
+mapResolution: 0.3
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -37,21 +37,21 @@ initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: true
+penalizeRotation: false
 funSelect: 3
 fitSselect: 1
 
 
 # Population
-popMin: 30
+popMin: 10
 
 
 
 # Selection
 scenario: 1
-keep: 0 #
-select: 30 #
-tournamentSize: 30 #
+keep: 1 #
+select: 2 #
+tournamentSize: 1 #
 selPressure: 2 #
 
 # Crossover

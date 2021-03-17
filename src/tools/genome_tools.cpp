@@ -28,6 +28,7 @@ bool genome_tools::genome::updateGenParameter(){
   this->traveledDist = 0;
   this->cross = 0;
   this->rotationCost = 0;
+  this->diversityFactor = 0;
 
   // New collection values
   pixelCrossCoverage = 0;
@@ -203,19 +204,30 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
   // assert(pSize*(pSize +1)/2 == upperFlat.size());
 
   int idx = 0;
-  for(int row=0; row < pSize-1; row++)
+  for(int row=0; row < pSize-1; row++){
+    // pool[row].diversityFactor = 0;
     for(int col=row+1; col<pSize; col++){
       // TODO: Only possible pixel
-      upperFlat[idx] = D(row, col) = D(col, row) = (*pool[row].mat - *pool[col].mat).cwiseAbs().sum();
+      float res = (*pool[row].mat - *pool[col].mat).norm();
+      // debug("Row: ", row, " Col: ", col, " dist: ", res);
+      // assert(res == (*pool[col].mat -*pool[row].mat).norm());
+      upperFlat[row] += res;
+      upperFlat[col] += res;
+      pool[row].diversityFactor += res;
+      pool[col].diversityFactor += res;
       idx++;
     }
+  }
 }
 
 
 void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min_, float &max_){
   int pSize = pool.size();
   Eigen::MatrixXf D(pSize, pSize);
-  Eigen::VectorXf upperFlat((pSize-1)*(pSize)/2);
+  Eigen::VectorXf upperFlat(pSize);
+  // debug("..", upperFlat);
+  upperFlat.setZero();
+  // debug("..", upperFlat);
   calDistanceMat(pool, D, upperFlat);
 
   // Eigen::VectorXi minIdx;
@@ -244,83 +256,3 @@ void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float
 
   // std = D.triangularView<Eigen::Upper>().std();
 }
-
-// TODO: Put this in path tools
-// shared_ptr<PathAction> makeAction(PAT type, Position start, Position end){
-//   switch(type){
-//   case PAT::Start:{
-//     return make_shared<StartAction>(StartAction(start));
-//     break;
-//   }
-//   case PAT::Ahead: case PAT::CAhead:{
-//     auto ac = AheadAction(static_cast<PAT>(type), {});
-//     ac.setConfigByWaypoints(start, end);
-//     return make_shared<AheadAction>(ac);
-//     break;
-//   }
-//   case PAT::End:{
-//     return make_shared<EndAction>(EndAction({start, end}));
-//   }
-//   }
-
-// }
-
-
-// void genome_tools::calMeanGen(Genpool& pool, vector<int> &contrib, vector<vector<float>> &meanActions, int maxActionSize){
-//   //$G_{n}^{ave} = \frac{1}{P}\displaystyle\sum_{i=1}^{P} G_{i,n}$
-//   // PAs meanActions;
-//   // float actions[maxActionSize][5]; // [type, x_s, y_s, x_e, y_e]
-//   // vector<vector<float>> meanActions(5, vector<float>(maxActionSize));
-
-
-
-
-//   // iterate over all gens and maxsize of gens and add start and endpoint as
-//   for (auto it = pool.begin(); it != pool.end(); ++it) {
-//     for(int i = 0; i < maxActionSize; i++){
-//       // Check if end of gen is reached
-//       if (maxActionSize >= (*it).actions.size())
-// 	break;
-//       // Add contribution
-//       contrib[i]++;
-//       // Add action parameter
-//       // meanActions[i][0] += static_cast<int>(it->actions[i]->type);
-//       meanActions[i][0] += it->actions[i]->wps.front()[0];
-//       meanActions[i][1] += it->actions[i]->wps.front()[1];
-//       meanActions[i][2] += it->actions[i]->wps.back()[0];
-//       meanActions[i][3] += it->actions[i]->wps.back()[1];
-//     }
-//   }
-
-//   // Generate Actions
-//   for(int i = 0; i < maxActionSize; i++){
-//     // create mean actions
-//     for(int j=0; j<4; j++)
-//       meanActions[i][j] = meanActions[i][j] / contrib[i];
-//   }
-// }
-
-// //
-// vector<float> genome_tools::SPD(Genpool& pool, int maxActionSize){
-//   // Action wise difference and
-//   vector<int> contrib(maxActionSize);
-//   vector<float> actionStd(maxActionSize);
-//   vector<vector<float>> meanActions(5, vector<float>(maxActionSize));
-//   calMeanGen(pool, contrib, meanActions maxActionSize);
-//   for (auto it = pool.begin(); it != pool.end(); ++it) {
-//     SPD(*it, meanGen, actionStd);
-//   }
-// }
-
-// // // calculate the genwise SPD and patially calculate the action wise standard deviation
-// void genome_tools::SPD(genome &gen, vector<vector<float>> &meanGen, vector<float> &actionStd) {
-//   float spd = 0;
-//   // $G_{n}^{ave} = \frac{1}{P}\displaystyle\sum_{i=1}^{P} G_{i,n}$
-//   for(int i=0; i<gen.actions.size(); i++){
-//     float contri = (gen.actions[i]->wps.front() - meanGen.actions[i]->wps.front()).norm()
-//       + (gen.actions[i]->wps.back() - meanGen.actions[i]->wps.back()).norm();
-//     actionStd[i] += contri;
-//     spd += contri;
-//   }
-//   gen.spd = spd;
-// }
