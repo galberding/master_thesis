@@ -16,7 +16,7 @@ namespace mapgen {
   using namespace grid_map;
   using namespace std;
 
-  std::shared_ptr<grid_map::GridMap> generateMapType(int with, int height, float res, int type, grid_map::Position& start);
+  std::shared_ptr<grid_map::GridMap> generateMapType(int with, int height, float res, float rob_width, int type, grid_map::Position& start);
 
   shared_ptr<GridMap> changeMapRes(shared_ptr<GridMap> gmap, float res);
   /**

@@ -4,80 +4,122 @@
 // using namespace grid_map;
 using namespace mapgen;
 
-shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, int type, Position& start) {
+void add_walls(GridMap& map, int width, int height, float thickness){
+  map.add("obstacle", 1);
+  bool check;
+  // debug("W: ", floor(width - 2*thickness), " H: ", floor(height - 2*thickness));
+  SubmapGeometry sMap(map,
+		      Position(0,0),
+		      Length(floor(height - thickness), floor(width - thickness)),
+		      check);
+  if(not check){
+    warn("Cannot build walls");
+    return;
+  }
+
+  for (grid_map::SubmapIterator iterator(sMap);
+       !iterator.isPastEnd(); ++iterator) {
+    map.at("obstacle", *iterator) = 0;
+  }
+}
+
+bool getStartPosition(GridMap& map, Position& start){
+  for(GridMapIterator it(map); !it.isPastEnd(); ++it){
+    if(map.at("obstacle", *it) == 0){
+      if(map.getPosition(*it, start)){
+	return true;
+      }else{
+	warn("Start point cannot be set!");
+	throw 42;
+      }
+    }
+  }
+  warn("No startpoint found!");
+  exit(-1);
+  return false;
+}
+
+shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, float rob_width,  int type, Position& start) {
   GridMap map;
   map.setGeometry(Length(height, width), res);
   bool startSet = false;
   switch(type){
   case 0:{ // empty
+    // TODO: Why this case??
     map.add("obstacle", 0);
     throw 42;
     assertm(map.getPosition(Index(0,0), start), "Cannot get position by index while map generation type 0");
     break;
   }
   case 1:{ // bounds
-    map.add("obstacle", 1);
-    int h_offset = static_cast<int>(map.getSize()(0)*0.1);
-    int w_offset = static_cast<int>(map.getSize()(1)*0.1);
+
+    // Walls should be at least double the size of the robot:
+    // float wallsize = 2* rob_width;
+    float wallsize = 3;
+    add_walls(map, width, height, wallsize);
+    getStartPosition(map, start);
+    // map.add("obstacle", 1);
+    // int h_offset = static_cast<int>(map.getSize()(0)*0.1);
+    // int w_offset = static_cast<int>(map.getSize()(1)*0.1);
 
 
-    Index submapStartIndex(h_offset, w_offset);
-    Index submapBufferSize(
-			   static_cast<int>(map.getSize()(0) -2*h_offset),
-			   static_cast<int>(map.getSize()(1) - 2*w_offset)
-			   );
+    // Index submapStartIndex(h_offset, w_offset);
+    // Index submapBufferSize(
+    // 			   static_cast<int>(map.getSize()(0) -2*h_offset),
+    // 			   static_cast<int>(map.getSize()(1) - 2*w_offset)
+    // 			   );
 
 
-    for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
-      !iterator.isPastEnd(); ++iterator) {
-      map.at("obstacle", *iterator) = 0;
-      if(!startSet){
-        if (map.getPosition(*iterator, start)) {
-	  startSet = true;
-          if (map.atPosition("obstacle", start) > 0)
-            startSet = false;
-        }
-      }
+    // for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
+    //   !iterator.isPastEnd(); ++iterator) {
+    //   map.at("obstacle", *iterator) = 0;
+    //   if(!startSet){
+    //     if (map.getPosition(*iterator, start)) {
+    // 	  startSet = true;
+    //       if (map.atPosition("obstacle", start) > 0)
+    //         startSet = false;
+    //     }
+    //   }
 
-    }
-    if(not startSet){
-      warn("No startpoint is set!");
-      throw 42;
-    }
+    // }
+    // if(not startSet){
+    //   warn("No startpoint is set!");
+    //   throw 42;
+    // }
     break;
   }
   case 2:{ // Center circle
 
     map.add("obstacle", 1);
-    int h_offset = static_cast<int>(map.getSize()(0)*0.1);
-    int w_offset = static_cast<int>(map.getSize()(1)*0.1);
+    // int h_offset = static_cast<int>(map.getSize()(0)*0.1);
+    // int w_offset = static_cast<int>(map.getSize()(1)*0.1);
 
 
-    Index submapStartIndex(h_offset, w_offset);
-    Index submapBufferSize(
-			   static_cast<int>(map.getSize()(0) -2*h_offset),
-			   static_cast<int>(map.getSize()(1) - 2*w_offset)
-			   );
+    // Index submapStartIndex(h_offset, w_offset);
+    // Index submapBufferSize(
+    // 			   static_cast<int>(map.getSize()(0) -2*h_offset),
+    // 			   static_cast<int>(map.getSize()(1) - 2*w_offset)
+    // 			   );
 
 
-    for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
-	 !iterator.isPastEnd(); ++iterator) {
-      map.at("obstacle", *iterator) = 0;
-      if(!startSet){
-	if(map.getPosition(*iterator, start)){
-	  startSet = true;
-	  if(map.atPosition("obstacle", start) > 0)
-	    startSet = false;
-	}
-	// assertm(map.getPosition(*iterator, start), "Cannot get position by index while map generation type 1");
-      }
+    // for (grid_map::SubmapIterator iterator(map,submapStartIndex, submapBufferSize);
+    // 	 !iterator.isPastEnd(); ++iterator) {
+    //   map.at("obstacle", *iterator) = 0;
+    //   if(!startSet){
+    // 	if(map.getPosition(*iterator, start)){
+    // 	  startSet = true;
+    // 	  if(map.atPosition("obstacle", start) > 0)
+    // 	    startSet = false;
+    // 	}
+    // 	// assertm(map.getPosition(*iterator, start), "Cannot get position by index while map generation type 1");
+    //   }
 
-    }
-    if(not startSet){
-      warn("No startpoint is set!");
-      throw 42;
-    }
-    for(grid_map::CircleIterator iter(map, Position(0,0), h_offset); !iter.isPastEnd(); ++iter){
+    // }
+    // if(not startSet){
+    //   warn("No startpoint is set!");
+    //   throw 42;
+    // }
+    for(grid_map::CircleIterator iter(map, Position(0,0), 3); !iter.isPastEnd(); ++iter){
       map.at("obstacle", *iter) = 1;
     }
     break;

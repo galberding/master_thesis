@@ -411,14 +411,14 @@ TEST(Serializer, readPoolFromFile){
 
 TEST(MapGen, changeResolution){
   Position start;
-  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.1, 1, start);
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.1, 0.1, 1, start);
   EXPECT_FLOAT_EQ(mapgen::changeMapRes(map, 0.3)->getResolution(), 0.3);
 }
 
 TEST(MapGen, drawPath){
   Position start, pos0, pos1, pos2, pos3;
   cv::Mat rob_map, old;
-  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.4, 1, start);
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.4, 0.4, 1, start);
 
 
   map->getPosition(Index(1,1), pos0);
@@ -455,15 +455,30 @@ TEST(MapGen, inspectMapType2){
   // TODO: Check if start position is correct
   // Vis results
   Position start, pos0, pos1, pos2, pos3;
-  shared_ptr<GridMap> map = mapgen::generateMapType(100, 100, 0.4, 2, start);
+  shared_ptr<GridMap> map = mapgen::generateMapType(100, 100, 0.2, 0.3, 2, start);
 
 
   // Visualize results
   cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
-  // cv::imshow("Path", bb);
-  // cv::waitKey();
+  cv::imshow("Path", bb);
+  cv::waitKey();
 
 }
+
+TEST(MapGen, inspectMapType1){
+  // TODO: Check if start position is correct
+  // Vis results
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.2, 0.3, 1, start);
+
+
+  // Visualize results
+  cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
+  cv::imshow("Path", bb);
+  cv::waitKey();
+
+}
+
 
 
 TEST(GenTools, testErase){
