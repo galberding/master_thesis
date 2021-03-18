@@ -11,7 +11,7 @@ printInfo: true
 
 # Snapshots
 restore: false
-snapshot: "/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions"
+snapshot: '/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions'
 takeSnapshot: true
 takeSnapshotEvery: 10
 tSnap: pop.pas
@@ -43,14 +43,14 @@ fitSselect: 1
 
 
 # Population
-popMin: 10
+popMin: 11
 
 
 
 # Selection
 scenario: 1
 keep: 1 #
-select: 2 #
+select: 3 #
 tournamentSize: 1 #
 selPressure: 2 #
 

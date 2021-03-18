@@ -218,6 +218,7 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
       idx++;
     }
   }
+
 }
 
 

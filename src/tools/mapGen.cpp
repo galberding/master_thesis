@@ -16,7 +16,6 @@ void add_walls(GridMap& map, int width, int height, float thickness){
     warn("Cannot build walls");
     return;
   }
-
   for (grid_map::SubmapIterator iterator(sMap);
        !iterator.isPastEnd(); ++iterator) {
     map.at("obstacle", *iterator) = 0;

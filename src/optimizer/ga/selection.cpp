@@ -63,8 +63,6 @@ void sel::SelectionStrategy::uniformSelectionWithoutReplacement(Genpool &pool, F
 
 // TODO: Move to own selection procedure class
 genome sel::SelectionStrategy::tournamentSelection(Genpool &pool, executionConfig &eConf){
-
-  assert(pool.size() > eConf.tournamentSize);
   deque<genome> turn;
   shuffle(pool.begin(), pool.end(), eConf.generator);
   turn.insert(turn.begin(), pool.begin(), next(pool.begin(), eConf.tournamentSize));

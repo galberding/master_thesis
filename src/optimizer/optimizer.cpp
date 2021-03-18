@@ -166,8 +166,19 @@ void op::adaptCrossover(executionConfig& eConf){
 bool op::Optimizer::checkEndCondition(){
   bool res = false;
   res |= eConf.actionLenAvg > 300;
-  res |= not (eConf.diversityMean + eConf.diversityStd > 0);
-  return res;
+  if(eConf.actionLenAvg > 400){
+    warn("Max action sequence length reached!");
+    return true;
+  }
+  if(eConf.diversityMean + eConf.diversityStd > 0){
+    warn("Diversity is 0, Population converged or died!");
+    return true;
+  }
+  if (pool.size() < eConf.tournamentSize){
+    warn("Tournament bigger toolsize -> Adaptive parameter on?");
+    return true;
+  }
+  return false;
 }
 
 void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
