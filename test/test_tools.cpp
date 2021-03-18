@@ -455,7 +455,7 @@ TEST(MapGen, inspectMapType2){
   // TODO: Check if start position is correct
   // Vis results
   Position start, pos0, pos1, pos2, pos3;
-  shared_ptr<GridMap> map = mapgen::generateMapType(100, 100, 0.2, 0.3, 2, start);
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.1, 0.3, 2, start);
 
 
   // Visualize results
@@ -469,7 +469,7 @@ TEST(MapGen, inspectMapType1){
   // TODO: Check if start position is correct
   // Vis results
   Position start, pos0, pos1, pos2, pos3;
-  shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.2, 0.3, 1, start);
+  shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.1, 0.3, 1, start);
 
 
   // Visualize results
