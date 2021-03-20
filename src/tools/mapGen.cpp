@@ -42,7 +42,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, fl
   GridMap map;
   map.setGeometry(Length(height, width), res);
   bool startSet = false;
-  float wallsize = 1;
+  float wallsize = 3;
   switch(type){
   case 0:{ // empty
     // TODO: Why this case??

@@ -143,7 +143,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   // Time parameter:
   float actualTime = (gen.p_obj + gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
-  float optimalTime = (gen.traveledDist - gen.cross - gen.p_obj) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  float optimalTime = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   if(optimalTime < 0)
     optimalTime = 0;
   float finalTime = 0;

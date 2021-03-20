@@ -587,8 +587,10 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   for (grid_map::PolygonIterator it(*cmap, poly);
       !it.isPastEnd(); ++it) {
     const Index idx(*it);
+    //
+
     if(obj(idx(0), idx(1)) > 0){
-      action->c_config[Counter::ObjCount]++;
+      action->c_config[Counter::ObjCount] += 10;
     }else{
       if(data(idx(0), idx(1)) > 0)
 	action->c_config[Counter::CrossCount]++;

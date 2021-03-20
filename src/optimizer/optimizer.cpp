@@ -170,9 +170,9 @@ bool op::Optimizer::checkEndCondition(){
     warn("Max action sequence length reached!");
     return true;
   }
-  if(eConf.diversityMean + eConf.diversityStd > 0){
+  if(eConf.diversityMean + eConf.diversityStd == 0){
     warn("Diversity is 0, Population converged or died!");
-    return true;
+    // return true;
   }
   if (pool.size() < eConf.tournamentSize){
     warn("Tournament bigger toolsize -> Adaptive parameter on?");
