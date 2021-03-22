@@ -197,10 +197,10 @@ void genome_tools::removeZeroPAs(genome &gen){
   // gen.actions =
 }
 
-void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat){
+void genome_tools::calDistanceMat(Genpool &pool, Eigen::VectorXf& upperFlat){
   int pSize = pool.size();
-  assert(D.cols() == pSize);
-  assert(D.rows() == pSize);
+  // assert(D.cols() == pSize);
+  // assert(D.rows() == pSize);
   // assert(pSize*(pSize +1)/2 == upperFlat.size());
 
   int idx = 0;
@@ -224,21 +224,21 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::Vect
 
 void genome_tools::getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min_, float &max_){
   int pSize = pool.size();
-  Eigen::MatrixXf D(pSize, pSize);
+  // Eigen::MatrixXf D(pSize, pSize);
   Eigen::VectorXf upperFlat(pSize);
   // debug("..", upperFlat);
   upperFlat.setZero();
   // debug("..", upperFlat);
-  calDistanceMat(pool, D, upperFlat);
+  calDistanceMat(pool, upperFlat);
 
   // Eigen::VectorXi minIdx;
   mean = upperFlat.mean();
   min_ = upperFlat.minCoeff();
   max_ = upperFlat.maxCoeff();
 
-  debug("Min: ", min_);
-  debug("Max: ", max_);
-  debug("Mean: ", mean);
+  // debug("Min: ", min_);
+  // debug("Max: ", max_);
+  // debug("Mean: ", mean);
 
   // debug("Size: ", pSize);
   // debug("Start");

@@ -5,7 +5,7 @@
 /////////////////////////////////////////////////////////////////////////////
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
-  debug("Poolsize: ", pool.size());
+  // debug("Poolsize: ", pool.size());
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
   // Write initial logfile
   if(eConf.currentIter == 0){
@@ -171,7 +171,7 @@ bool op::Optimizer::checkEndCondition(){
     return true;
   }
   if(eConf.diversityMean + eConf.diversityStd == 0){
-    warn("Diversity is 0, Population converged or died!");
+    // warn("Diversity is 0, Population converged or died!");
     // return true;
   }
   if (pool.size() < eConf.tournamentSize){
@@ -270,7 +270,7 @@ void op::Optimizer::optimizePath(bool display){
       printRunInformation(eConf, display);
       if (checkEndCondition())
 	break;
-      assert(eConf.actionLenAvg < 300);
+      // assert(eConf.actionLenAvg < 300);
 
       // Selection
 

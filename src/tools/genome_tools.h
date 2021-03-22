@@ -89,7 +89,7 @@ namespace genome_tools {
   int countDeadGens(Genpool &pool, int minSize);
   void removeZeroPAs(Genpool &pool);
   void removeZeroPAs(genome &gen);
-  void calDistanceMat(Genpool &pool, Eigen::MatrixXf& D, Eigen::VectorXf& upperFlat);
+  void calDistanceMat(Genpool &pool, Eigen::VectorXf& upperFlat);
   void getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min, float &max);
   // genome calMeanGen(Genpool& pool, int maxActionSize);
 }

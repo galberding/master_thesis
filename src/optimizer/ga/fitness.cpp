@@ -78,8 +78,8 @@ void fit::trackPoolFitness(Genpool& pool, executionConfig& eConf){
   finalizeFitnessLogging(pool.size(), eConf);
   if(eConf.crossAdapter == 0)
     eConf.lastDmax = 0;
-  eConf.adaptCrossover();
   eConf.adaptMutation();
+  eConf.adaptCrossover();
   eConf.adaptCLen();
   eConf.adaptSelPressure();
 
