@@ -9,7 +9,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -38,6 +38,9 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.best.finalCoverage,
 				    eConf.best.finalRotationTime,
 				    eConf.best.actions.size(),
+				    eConf.best.diversityFactor,
+				    eConf.best.p_obj,
+				    eConf.best.cross,
 				    eConf.diversityMean,
 				    eConf.diversityStd,
 				    eConf.diversityMax,

@@ -33,7 +33,7 @@ Rob_RPM: 60    # rounds per minute
 
 # Initialization
 initActions: 50
-initIndividuals: 20 #
+initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
@@ -43,14 +43,14 @@ fitSselect: 1
 
 
 # Population
-popMin: 10
+popMin: 100
 
 
 
 # Selection
-scenario: 0
-keep: 0 #
-select: 3 #
+scenario: 3
+keep: 1 #
+select: 10 #
 tournamentSize: 1 #
 selPressure: 2 #
 
@@ -80,8 +80,8 @@ crossUpper: 1
 crossLower: 0.5
 cLenUpper: 0.1 #
 cLenLower: 0.5 #
-mutUpper: 0.5
+mutUpper: 0.05
 
-adaptSP: false
+adaptSP: true
 adaptSPlower: 1
-adaptSPupper: 30
+adaptSPupper: 2
