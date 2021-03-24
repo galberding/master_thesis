@@ -28,7 +28,7 @@ namespace conf {
     executionConfig(const string loadPath){
       loadConfFromYaml(loadPath);
       // mapResolution = Rob_width;
-      debug("Map Res: ", mapResolution);
+      // debug("Map Res: ", mapResolution);
       gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, Rob_width, mapType, start);
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());

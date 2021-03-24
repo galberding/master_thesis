@@ -22,11 +22,19 @@ void add_walls(GridMap& map, int width, int height, float thickness){
   }
 }
 
-bool getStartPosition(GridMap& map, Position& start){
+bool getStartPosition(GridMap& map, Position& start, float robRad){
   for(GridMapIterator it(map); !it.isPastEnd(); ++it){
     if(map.at("obstacle", *it) == 0){
       if(map.getPosition(*it, start)){
-	return true;
+	bool isfree = true;
+	for (CircleIterator cit(map, start, 2*robRad); !cit.isPastEnd(); ++cit){
+	  if(map.at("obstacle", *cit) > 0){
+	    isfree = false;
+	    break;
+	  }
+	}
+	if(isfree)
+	  return true;
       }else{
 	warn("Start point cannot be set!");
 	throw 42;
@@ -57,7 +65,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, fl
     // float wallsize = 2* rob_width;
 
     add_walls(map, width, height, wallsize);
-    getStartPosition(map, start);
+    getStartPosition(map, start, rob_width);
 
     break;
   }
@@ -68,7 +76,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, fl
       map.at("obstacle", *iter) = 1;
     }
 
-    getStartPosition(map, start);
+    getStartPosition(map, start, rob_width);
     break;
   }
   default:{

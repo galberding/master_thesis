@@ -6,7 +6,7 @@
 
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   // debug("Poolsize: ", pool.size());
-  getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
+
   // Write initial logfile
   if(eConf.currentIter == 0){
       *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
@@ -262,20 +262,21 @@ void op::Optimizer::optimizePath(bool display){
   (*fs)(pool, *rob, eConf);
   while(eConf.currentIter <= eConf.maxIterations){
     // debug("test");
-      // Logging
+    // Logging
     // debug("Size: ", pool.size());
-      getBestGen(pool, eConf);
-      trackPoolFitness(pool, eConf);
-      eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-      eConf.zeroActionPercent = calZeroActionPercent(pool);
-      clearZeroPAs(pool, eConf);
-      logAndSnapshotPool(eConf);
-      printRunInformation(eConf, display);
-      if (checkEndCondition())
-	break;
-      // assert(eConf.actionLenAvg < 300);
+    getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
+    getBestGen(pool, eConf);
+    trackPoolFitness(pool, eConf);
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    eConf.zeroActionPercent = calZeroActionPercent(pool);
+    clearZeroPAs(pool, eConf);
+    logAndSnapshotPool(eConf);
+    printRunInformation(eConf, display);
+    if (checkEndCondition())
+      break;
+    // assert(eConf.actionLenAvg < 300);
 
-      // Selection
+    // Selection
 
       saveBest(pool, eConf);
       select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
@@ -370,6 +371,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
     // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
+    getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
     trackPoolFitness(pool, eConf);
