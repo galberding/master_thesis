@@ -22,6 +22,8 @@ void fit::resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.actionLenMin = eConf.actionLenMax;
   eConf.actionLenMax = 0;
   eConf.actionLenAvg = 0;
+  eConf.fitnessMinObjCount = eConf.fitnessMaxObjCount;
+  eConf.fitnessMaxObjCount = 0;
 }
 
 
@@ -48,12 +50,19 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
   if(gen.finalRotationTime < eConf.fitnessMinAngleCost)
     eConf.fitnessMinAngleCost = gen.finalRotationTime;
 
+  if(gen.p_obj > eConf.fitnessMaxObjCount)
+    eConf.fitnessMaxObjCount = gen.p_obj;
+  if(gen.p_obj < eConf.fitnessMinObjCount)
+    eConf.fitnessMinObjCount = gen.p_obj;
+
+
 
   eConf.fitnessAvg += fitness;
   eConf.actionLenAvg += gen.actions.size();
   eConf.fitnessAvgTime += gen.finalTime;
   eConf.fitnessAvgCoverage += gen.finalCoverage;
   eConf.fitnessAvgAngleCost += gen.finalRotationTime;
+  eConf.fitnessAvgObjCount += gen.p_obj;
 }
 
 
@@ -65,6 +74,7 @@ void fit::finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.fitnessAvgCoverage /= poolsize;
   eConf.fitnessAvgAngleCost /= poolsize;
   eConf.actionLenAvg /= poolsize;
+  eConf.fitnessAvgObjCount /= poolsize;
 }
 
 
@@ -159,6 +169,8 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   float totalCoverage = (freeSpace + gen.p_obj) * pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
 
+
+
   gen.finalCoverage = finalCoverage;
   gen.finalTime = finalTime;
   float x = finalTime;
@@ -167,12 +179,12 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   fitnessFun(gen, x, y, eConf);
   // Panelty for zero actions
-  int zeros = countZeroActions(gen);
+  int zeros = countZeroActions(gen, eConf.mapResolution);
   if(eConf.penalizeZeroActions and zeros > 0)
     gen.fitness *= 1.0 / zeros;
 
   // if (gen.p_obj > 0)
-  //   gen.fitness *= 1 / gen.p_obj;
+  //   gen.fitness *= 1.0 / gen.p_obj;
 
   return gen.fitness;
 }
@@ -247,7 +259,7 @@ float fit::FitnessSemiContinuous::calculation(genome &gen, int freeSpace, execut
   fitnessFun(gen, x, y, eConf);
   // debug(" cross_d: ",cross_d, " area: ",area," cov: ",cov," finalCoverage: ",finalCoverage," actualTime: ",actualTime," optimalTime: ",optimalTime," rotation_time: ",rotation_time, " genRot: ", gen.rotations, "finalTime: ",finalTime, " Fit: ", gen.fitness);
   if(eConf.penalizeZeroActions)
-    gen.fitness *= 1.0 - calZeroActionPercent(gen);
+    gen.fitness *= 1.0 - calZeroActionPercent(gen, eConf.mapResolution);
 
   return gen.fitness;
 }

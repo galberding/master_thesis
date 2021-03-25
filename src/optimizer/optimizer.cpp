@@ -9,7 +9,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,ObjCountAvg,ObjCountMax,ObjCountMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestPathLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -29,6 +29,9 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.fitnessAvgAngleCost,
 				    eConf.fitnessMaxAngleCost,
 				    eConf.fitnessMinAngleCost,
+				    eConf.fitnessAvgObjCount,
+				    eConf.fitnessMaxObjCount,
+				    eConf.fitnessMinObjCount,
 				    eConf.actionLenAvg,
 				    eConf.actionLenMax,
 				    eConf.actionLenMin,
@@ -38,6 +41,7 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.best.finalCoverage,
 				    eConf.best.finalRotationTime,
 				    eConf.best.actions.size(),
+				    eConf.best.pathLengh,
 				    eConf.best.diversityFactor,
 				    eConf.best.p_obj,
 				    eConf.best.cross,
@@ -190,7 +194,7 @@ bool op::Optimizer::checkEndCondition(){
 
 void op::clearZeroPAs(Genpool& pool, executionConfig& eConf){
   if(eConf.clearZeros > 0 and eConf.currentIter % eConf.clearZeros == 0)
-    genome_tools::removeZeroPAs(pool);
+    genome_tools::removeZeroPAs(pool, eConf.mapResolution);
 }
 
 
@@ -271,8 +275,8 @@ void op::Optimizer::optimizePath(bool display){
     getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
     getBestGen(pool, eConf);
     trackPoolFitness(pool, eConf);
-    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
-    eConf.zeroActionPercent = calZeroActionPercent(pool);
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen(), eConf.mapResolution);
+    eConf.zeroActionPercent = calZeroActionPercent(pool, eConf.mapResolution);
     clearZeroPAs(pool, eConf);
     logAndSnapshotPool(eConf);
     printRunInformation(eConf, display);
@@ -371,9 +375,9 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 
 
     // Logging
-    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
+    eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen(), eConf.mapResolution);
     // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
-    eConf.zeroActionPercent = calZeroActionPercent(pool);
+    eConf.zeroActionPercent = calZeroActionPercent(pool, eConf.mapResolution);
     getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
     getBestGen(pool, eConf);
     saveBest(pool, eConf);

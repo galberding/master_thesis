@@ -568,8 +568,10 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
     waypoints.back() = cmap->getClosestPositionInMap(waypoints.back());
   }
 
-  if(action->mod_config[PAP::Distance] == 0){
+  if(action->mod_config[PAP::Distance] < cmap->getResolution()){
     // debug("Action has 0 distance");
+    action->wps.back() = action->wps.front();
+    action->mod_config[PAP::Distance] = 0;
     return false;
   }
 

@@ -79,16 +79,16 @@ namespace genome_tools {
   using FamilyPool = deque<Genpool>;
 
   void validateGen(genome &gen);
-  int countZeroActions(genome &gen);
-  float calZeroActionPercent(genome &gen);
-  float calZeroActionPercent(Genpool &pool);
+  int countZeroActions(genome &gen, float delta);
+  float calZeroActionPercent(genome &gen, float delta);
+  float calZeroActionPercent(Genpool &pool, float delta);
   /**
      Count how many gens have action length less than minSize.
      Those gens cannot participate on crossover.
    **/
-  int countDeadGens(Genpool &pool, int minSize);
-  void removeZeroPAs(Genpool &pool);
-  void removeZeroPAs(genome &gen);
+  int countDeadGens(Genpool &pool, int minSize, float delta);
+  void removeZeroPAs(Genpool &pool, float delta);
+  void removeZeroPAs(genome &gen, float delta);
   void calDistanceMat(Genpool &pool, Eigen::VectorXf& upperFlat);
   void getDivMeanStd(Genpool &pool, float& mean, float& stdev, float &min, float &max);
   // genome calMeanGen(Genpool& pool, int maxActionSize);

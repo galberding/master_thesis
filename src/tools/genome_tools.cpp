@@ -130,42 +130,42 @@ void genome_tools::validateGen(genome &gen){
   }
 }
 
-int genome_tools::countZeroActions(genome &gen){
+int genome_tools::countZeroActions(genome &gen, float delta){
   int res = 0;
   for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
-    if(compareF(it->get()->mod_config[PAP::Distance], 0, 0.000001)){
+    if(it->get()->mod_config[PAP::Distance] < delta){
       res += 1;
     }
   }
   return res;
 }
 
-float genome_tools::calZeroActionPercent(genome &gen){
+float genome_tools::calZeroActionPercent(genome &gen, float delta){
   // float res = 0;
   // for (auto it = gen.actions.begin(); it != gen.actions.end(); ++it) {
   //   if(compareF(it->get()->mod_config[PAP::Distance], 0, 0.000001)){
   //     res += 1;
   //   }
   // }
-  return countZeroActions(gen) / (gen.actions.size()-1);
+  return countZeroActions(gen, delta) / (gen.actions.size()-1);
 }
 
-float genome_tools::calZeroActionPercent(Genpool &pool){
+float genome_tools::calZeroActionPercent(Genpool &pool, float delta){
   // TODO: Does nothing!!
   float res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
-    res += calZeroActionPercent(*it);
+    res += calZeroActionPercent(*it, delta);
   }
   return res / pool.size();
 }
 
-void genome_tools::removeZeroPAs(Genpool &pool) {
+void genome_tools::removeZeroPAs(Genpool &pool, float delta) {
   for(auto &gen : pool){
-    removeZeroPAs(gen);
+    removeZeroPAs(gen, delta);
   }
 }
 
-int genome_tools::countDeadGens(Genpool &pool, int minSize){
+int genome_tools::countDeadGens(Genpool &pool, int minSize, float delta){
   int res = 0;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     if (it->actions.size() < minSize or not it->updateGenParameter())
@@ -175,7 +175,7 @@ int genome_tools::countDeadGens(Genpool &pool, int minSize){
   return res;
 }
 
-void genome_tools::removeZeroPAs(genome &gen){
+void genome_tools::removeZeroPAs(genome &gen, float delta){
   // Remove consecutive zero actions and check if the third action is still a zero action
   // We will allow to consecutive zero actions, everything else will be removed
   // This will have no impact on the fitness thus it can safely be executed after the evaluation process
@@ -186,8 +186,8 @@ void genome_tools::removeZeroPAs(genome &gen){
     if(ac->type == PAT::Start || ac->type == PAT::End){
       gen.actions.push_back(ac);
     }else{
-      if(compareF(ac->mod_config[PAP::Distance], 0)
-	 && compareF(gen.actions.back()->mod_config[PAP::Distance], 0)){
+      if(ac->mod_config[PAP::Distance] < delta
+	 && gen.actions.back()->mod_config[PAP::Distance] < delta){
 	continue;
       }else{
 	gen.actions.push_back(ac);

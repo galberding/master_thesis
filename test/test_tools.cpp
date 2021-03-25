@@ -519,7 +519,7 @@ TEST(GenTools, testErase){
 
   genome_tools::genome gen(act);
   // debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
-  genome_tools::removeZeroPAs(gen);
+  genome_tools::removeZeroPAs(gen, 0);
   // genome_tools::genome gen(act);
   // debug("Zero Actions: ", genome_tools::calZeroActionPercent(gen));
 }

@@ -23,7 +23,7 @@ clearZeros: 0
 mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.1
+mapResolution: 0.2
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -32,12 +32,12 @@ Rob_RPM: 60    # rounds per minute
 
 
 # Initialization
-initActions: 50
+initActions: 20
 initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
-penalizeRotation: false
+penalizeRotation: true
 funSelect: 2
 fitSselect: 1
 
@@ -50,7 +50,7 @@ popMin: 100
 # Selection
 scenario: 1
 keep: 1 #
-select: 50 #
+select: 20 #
 tournamentSize: 1 #
 selPressure: 2 #
 
@@ -83,5 +83,5 @@ cLenLower: 0.3 #
 mutUpper: 0.1
 
 adaptSP: true
-adaptSPlower: 1
-adaptSPupper: 20
+adaptSPlower: 50
+adaptSPupper: 50
