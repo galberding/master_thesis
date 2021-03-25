@@ -63,7 +63,7 @@ crossLength: 0.4
 crossChildSelector: 2
 # 0 - DualPointcrossover
 # 1 - Same Start idx
-crossStrategy: 0
+crossStrategy: 1
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0

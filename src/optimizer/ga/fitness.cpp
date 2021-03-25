@@ -152,7 +152,8 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.setPathSignature(eConf.gmap);
 
   // Time parameter:
-  float actualTime = (gen.p_obj + gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  // float actualTime = (gen.p_obj + gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   float optimalTime = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   if(optimalTime < 0)
     optimalTime = 0;
@@ -166,7 +167,8 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   float currentCoverage = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2);
   // if(currentCoverage < 0)
   //   currentCoverage = 0;
-  float totalCoverage = (freeSpace + gen.p_obj) * pow(eConf.mapResolution, 2);
+  float totalCoverage = (freeSpace) * pow(eConf.mapResolution, 2);
+  // float totalCoverage = (freeSpace + gen.p_obj) * pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
 
 
@@ -180,11 +182,12 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   fitnessFun(gen, x, y, eConf);
   // Panelty for zero actions
   int zeros = countZeroActions(gen, eConf.mapResolution);
+  // debug(zeros);
   if(eConf.penalizeZeroActions and zeros > 0)
     gen.fitness *= 1.0 / zeros;
 
-  // if (gen.p_obj > 0)
-  //   gen.fitness *= 1.0 / gen.p_obj;
+  if (gen.p_obj > 0)
+    gen.fitness *= 1.0 / gen.p_obj;
 
   return gen.fitness;
 }
