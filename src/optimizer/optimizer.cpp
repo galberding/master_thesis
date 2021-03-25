@@ -125,10 +125,14 @@ void op::Optimizer::snapshotPopulation(executionConfig& eConf){
 
 
 void op::getBestGen(Genpool& pool, executionConfig& eConf){
+  // for (auto it = pool.begin(); it != pool.end(); ++it) {
+  //   debug("Pool Div", it->diversityFactor);
+  // }
   eConf.best = pool.front();
   bool foundBest = false;
   for (auto it = pool.begin(); it != pool.end(); ++it) {
     if(it->fitness >  eConf.best.fitness){
+      // debug("DivFac: ", it->diversityFactor, " ", it->fitness);
       eConf.best = *it;
       // debug("New best");
       if(it->fitness > eConf.crossBestFit){
@@ -367,11 +371,11 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 
 
     // Logging
-    getBestGen(pool, eConf);
     eConf.deadGensCount = countDeadGens(pool, eConf.getMinGenLen());
     // debug("Size: ", pool.size(), " dead: ", eConf.deadGensCount);
     eConf.zeroActionPercent = calZeroActionPercent(pool);
     getDivMeanStd(pool, eConf.diversityMean, eConf.diversityStd, eConf.diversityMin, eConf.diversityMax);
+    getBestGen(pool, eConf);
     saveBest(pool, eConf);
     clearZeroPAs(pool, eConf);
     trackPoolFitness(pool, eConf);

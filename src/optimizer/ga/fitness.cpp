@@ -17,10 +17,10 @@ void fit::resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.fitnessMaxCoverage = 0;
   eConf.fitnessMinCoverage = 1;
   eConf.fitnessAvgAngleCost = 0;
+  eConf.fitnessMinAngleCost = eConf.fitnessMaxAngleCost;
   eConf.fitnessMaxAngleCost = 0;
-  eConf.fitnessMinAngleCost = 1;
+  eConf.actionLenMin = eConf.actionLenMax;
   eConf.actionLenMax = 0;
-  eConf.actionLenMin = 100000;
   eConf.actionLenAvg = 0;
 }
 

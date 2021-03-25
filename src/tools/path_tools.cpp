@@ -590,7 +590,7 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
     //
 
     if(obj(idx(0), idx(1)) > 0){
-      action->c_config[Counter::ObjCount] += 10;
+      action->c_config[Counter::ObjCount] += 1;
     }else{
       if(data(idx(0), idx(1)) > 0)
 	action->c_config[Counter::CrossCount]++;

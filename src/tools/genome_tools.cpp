@@ -28,7 +28,7 @@ bool genome_tools::genome::updateGenParameter(){
   this->traveledDist = 0;
   this->cross = 0;
   this->rotationCost = 0;
-  this->diversityFactor = 0;
+  // this->diversityFactor = 0;
 
   // New collection values
   pixelCrossCoverage = 0;
@@ -202,7 +202,9 @@ void genome_tools::calDistanceMat(Genpool &pool, Eigen::VectorXf& upperFlat){
   // assert(D.cols() == pSize);
   // assert(D.rows() == pSize);
   // assert(pSize*(pSize +1)/2 == upperFlat.size());
-
+  for (auto it = pool.begin(); it != pool.end(); ++it) {
+    it->diversityFactor = 0;
+  }
   int idx = 0;
   for(int row=0; row < pSize-1; row++){
     // pool[row].diversityFactor = 0;

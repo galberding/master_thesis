@@ -38,7 +38,7 @@ initIndividuals: 100 #
 # Fitness
 penalizeZeroActions: true
 penalizeRotation: false
-funSelect: 1
+funSelect: 2
 fitSselect: 1
 
 
@@ -48,9 +48,9 @@ popMin: 100
 
 
 # Selection
-scenario: 3
+scenario: 1
 keep: 1 #
-select: 40 #
+select: 50 #
 tournamentSize: 1 #
 selPressure: 2 #
 
@@ -77,11 +77,11 @@ mutaReplaceGen: 0.0
 # Adaptive parameter:
 adaptParameter: true
 crossUpper: 1
-crossLower: 0.5
+crossLower: 0.7
 cLenUpper: 0.1 #
-cLenLower: 0.5 #
-mutUpper: 0.05
+cLenLower: 0.3 #
+mutUpper: 0.1
 
 adaptSP: true
 adaptSPlower: 1
-adaptSPupper: 2
+adaptSPupper: 20
