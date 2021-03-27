@@ -214,6 +214,9 @@ void conf::executionConfig::adaptMutation(){
     else
       mutaFit =  (fitnessMax - fitnessAvg) / (fitnessMax - fitnessMin) * mutUpper;
     mutaDiv = (dMax - diversityMean)  / dMax * mutUpper;
+    // debug("Fit: ", mutaFit);
+    // assert(mutaFit >= 0);
+    // assert(mutaDiv >= 0);
     muta = (mutaFit + mutaDiv) / 2;
   }else{
     muta = mutUpper;

@@ -13,7 +13,7 @@ printInfo: true
 restore: false
 snapshot: '/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions'
 takeSnapshot: true
-takeSnapshotEvery: 10
+takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
@@ -32,8 +32,8 @@ Rob_RPM: 60    # rounds per minute
 
 
 # Initialization
-initActions: 20
-initIndividuals: 100 #
+initActions: 10
+initIndividuals: 1000 #
 
 # Fitness
 penalizeZeroActions: true
@@ -48,9 +48,9 @@ popMin: 100
 
 
 # Selection
-scenario: 1
-keep: 1 #
-select: 20 #
+scenario: 3
+keep: 10 #
+select: 40 #
 tournamentSize: 1 #
 selPressure: 2 #
 
@@ -77,11 +77,11 @@ mutaReplaceGen: 0.0
 # Adaptive parameter:
 adaptParameter: true
 crossUpper: 1
-crossLower: 0.7
-cLenUpper: 0.1 #
-cLenLower: 0.3 #
-mutUpper: 0.1
+crossLower: 0.6
+cLenUpper: 0.8 #
+cLenLower: 0.8 #
+mutUpper: 0.0
 
 adaptSP: true
-adaptSPlower: 50
-adaptSPupper: 50
+adaptSPlower: 1
+adaptSPupper: 2

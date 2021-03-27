@@ -1,4 +1,5 @@
 #include "path_tools.h"
+#include "grid_map_core/GridMapMath.hpp"
 
 // #ifdef __DEBUG__
 // #undef __DEBUG__
@@ -303,7 +304,7 @@ bool path::Robot::execute(shared_ptr<PathAction> action, shared_ptr<grid_map::Gr
   // Post processing of action
   if(!res){
     // Ignore actions that have no distance
-    if(action->c_config[Counter::StepCount] == 0){
+    if(action->c_config[Counter::StepCount] == 0 and action->c_config[Counter::ObjCount] == 0){
       // debug("Action has distance 0");
       return true;
     }
@@ -563,15 +564,20 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   // if(not cmap->isInside(currentPos))
   //   throw 42;
   // TODO: Fix check!
+  // if(not checkIfPositionWithinMap(waypoints.back(), cmap->getLength(), cmap->getPosition())){
+  //   debug("Check Boundary of ",waypoints.back()[0]," | ", waypoints.back()[1], " failed, get closest: ", cmap->getClosestPositionInMap(waypoints.back()));
+
+  // }
   if (not cmap->isInside(waypoints.back())){
     adapted = true;
-    waypoints.back() = cmap->getClosestPositionInMap(waypoints.back());
+    waypoints[1] = cmap->getClosestPositionInMap(waypoints.back());
+    action->wps[1] = waypoints.back();
   }
-
+  // debug("Actual Distance: ", action->mod_config[PAP::Distance]);
   if(action->mod_config[PAP::Distance] < cmap->getResolution()){
-    // debug("Action has 0 distance");
-    action->wps.back() = action->wps.front();
-    action->mod_config[PAP::Distance] = 0;
+    // debug("Action has 0 distance: ");
+    // action->wps.back() = action->wps.front();
+    // action->mod_config[PAP::Distance] = 0;
     return false;
   }
 
@@ -601,7 +607,14 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
     }
   }
 
-  currentPos = waypoints.back();
+  if(action->c_config[Counter::StepCount] == 0 and action->c_config[Counter::ObjCount] == 0){
+    // debug("Undetected Zero Action with distance: ", action->mod_config[PAP::Distance]);
+    currentPos = waypoints.front();
+    action->wps.back() = waypoints.front();
+    action->mod_config[PAP::Distance] = 0;
+    adapted = true;
+  }else
+    currentPos = waypoints.back();
 
   return not adapted;
 }

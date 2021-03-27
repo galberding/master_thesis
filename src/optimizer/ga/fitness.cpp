@@ -165,8 +165,8 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   // Coverage
   float currentCoverage = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2);
-  // if(currentCoverage < 0)
-  //   currentCoverage = 0;
+  if(currentCoverage < 0)
+    currentCoverage = 0;
   float totalCoverage = (freeSpace) * pow(eConf.mapResolution, 2);
   // float totalCoverage = (freeSpace + gen.p_obj) * pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
@@ -184,10 +184,10 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   int zeros = countZeroActions(gen, eConf.mapResolution);
   // debug(zeros);
   if(eConf.penalizeZeroActions and zeros > 0)
-    gen.fitness *= 1.0 / zeros;
+    gen.fitness *= 1.0/zeros;
 
   if (gen.p_obj > 0)
-    gen.fitness *= 1.0 / gen.p_obj;
+    gen.fitness *= 1.0/gen.p_obj;
 
   return gen.fitness;
 }

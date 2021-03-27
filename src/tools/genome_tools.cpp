@@ -147,7 +147,7 @@ float genome_tools::calZeroActionPercent(genome &gen, float delta){
   //     res += 1;
   //   }
   // }
-  return countZeroActions(gen, delta) / (gen.actions.size()-1);
+  return static_cast<float>(countZeroActions(gen, delta)) / (gen.actions.size()-1);
 }
 
 float genome_tools::calZeroActionPercent(Genpool &pool, float delta){

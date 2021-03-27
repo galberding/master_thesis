@@ -1,6 +1,6 @@
 #ifndef DEBUG_H
 #define DEBUG_H
-// #undef NDEBUG
+#undef NDEBUG
 #include <iostream>
 #include <cstdio>
 #include <cassert>
