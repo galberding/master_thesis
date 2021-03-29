@@ -17,6 +17,9 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
 
   if(yConf["scenario"])
     scenario = yConf["scenario"].as<float>();
+
+  if(yConf["genSeed"])
+    genSeed = yConf["genSeed"].as<float>();
   if(yConf["logName"])
     logName = yConf["logName"].as<string>();
   if(yConf["logDir"])

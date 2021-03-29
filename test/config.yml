@@ -4,10 +4,7 @@ maxIterations: 2000
 
 visualize: true
 printInfo: true
-# 0: elitist selction
-# 1: Tournament selection
-# 2: Roulettwheel selection
-
+genSeed: 4
 
 # Snapshots
 restore: false
@@ -48,6 +45,10 @@ popMin: 100
 
 
 # Selection
+# 0: elitist selction
+# 1: Tournament selection
+# 2: Roulettwheel selection
+# 3: RRWS
 scenario: 0
 keep: 0 #
 select: 0 #

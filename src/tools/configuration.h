@@ -32,7 +32,7 @@ namespace conf {
       gmap = mapgen::generateMapType(mapWidth, mapHeight, mapResolution, Rob_width, mapType, start);
       fitnessStr = make_shared<std::ostringstream>(std::ostringstream());
       logStr = make_shared<std::ostringstream>(std::ostringstream());
-      generator.seed(4);
+      generator.seed(genSeed);
       ends = {start};
       Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
       // TODO :Possible that values will be lost
@@ -51,6 +51,7 @@ namespace conf {
     string logDir = "";
     // string logFitness = "";
     string logName = "";
+    int genSeed = 42;
 
     bool visualize = true;
     bool printInfo = true;
