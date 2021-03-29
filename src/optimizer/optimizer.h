@@ -1,6 +1,6 @@
 #ifndef __OPTI_ADAPTER__
 #define __OPTI_ADAPTER__
-
+#include <chrono>
 
 #include <Eigen/Dense>
 #include <algorithm>
@@ -41,6 +41,11 @@ namespace op {
   /////////////////////////////////////////////////////////////////////////////
 
 
+  using std::chrono::high_resolution_clock;
+  using std::chrono::duration_cast;
+  using std::chrono::duration;
+  using std::chrono::milliseconds;
+
   struct Optimizer {
     executionConfig eConf;
     shared_ptr<FitnessStrategy> fitnessStrat;
@@ -52,6 +57,7 @@ namespace op {
     SelectionPool sPool;
     FamilyPool fPool;
     shared_ptr<Robot> rob;
+    std::chrono::time_point<std::chrono::high_resolution_clock> tp;
 
     Optimizer(
 	      shared_ptr<InitStrategy> init,
@@ -84,7 +90,7 @@ namespace op {
 	rob = make_shared<Robot>(Robot(eConf.rob_conf,
 				     eConf.gmap,
 				     eConf.obstacleName));}
-
+      tp = high_resolution_clock::now();
 
     }
     /**

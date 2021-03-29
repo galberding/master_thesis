@@ -32,7 +32,7 @@ Rob_RPM: 60    # rounds per minute
 
 
 # Initialization
-initActions: 20
+initActions: 25
 initIndividuals: 100 #
 
 # Fitness
@@ -48,15 +48,15 @@ popMin: 100
 
 
 # Selection
-scenario: 3
-keep: 1 #
-select: 50 #
-tournamentSize: 5 #
-selPressure: 2 #
+scenario: 0
+keep: 0 #
+select: 0 #
+tournamentSize: 0 #
+selPressure: 0 #
 
 # Crossover
-crossoverProba: 0.9
-crossLength: 0.5
+crossoverProba: 0.8
+crossLength: 0.2
 # 0 - local
 # 1 - global
 # 2 - both
@@ -67,16 +67,16 @@ crossStrategy: 1
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.0  #
+mutaRandAngleProba: 0.01  #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.0  #
-mutaReplaceGen: 0.00
+mutaRandScaleDistProba: 0.01  #
+mutaReplaceGen: 0.01
 
 
 # Adaptive parameter:
 adaptParameter: false
-crossUpper: 1
+crossUpper: 0.8
 crossLower: 0.6
 cLenUpper: 0.8 #
 cLenLower: 0.8 #

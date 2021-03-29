@@ -7,9 +7,13 @@
 void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
   // debug("Poolsize: ", pool.size());
 
+  auto t_end = high_resolution_clock::now();
+  auto duration = duration_cast<milliseconds>(t_end - tp);
+  tp = t_end;
+
   // Write initial logfile
   if(eConf.currentIter == 0){
-      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,ObjCountAvg,ObjCountMax,ObjCountMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestPathLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount\n";
+      *eConf.logStr << "Iteration,FitAvg,FitMax,FitMin,TimeAvg,TimeMax,TimeMin,CovAvg,CovMax,CovMin,AngleAvg,AngleMax,AngleMin,ObjCountAvg,ObjCountMax,ObjCountMin,AcLenAvg,AcLenMax,AcLenMin,ZeroAcPercent,DGens,BestTime,BestCov,BestAngle,BestLen,BestPathLen,BestDiv,BestObj,BestCross,DivMean,DivStd,DivMax,DivMin,PopFilled,PopSize,CrossFailed,MutaCount,Duration\n";
       logging::Logger(eConf.logStr->str(), eConf.logDir, eConf.logName);
       eConf.logStr->str("");
   }
@@ -52,7 +56,8 @@ void op::Optimizer::logAndSnapshotPool(executionConfig& eConf){
 				    eConf.popFilled,
 				    eConf.popSize,
 				    eConf.crossFailed,
-				    eConf.mutaCount
+				    eConf.mutaCount,
+				    duration.count()
 				    );
     }
     if(eConf.takeSnapshot && (eConf.currentIter % eConf.takeSnapshotEvery == 0)){

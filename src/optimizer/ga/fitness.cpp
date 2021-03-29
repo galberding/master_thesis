@@ -184,10 +184,10 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   int zeros = countZeroActions(gen, eConf.mapResolution);
   // debug(zeros);
   if(eConf.penalizeZeroActions and zeros > 0)
-    gen.fitness *= 1.0/zeros;
+    gen.fitness *= 1.0/(zeros * 2);
 
   if (gen.p_obj > 0)
-    gen.fitness *= 1.0/gen.p_obj;
+    gen.fitness *= 1.0/(gen.p_obj * 2);
 
   return gen.fitness;
 }
