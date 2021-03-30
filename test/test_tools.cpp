@@ -7,6 +7,7 @@
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include "../src/tools/pa_serializer.h"
 #include "../src/tools/genome_tools.h"
+#include "grid_map_core/iterators/LineIterator.hpp"
 
 
 using namespace path;
@@ -289,7 +290,7 @@ TEST_F(RobotTest, evaluateActionTestTooFewActions){
   // actions2.push_back(make_shared<AheadAction>(aa3));
   // actions2.push_back(make_shared<AheadAction>(aa4));
 
-  ASSERT_DEATH(rob->evaluateActions(actions2), "");
+  ASSERT_TRUE(rob->evaluateActions(actions2));
   // bool res = rob->evaluateActions(actions2);
 
   // EXPECT_TRUE(!res);
@@ -461,7 +462,7 @@ TEST(MapGen, inspectMapType2){
   // Visualize results
   cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
   cv::imshow("Path", bb);
-  cv::waitKey();
+  // cv::waitKey();
 
 }
 
@@ -475,10 +476,42 @@ TEST(MapGen, inspectMapType1){
   // Visualize results
   cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
   cv::imshow("Path", bb);
-  cv::waitKey();
+  // cv::waitKey();
 
 }
 
+
+void genIdx(shared_ptr<GridMap> map, Position start, Position end){
+  for(LineIterator li(*map, start, end); !li.isPastEnd(); ++li){
+    Position pos;
+    // debug((*li).x()," ", (*li).y());
+    map->getPosition(*li, pos);
+    // debug("Pos: ", pos[0], " ", pos[1]);
+    cout << pos[0] << "/" << pos[1] << endl;
+  }
+}
+
+TEST(MapGen, generatIdx){
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.5, 0.3, 0, start);
+  // map.setPosition(Position())
+  // genIdx(map, Position(4.75, 4.74), Position(1.25, 3.25));
+  // genIdx(map, Position(1.25, 3.25), Position(1.25, 1.25));
+
+  genIdx(map, Position(0.5, 4.5), Position(0.5, 0.5));
+  genIdx(map, Position(0.5, 0.5), Position(4.25, 2.25));
+  genIdx(map, Position(4.25, 2.25), Position(4.25, 4.25));
+  genIdx(map, Position(4.25, 4.25), Position(1.25, 3.25));
+  genIdx(map, Position(1.25, 3.25), Position(1.25, 3.2));
+
+  // Visualize results
+
+
+  // cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
+  // cv::imshow("Path", bb);
+  // cv::waitKey();
+
+}
 
 
 TEST(GenTools, testErase){

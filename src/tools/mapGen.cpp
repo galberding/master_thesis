@@ -55,8 +55,9 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, fl
   case 0:{ // empty
     // TODO: Why this case??
     map.add("obstacle", 0);
-    throw 42;
-    assertm(map.getPosition(Index(0,0), start), "Cannot get position by index while map generation type 0");
+    getStartPosition(map, start, rob_width);
+    // throw 42;
+    // assertm(map.getPosition(Index(0,0), start), "Cannot get position by index while map generation type 0");
     break;
   }
   case 1:{ // bounds
