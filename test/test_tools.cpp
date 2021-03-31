@@ -514,6 +514,29 @@ TEST(MapGen, generatIdx){
 }
 
 
+TEST(MapGen, testMapCoverMtype1){
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.1, 0.3, 2, start);
+  ASSERT_TRUE(mapgen::emulateCoveredMapSegment(map, start));
+
+  // cv::Mat bb = mapgen::gmapToImg(map, "covered");
+  // bb += mapgen::gmapToImg(map, "obstacle");
+  // cv::imshow("Path", bb);
+  // cv::waitKey();
+}
+
+TEST(MapGen, testMapCoverMtype2){
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.1, 0.3, 1, start);
+  ASSERT_TRUE(mapgen::emulateCoveredMapSegment(map, start));
+
+  // cv::Mat bb = mapgen::gmapToImg(map, "covered");
+  // bb += mapgen::gmapToImg(map, "obstacle");
+  // cv::imshow("Path", bb);
+  // cv::waitKey();
+
+}
+
 TEST(GenTools, testErase){
   Position start(42,42), end(42,42);
 

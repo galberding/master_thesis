@@ -1,4 +1,5 @@
 #include "mapGen.h"
+#include "grid_map_core/iterators/SubmapIterator.hpp"
 
 // using namespace std;
 // using namespace grid_map;
@@ -126,4 +127,21 @@ cv::Mat mapgen::gmapToImg(const shared_ptr<GridMap> gmap, const string layer, ui
 void mapgen::saveMap(const string name, const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh){
   cv::Mat img = gmapToImg(gmap, layer, upperThresh);
   cv::imwrite(name+".png", img);
+}
+
+bool mapgen::emulateCoveredMapSegment(shared_ptr<GridMap> map, Position& start) {
+  int height = map->getLength().x();
+  int width = map->getLength().y();
+  bool check;
+  SubmapGeometry sMap(*map,
+		      Position(-height/2, -width/2),
+		      Length(floor(height), floor(width)), check);
+
+  // for(SubmapIterator())
+  for (grid_map::SubmapIterator iterator(sMap);
+       !iterator.isPastEnd(); ++iterator) {
+    map->at("covered", *iterator) = 1;
+  }
+
+  return map->atPosition("covered", start) == 0;
 }
