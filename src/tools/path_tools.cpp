@@ -559,6 +559,7 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   resetConfParameter(action->c_config, Counter::CrossCount);
   resetConfParameter(action->c_config, Counter::StepCount);
   resetConfParameter(action->c_config, Counter::ObjCount);
+  resetConfParameter(action->c_config, Counter::CoverdCount);
 
   // Check if waypoints are in range
   // if(not cmap->isInside(currentPos))
@@ -590,6 +591,7 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
   // Get layers of grid map (for efficiency)
   grid_map::Matrix& data = (*cmap)[opName];
   grid_map::Matrix& obj = (*cmap)["obstacle"];
+  grid_map::Matrix& covered = (*cmap)["covered"];
 
   // Iterate over all pixel, covered by the polygon
   for (grid_map::PolygonIterator it(*cmap, poly);
@@ -604,6 +606,7 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
 	action->c_config[Counter::CrossCount]++;
       action->c_config[Counter::StepCount]++;
       data(idx(0), idx(1))++;
+      action->c_config[Counter::CoverdCount] += covered(idx(0), idx(1));
     }
   }
 

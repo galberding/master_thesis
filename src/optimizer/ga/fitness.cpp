@@ -152,6 +152,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.setPathSignature(eConf.gmap);
 
   // Time parameter:
+  gen.cross += gen.covered;
   float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   // float actualTime = (gen.p_obj + gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
   float optimalTime = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
@@ -167,7 +168,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   float currentCoverage = (gen.traveledDist - gen.cross) * pow(eConf.mapResolution, 2);
   if(currentCoverage < 0)
     currentCoverage = 0;
-  float totalCoverage = (freeSpace) * pow(eConf.mapResolution, 2);
+  float totalCoverage = (freeSpace - gen.covered) * pow(eConf.mapResolution, 2);
   // float totalCoverage = (freeSpace + gen.p_obj) * pow(eConf.mapResolution, 2);
   float finalCoverage = currentCoverage / totalCoverage;
 

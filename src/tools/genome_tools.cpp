@@ -34,6 +34,7 @@ bool genome_tools::genome::updateGenParameter(){
   pixelCrossCoverage = 0;
   pathLengh = 0;
   rotations = 0;
+  covered = 0;
   reachEnd = true;
   p_obj = 0;
   float continu = 0;
@@ -45,7 +46,7 @@ bool genome_tools::genome::updateGenParameter(){
     // Coverage in Pixel values
     pixelCrossCoverage += (*it)->c_config[Counter::CrossCount];
     p_obj += (*it)->c_config[Counter::ObjCount];
-
+    covered += (*it)->c_config[Counter::CoverdCount];
     // Given in cm
     traveledDist += (*it)->c_config[Counter::StepCount];
     // Cross is given in cm^2

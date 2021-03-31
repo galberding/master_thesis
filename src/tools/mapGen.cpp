@@ -49,6 +49,7 @@ bool getStartPosition(GridMap& map, Position& start, float robRad){
 shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, float rob_width,  int type, Position& start) {
   GridMap map;
   map.setGeometry(Length(height, width), res);
+  map.add("covered", 0);
   bool startSet = false;
   float wallsize = 3;
   switch(type){

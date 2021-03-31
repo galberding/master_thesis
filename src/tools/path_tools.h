@@ -70,7 +70,8 @@ namespace path {
   enum class Counter{
     CrossCount = 0,
     StepCount = 1,
-    ObjCount = 2
+    ObjCount = 2,
+    CoverdCount = 3
   };
   struct PathAction;
 
@@ -135,6 +136,7 @@ namespace path {
 	{Counter::StepCount, 0},
 	{Counter::CrossCount, 0},
 	{Counter::ObjCount, 0},
+	{Counter::CoverdCount, 0},
       }{
       id++;
     };

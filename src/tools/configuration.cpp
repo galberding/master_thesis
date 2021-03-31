@@ -17,6 +17,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
 
   if(yConf["scenario"])
     scenario = yConf["scenario"].as<float>();
+  if(yConf["retrain"])
+    retrain = yConf["retrain"].as<float>();
 
   if(yConf["genSeed"])
     genSeed = yConf["genSeed"].as<float>();

@@ -5,7 +5,7 @@ maxIterations: 2000
 visualize: true
 printInfo: true
 genSeed: 4
-
+retrain: 0
 # Snapshots
 restore: false
 snapshot: '/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions'

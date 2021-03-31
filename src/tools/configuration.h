@@ -52,6 +52,7 @@ namespace conf {
     // string logFitness = "";
     string logName = "";
     int genSeed = 42;
+    int retrain = 0;
 
     bool visualize = true;
     bool printInfo = true;

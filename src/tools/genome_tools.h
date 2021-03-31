@@ -58,7 +58,7 @@ namespace genome_tools {
     float p_obj = 0;
     float rotationCost = 0;
     float coverage = 0;
-
+    int covered = 0;
     float pixelCrossCoverage = 0;
     float pathLengh = 0;	// [m]
     float rotations = 0;	// [rad]
