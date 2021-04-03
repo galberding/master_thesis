@@ -124,6 +124,13 @@ genome sel::RWS::selection(Genpool &currentPopulation, executionConfig &eConf){
   return gen;
 }
 
+// float getRankProba(int pos, float SP, int positions){
+//   float worst = 0;
+//   float best = 2 - worst;
+
+//   return
+// }
+
 genome sel::RankedRWS::selection(Genpool &currentPopulation, executionConfig &eConf){
   // debug("Ranked!");
   float SP = eConf.selPressure;
@@ -135,6 +142,8 @@ genome sel::RankedRWS::selection(Genpool &currentPopulation, executionConfig &eC
   std::uniform_real_distribution<float> rouletteWheel(2-SP, currentPopulation.size());
   float wheelValue = rouletteWheel(eConf.generator);
   for(int i=0; i<currentPopulation.size(); i++){
+
+
     float rank = 2.0-SP+2.0*(SP-1.0)*((i-1.0) / (currentPopulation.size()-1.0));
     // debug("Rank: ", rank);
     totalSum += rank;

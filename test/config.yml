@@ -4,7 +4,7 @@ maxIterations: 2000
 
 visualize: true
 printInfo: true
-genSeed: 4
+genSeed: 38
 retrain: 0
 # Snapshots
 restore: false
@@ -14,7 +14,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 0
+clearZeros: 100
 
 # Map
 mapType: 1
@@ -28,9 +28,6 @@ Rob_speed: 0.3 # [m/s]
 Rob_RPM: 60    # rounds per minute
 
 
-# Initialization
-initActions: 25
-initIndividuals: 100 #
 
 # Fitness
 penalizeZeroActions: true
@@ -38,9 +35,10 @@ penalizeRotation: false
 funSelect: 2
 fitSselect: 1
 
-
-# Population
-popMin: 100
+# Initialization
+initActions: 25
+initIndividuals: 500 #
+popMin: 300
 
 
 
@@ -51,13 +49,13 @@ popMin: 100
 # 3: RRWS
 scenario: 0
 keep: 0 #
-select: 0 #
-tournamentSize: 0 #
+select: 20 #
+tournamentSize: 4 #
 selPressure: 0 #
 
 # Crossover
-crossoverProba: 0.8
-crossLength: 0.2
+crossoverProba: 0.85
+crossLength: 0.8
 # 0 - local
 # 1 - global
 # 2 - both
@@ -68,21 +66,21 @@ crossStrategy: 1
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
-mutaRandAngleProba: 0.01  #
+mutaRandAngleProba: 0.001  #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
-mutaRandScaleDistProba: 0.01  #
-mutaReplaceGen: 0.01
+mutaRandScaleDistProba: 0.001  #
+mutaReplaceGen: 0.001
 
 
 # Adaptive parameter:
-adaptParameter: false
-crossUpper: 0.8
-crossLower: 0.6
-cLenUpper: 0.8 #
+adaptParameter: true
+crossUpper: 1
+crossLower: 0.7
+cLenUpper: 0.2 #
 cLenLower: 0.8 #
-mutUpper: 0.0
+mutUpper: 0.5
 
-adaptSP: false
+adaptSP: true
 adaptSPlower: 5
 adaptSPupper: 50

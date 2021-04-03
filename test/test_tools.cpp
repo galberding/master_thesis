@@ -7,6 +7,7 @@
 #include <grid_map_cv/GridMapCvConverter.hpp>
 #include "../src/tools/pa_serializer.h"
 #include "../src/tools/genome_tools.h"
+#include "grid_map_core/iterators/GridMapIterator.hpp"
 #include "grid_map_core/iterators/LineIterator.hpp"
 
 
@@ -482,12 +483,42 @@ TEST(MapGen, inspectMapType1){
 
 
 void genIdx(shared_ptr<GridMap> map, Position start, Position end){
+
+
   for(LineIterator li(*map, start, end); !li.isPastEnd(); ++li){
     Position pos;
     // debug((*li).x()," ", (*li).y());
     map->getPosition(*li, pos);
     // debug("Pos: ", pos[0], " ", pos[1]);
     cout << pos[0] << "/" << pos[1] << endl;
+  }
+  cout << endl;
+}
+
+
+void printWall(shared_ptr<GridMap> map){
+
+  for(GridMapIterator it(*map); !it.isPastEnd(); ++it){
+    if(map->at("obstacle",*it)==1){
+      Position pos;
+      map->getPosition(*it, pos);
+      cout << pos(0) << "/" << pos(1) << ",";
+    }
+  }
+  cout << endl;
+}
+
+void genIdxPoly(shared_ptr<GridMap> map, Position start, Position end){
+  Polygon poly;
+  poly.addVertex(start);
+  poly.addVertex(end);
+  poly.thickenLine(0.3);
+  for (grid_map::PolygonIterator it(*map, poly);
+       !it.isPastEnd(); ++it) {
+    Position pos;
+    // debug((*li).x()," ", (*li).y());
+    map->getPosition(*it, pos);
+    cout << pos[0] << "/" << pos[1] << ",";
   }
 }
 
@@ -510,7 +541,46 @@ TEST(MapGen, generatIdx){
   // cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
   // cv::imshow("Path", bb);
   // cv::waitKey();
+}
 
+TEST(MapGen, generatIdxPoly){
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(10, 10, 0.25, 0.3, 0, start);
+  // map.setPosition(Position())
+  // genIdx(map, Position(4.75, 4.74), Position(1.25, 3.25));
+  // genIdx(map, Position(1.25, 3.25), Position(1.25, 1.25));
+  debug("Poly Index");
+  cout << "\\def\\points{";
+  genIdxPoly(map, Position(0.5, 4.5), Position(0.5, 0.5));
+  genIdxPoly(map, Position(0.5, 0.5), Position(4.25, 2.25));
+  genIdxPoly(map, Position(4.25, 2.25), Position(4.25, 4.25));
+  genIdxPoly(map, Position(4.25, 4.25), Position(1.25, 3.25));
+  genIdxPoly(map, Position(1.25, 3.25), Position(1.25, 3.2));
+
+  // Visualize results
+
+
+  // cv::Mat bb = mapgen::gmapToImg(map, "obstacle");
+  // cv::imshow("Path", bb);
+  // cv::waitKey();
+
+}
+
+TEST(MapGen, generatWallIdx){
+  Position start, pos0, pos1, pos2, pos3;
+  shared_ptr<GridMap> map = mapgen::generateMapType(5, 5, 0.25, 0.1, 1, start);
+  cout << "\\def\\wall{";
+  printWall(map);
+  // map.setPosition(Position())
+  // genIdx(map, Position(4.75, 4.74), Position(1.25, 3.25));
+  // genIdx(map, Position(1.25, 3.25), Position(1.25, 1.25));
+  // debug("Poly Index");
+  // cout << "\\def\\points{";
+  // genIdxPoly(map, Position(0.5, 4.5), Position(0.5, 0.5));
+  // genIdxPoly(map, Position(0.5, 0.5), Position(4.25, 2.25));
+  // genIdxPoly(map, Position(4.25, 2.25), Position(4.25, 4.25));
+  // genIdxPoly(map, Position(4.25, 4.25), Position(1.25, 3.25));
+  // genIdxPoly(map, Position(1.25, 3.25), Position(1.25, 3.2));
 }
 
 
