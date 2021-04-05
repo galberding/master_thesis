@@ -610,7 +610,8 @@ bool path::PolyRobot::mapMove(shared_ptr<GridMap> cmap, shared_ptr<PathAction> a
     }
   }
 
-  if(action->c_config[Counter::StepCount] == 0 and action->c_config[Counter::ObjCount] == 0){
+  // if(action->c_config[Counter::StepCount] == 0 and action->c_config[Counter::ObjCount] == 0){
+  if(action->c_config[Counter::StepCount] == 0){
     // debug("Undetected Zero Action with distance: ", action->mod_config[PAP::Distance]);
     currentPos = waypoints.front();
     action->wps.back() = waypoints.front();

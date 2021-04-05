@@ -4,7 +4,7 @@ maxIterations: 2000
 
 visualize: true
 printInfo: true
-genSeed: 38
+genSeed: 42
 retrain: 0
 # Snapshots
 restore: false
@@ -14,7 +14,7 @@ takeSnapshotEvery: 100
 tSnap: pop.pas
 
 # Clear Zero action every X iteration
-clearZeros: 100
+clearZeros: 1
 
 # Map
 mapType: 1
@@ -25,20 +25,20 @@ mapResolution: 0.2
 # Robot:
 Rob_width: 0.3 # [m]
 Rob_speed: 0.3 # [m/s]
-Rob_RPM: 60    # rounds per minute
+Rob_RPM: 30    # rounds per minute
 
 
 
 # Fitness
-penalizeZeroActions: true
-penalizeRotation: false
-funSelect: 2
+penalizeZeroActions: false
+penalizeRotation: true
+funSelect: 1
 fitSselect: 1
 
 # Initialization
-initActions: 25
-initIndividuals: 500 #
-popMin: 300
+initActions: 50
+initIndividuals: 100 #
+popMin: 100
 
 
 
@@ -49,8 +49,8 @@ popMin: 300
 # 3: RRWS
 scenario: 0
 keep: 0 #
-select: 20 #
-tournamentSize: 4 #
+select: 50 #
+tournamentSize: 3 #
 selPressure: 0 #
 
 # Crossover
@@ -62,7 +62,7 @@ crossLength: 0.8
 crossChildSelector: 2
 # 0 - DualPointcrossover
 # 1 - Same Start idx
-crossStrategy: 1
+crossStrategy: 0
 
 # Mutation stuff
 mutaOrtoAngleProba: 0.0
@@ -77,10 +77,10 @@ mutaReplaceGen: 0.001
 adaptParameter: true
 crossUpper: 1
 crossLower: 0.7
-cLenUpper: 0.2 #
-cLenLower: 0.8 #
-mutUpper: 0.5
+cLenUpper: 0.8 #
+cLenLower: 0.2 #
+mutUpper: 0.05
 
 adaptSP: true
-adaptSPlower: 5
-adaptSPupper: 50
+adaptSPlower: 3
+adaptSPupper: 15
