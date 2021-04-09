@@ -1,11 +1,11 @@
 logDir: ConvexRegion2
 logName: run.log
-maxIterations: 2000
+maxIterations: 500
 
 visualize: true
 printInfo: true
 genSeed: 42
-retrain: 0
+retrain: 2000
 # Snapshots
 restore: false
 snapshot: '/homes/galberding/catkin_ws/devel/lib/ros_optimizer/elitistSel/100000_pool.actions'
@@ -31,8 +31,8 @@ Rob_RPM: 30    # rounds per minute
 
 # Fitness
 penalizeZeroActions: false
-penalizeRotation: true
-funSelect: 1
+penalizeRotation: false
+funSelect: 2
 fitSselect: 1
 
 # Initialization
@@ -51,7 +51,7 @@ scenario: 0
 keep: 0 #
 select: 50 #
 tournamentSize: 3 #
-selPressure: 0 #
+selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.85
@@ -77,9 +77,9 @@ mutaReplaceGen: 0.001
 adaptParameter: true
 crossUpper: 1
 crossLower: 0.7
-cLenUpper: 0.8 #
+cLenUpper: 0.5 #
 cLenLower: 0.2 #
-mutUpper: 0.05
+mutUpper: 0.5
 
 adaptSP: true
 adaptSPlower: 3

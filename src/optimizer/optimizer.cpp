@@ -376,12 +376,22 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
 
   Genpool mPool;
 
-  if(!eConf.restore){
-    (*init)(pool, eConf);
-  } else {
-    pool.clear();
-    restorePopulationFromSnapshot(eConf.snapshot);
+  if(eConf.retrain == 0 or eConf.currentIter == 0){
+
+    if(!eConf.restore){
+      (*init)(pool, eConf);
+    } else {
+      pool.clear();
+      restorePopulationFromSnapshot(eConf.snapshot);
+    }
+  }else{
+    eConf.currentIter = 0;
+    // Magic with the logger to keep old performance data
+    eConf.logDir = "retrain_run.log";
+    eConf.tSnap = "retrain_pool.actions";
+    eConf.tPerformanceSnap = "retrain_pool.performance";
   }
+
   // Main loop
   (*fs)(pool, *rob, eConf);
 

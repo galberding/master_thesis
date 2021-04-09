@@ -31,5 +31,17 @@ int main(int argc, char *argv[])
     opti.optimizePath_Turn_RWS(eConf.printInfo);
 
 
+
+  if(eConf.retrain){
+    mapgen::emulateCoveredMapSegment(opti.eConf.gmap, eConf.start);
+    opti.eConf.maxIterations = eConf.retrain;
+    if(eConf.scenario == 0)  // elitist selection
+      opti.optimizePath(eConf.printInfo);
+    else
+      opti.optimizePath_Turn_RWS(eConf.printInfo);
+
+  }
+
+
   return 0;
 }
