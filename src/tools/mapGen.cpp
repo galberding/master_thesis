@@ -140,7 +140,8 @@ bool mapgen::emulateCoveredMapSegment(shared_ptr<GridMap> map, Position& start) 
   // for(SubmapIterator())
   for (grid_map::SubmapIterator iterator(sMap);
        !iterator.isPastEnd(); ++iterator) {
-    map->at("covered", *iterator) = 1;
+    if(map->at("obstacle", *iterator) == 0)
+      map->at("covered", *iterator) = 1;
   }
 
   return map->atPosition("covered", start) == 0;

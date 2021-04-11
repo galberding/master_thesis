@@ -267,7 +267,7 @@ For now we will just return the start point because the robot object should find
 
     rob_config getConfig(){return defaultConfig;};
 
-    int getFreeArea();
+    int getFreeArea(bool recal=false);
 
     grid_map::GridMap cMap;
     shared_ptr<GridMap> pmap;

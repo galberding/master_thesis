@@ -475,9 +475,9 @@ cv::Mat path::Robot::gridToImg(string layer){
   return img;
 }
 
-int path::Robot::getFreeArea(){
-  if (!(freeArea > 0))
-    freeArea =  pmap->getSize().x()*pmap->getSize().y() - (pmap->get("obstacle").sum());
+int path::Robot::getFreeArea(bool recal){
+  if (!(freeArea > 0) or recal)
+    freeArea =  pmap->getSize().x()*pmap->getSize().y() - (pmap->get("obstacle").sum()) - (pmap->get("covered").sum());
   return freeArea;
 }
 

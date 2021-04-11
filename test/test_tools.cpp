@@ -589,10 +589,10 @@ TEST(MapGen, testMapCoverMtype1){
   shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.1, 0.3, 2, start);
   ASSERT_TRUE(mapgen::emulateCoveredMapSegment(map, start));
 
-  // cv::Mat bb = mapgen::gmapToImg(map, "covered");
+  cv::Mat bb = mapgen::gmapToImg(map, "covered");
   // bb += mapgen::gmapToImg(map, "obstacle");
-  // cv::imshow("Path", bb);
-  // cv::waitKey();
+  cv::imshow("Path", bb);
+  cv::waitKey();
 }
 
 TEST(MapGen, testMapCoverMtype2){
@@ -600,10 +600,10 @@ TEST(MapGen, testMapCoverMtype2){
   shared_ptr<GridMap> map = mapgen::generateMapType(11, 11, 0.1, 0.3, 1, start);
   ASSERT_TRUE(mapgen::emulateCoveredMapSegment(map, start));
 
-  // cv::Mat bb = mapgen::gmapToImg(map, "covered");
+  cv::Mat bb = mapgen::gmapToImg(map, "covered");
   // bb += mapgen::gmapToImg(map, "obstacle");
-  // cv::imshow("Path", bb);
-  // cv::waitKey();
+  cv::imshow("Path", bb);
+  cv::waitKey();
 
 }
 

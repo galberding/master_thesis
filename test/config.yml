@@ -1,6 +1,6 @@
 logDir: ConvexRegion2
 logName: run.log
-maxIterations: 500
+maxIterations: 100
 
 visualize: true
 printInfo: true
@@ -31,7 +31,7 @@ Rob_RPM: 30    # rounds per minute
 
 # Fitness
 penalizeZeroActions: false
-penalizeRotation: false
+penalizeRotation: true
 funSelect: 2
 fitSselect: 1
 
