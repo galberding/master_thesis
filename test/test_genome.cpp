@@ -50,73 +50,97 @@ TEST_F(RobTest, initReset){
 
 
 
-TEST(Crossover, idxCalculation){
-  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
-  ostringstream msg;
+// TEST(Crossover, idxCalculation){
+//   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+//   ostringstream msg;
 
-  Genpool pool;
+//   Genpool pool;
+//   InitStrategy init;
+//   eConf.initIndividuals = 1;
+//   eConf.initActions = 1;
+//   init(pool, eConf);
+//   Robot rob(eConf.rob_conf,
+// 	    eConf.gmap,
+// 	    eConf.obstacleName);
+
+//   genome gen = pool.front();
+//   int startAngle = 180;
+//   gen.actions[1]->mod_config[PAP::Angle] = startAngle;
+
+//   gen.actions.erase(next(gen.actions.begin(), 2));
+//   float factor = 0.5;
+//   for (int a=0; a <=90; a++){
+//     msg << startAngle + a*factor << ",";
+//     for(float i=0; i<50; i+=0.2){
+//       gen.actions[1]->mod_config[PAP::Distance] = i;
+//       gen.actions[1]->mod_config[PAP::Angle] = startAngle + a*factor;
+//       gen.actions[1]->modified = true;
+//       // gen.actions[1]->applyModifications();
+//       rob.evaluateActions(gen.actions);
+//       gen.updateGenParameter();
+//       // debug("Start: ", gen.actions[1]->wps[0][0],"|",gen.actions[1]->wps[0][1]);
+//       // debug("End: ", gen.actions[1]->wps[1][0],"|",gen.actions[1]->wps[1][1]);
+//       // debug("Dist: ", gen.traveledDist, " Cross: ", gen.cross, " Pdist: ", gen.traveledDist * 0.3, " Actual: ", i, " error: ", i - gen.traveledDist * 0.3);
+//       msg << i - gen.traveledDist * 0.3 << ",";
+//       // cv::Mat img = rob.gridToImg("map");
+//       // cv::imshow("Test", img);
+//       // cv::waitKey(0.5);
+//     }
+//     msg << endl;
+//   }
+
+//   logging::Logger(msg.str(),"hello/", "angletest");
+//   // cv::Mat img = rob.gridToImg("map");
+//   // cv::imshow("Test", img);
+//   // cv::waitKey();
+// }
+
+
+// TEST(Robot, intersectionTest){
+//   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+//   // grid_map::Polygon polygon;
+//   // polygon.addVertex(Position(-1,-1));
+//   // polygon.addVertex(Position(1,1));
+//   Polygon polygon = Polygon::convexHullOfTwoCircles(Position(-1,-1), Position(1,1), eConf.Rob_width/2);
+
+
+//   // polygon.thickenLine(0.5);
+
+//   eConf.gmap->add("map", 0);
+//   GridMap &map_ = *eConf.gmap;
+//   for (grid_map::PolygonIterator iterator(*eConf.gmap, polygon);
+//       !iterator.isPastEnd(); ++iterator) {
+//     // debug(*iterator);
+//     map_.at("map", *iterator) = 255.0;
+//   }
+//  // Robot rob(eConf.rob_conf,
+//  // 	    eConf.gmap,
+//  // 	    eConf.obstacleName);
+// //  cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
+// //   cv::imshow("Test", img);
+// //   cv::waitKey();
+// }
+
+TEST(Initialization, boustrophedon) {
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // ostringstream msg;
+
+  // Genpool pool;
   InitStrategy init;
-  eConf.initIndividuals = 1;
-  eConf.initActions = 1;
-  init(pool, eConf);
-  Robot rob(eConf.rob_conf,
-	    eConf.gmap,
-	    eConf.obstacleName);
-
-  genome gen = pool.front();
-  int startAngle = 180;
-  gen.actions[1]->mod_config[PAP::Angle] = startAngle;
-
-  gen.actions.erase(next(gen.actions.begin(), 2));
-  float factor = 0.5;
-  for (int a=0; a <=90; a++){
-    msg << startAngle + a*factor << ",";
-    for(float i=0; i<50; i+=0.2){
-      gen.actions[1]->mod_config[PAP::Distance] = i;
-      gen.actions[1]->mod_config[PAP::Angle] = startAngle + a*factor;
-      gen.actions[1]->modified = true;
-      // gen.actions[1]->applyModifications();
-      rob.evaluateActions(gen.actions);
-      gen.updateGenParameter();
-      // debug("Start: ", gen.actions[1]->wps[0][0],"|",gen.actions[1]->wps[0][1]);
-      // debug("End: ", gen.actions[1]->wps[1][0],"|",gen.actions[1]->wps[1][1]);
-      // debug("Dist: ", gen.traveledDist, " Cross: ", gen.cross, " Pdist: ", gen.traveledDist * 0.3, " Actual: ", i, " error: ", i - gen.traveledDist * 0.3);
-      msg << i - gen.traveledDist * 0.3 << ",";
-      // cv::Mat img = rob.gridToImg("map");
-      // cv::imshow("Test", img);
-      // cv::waitKey(0.5);
-    }
-    msg << endl;
-  }
-
-  logging::Logger(msg.str(),"hello/", "angletest");
-  // cv::Mat img = rob.gridToImg("map");
-  // cv::imshow("Test", img);
-  // cv::waitKey();
-}
-
-
-TEST(Robot, intersectionTest){
-  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
-  // grid_map::Polygon polygon;
-  // polygon.addVertex(Position(-1,-1));
-  // polygon.addVertex(Position(1,1));
-  Polygon polygon = Polygon::convexHullOfTwoCircles(Position(-1,-1), Position(1,1), eConf.Rob_width/2);
-
-
-  // polygon.thickenLine(0.5);
-
-  eConf.gmap->add("map", 0);
-  GridMap &map_ = *eConf.gmap;
-  for (grid_map::PolygonIterator iterator(*eConf.gmap, polygon);
-      !iterator.isPastEnd(); ++iterator) {
-    // debug(*iterator);
-    map_.at("map", *iterator) = 255.0;
-  }
- // Robot rob(eConf.rob_conf,
- // 	    eConf.gmap,
- // 	    eConf.obstacleName);
- cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
+  // eConf.initIndividuals = 1;
+  // eConf.initActions = 1;
+  // init(pool, eConf);
+  genome gen;
+  FitnessPoly fit;
+  init.boustrophedon(gen, eConf);
+  PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
+  validateGen(gen);
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Total: ", rob.getFreeArea());
+  debug("PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
+  img += mapgen::gmapToImg(eConf.gmap, "obstacle");
   cv::imshow("Test", img);
   cv::waitKey();
 }

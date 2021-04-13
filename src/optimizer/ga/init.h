@@ -15,6 +15,7 @@ namespace init {
     virtual void operator()(Genpool& pool, executionConfig& eConf);
     virtual void operator()(genome &gen, int len, executionConfig& eConf);
     void replaceZeroGensWithRandom(Genpool& pool);
+    void boustrophedon(genome &gen, executionConfig& eConf);
   };
 }
 

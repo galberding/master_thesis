@@ -11,7 +11,7 @@ void add_walls(GridMap& map, int width, int height, float thickness){
   // debug("W: ", floor(width - 2*thickness), " H: ", floor(height - 2*thickness));
   SubmapGeometry sMap(map,
 		      Position(0,0),
-		      Length(floor(height - thickness), floor(width - thickness)),
+		      Length(height - 3, width - 3),
 		      check);
   if(not check){
     warn("Cannot build walls");

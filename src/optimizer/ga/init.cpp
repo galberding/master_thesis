@@ -35,3 +35,42 @@ void init::InitStrategy::replaceZeroGensWithRandom(Genpool& pool){
 
 
 }
+
+void init::InitStrategy::boustrophedon(genome &gen, executionConfig &eConf){
+  gen.actions.clear();
+  int wallsize = 3;
+  gen.actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
+  int dir = 270;
+  for(int i = 0; i<25; i++){
+    switch (dir) {
+    case 270: { // Right
+      PA_config config{{PAP::Angle, 270}, {PAP::Distance, 6.5}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 180;
+      break;
+    }
+    case 180: { // Down
+      PA_config config{{PAP::Angle, 180}, {PAP::Distance, 0.6}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 90;
+      break;
+    }
+    case 90: { // Left
+      PA_config config{{PAP::Angle, 90}, {PAP::Distance, 6.5}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 0;
+      break;
+    }
+    case 0: { // Down
+      PA_config config{{PAP::Angle, 180}, {PAP::Distance, 0.6}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 270;
+      break;
+    }
+    default:
+      debug("Nothing");
+      break;
+    }
+  }
+  gen.actions.push_back(make_shared<EndAction>(EndAction(eConf.ends)));
+}

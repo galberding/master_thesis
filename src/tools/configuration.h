@@ -77,6 +77,10 @@ namespace conf {
     float zeroActionPercent = 0;
     float deadGensCount = 0;
 
+    float popAvgPathLen = 0;
+    float popMinPathLen = 0;
+    float popMaxPathLen = 0;
+
     // Diversity:
     float diversityMean = 0;
     float diversityStd = 0;

@@ -1,6 +1,6 @@
 logDir: ConvexRegion2
 logName: run.log
-maxIterations: 100
+maxIterations: 1000
 
 visualize: true
 printInfo: true
@@ -20,7 +20,7 @@ clearZeros: 1
 mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.2
+mapResolution: 0.05
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -32,11 +32,11 @@ Rob_RPM: 30    # rounds per minute
 # Fitness
 penalizeZeroActions: false
 penalizeRotation: true
-funSelect: 2
+funSelect: 1
 fitSselect: 1
 
 # Initialization
-initActions: 50
+initActions: 25
 initIndividuals: 100 #
 popMin: 100
 
@@ -47,8 +47,8 @@ popMin: 100
 # 1: Tournament selection
 # 2: Roulettwheel selection
 # 3: RRWS
-scenario: 0
-keep: 0 #
+scenario: 3
+keep: 1 #
 select: 50 #
 tournamentSize: 3 #
 selPressure: 2 #

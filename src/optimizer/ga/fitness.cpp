@@ -24,6 +24,10 @@ void fit::resetLoggingFitnessParameter(executionConfig& eConf){
   eConf.actionLenAvg = 0;
   eConf.fitnessMinObjCount = eConf.fitnessMaxObjCount;
   eConf.fitnessMaxObjCount = 0;
+
+  eConf.popAvgPathLen = 0;
+  eConf.popMinPathLen = eConf.popMaxPathLen;
+  eConf.popMaxPathLen = 0;
 }
 
 
@@ -55,6 +59,11 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
   if(gen.p_obj < eConf.fitnessMinObjCount)
     eConf.fitnessMinObjCount = gen.p_obj;
 
+  if(gen.pathLengh > eConf.popMaxPathLen)
+    eConf.popMaxPathLen = gen.pathLengh;
+  if(gen.pathLengh < eConf.popMinPathLen)
+    eConf.popMinPathLen = gen.pathLengh;
+
 
 
   eConf.fitnessAvg += fitness;
@@ -63,6 +72,7 @@ void fit::trackFitnessParameter(genome& gen, executionConfig& eConf){
   eConf.fitnessAvgCoverage += gen.finalCoverage;
   eConf.fitnessAvgAngleCost += gen.finalRotationTime;
   eConf.fitnessAvgObjCount += gen.p_obj;
+  eConf.popAvgPathLen += gen.pathLengh;
 }
 
 
@@ -75,6 +85,7 @@ void fit::finalizeFitnessLogging(int poolsize, executionConfig& eConf){
   eConf.fitnessAvgAngleCost /= poolsize;
   eConf.actionLenAvg /= poolsize;
   eConf.fitnessAvgObjCount /= poolsize;
+  eConf.popAvgPathLen /= poolsize;
 }
 
 
@@ -153,9 +164,21 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
 
   // Time parameter:
 
-  float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
-  // float actualTime = (gen.p_obj + gen.traveledDist)* pow(eConf.mapResolution, 2) / eConf.Rob_speed;
-  float optimalTime = (gen.traveledDist - (gen.cross + gen.covered)) * pow(eConf.mapResolution, 2) / eConf.Rob_speed;
+  // g +p = w* 100
+  float crossToCov =  1 - (gen.cross + gen.covered) / gen.traveledDist;
+  if (crossToCov < 0 )
+    crossToCov = 0;
+
+  float actualTime = gen.pathLengh / eConf.Rob_speed;
+  // float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
+
+  float optimalTime =  actualTime * crossToCov;
+  // float optimalTime = (gen.traveledDist - (gen.cross + gen.covered)) * pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
+
+  // debug("CrossRatio ",crossToCov, " pathlen: ", gen.pathLengh, " actual: ", actualTime, " Optimal: ", optimalTime, " Rot: ",  gen.rotations / eConf.Rob_angleSpeed);
+
+
+
   if(optimalTime < 0)
     optimalTime = 0;
   float finalTime = 0;
