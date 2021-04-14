@@ -78,6 +78,14 @@ namespace genome_tools {
   using SelectionPool = list<GenPair>;
   using FamilyPool = deque<Genpool>;
 
+  /**
+   * @brief      If a gen is modified apply the changes to the consecutive actions
+   *
+   * @details
+   *
+   * @param      genome
+   *
+   */
   void validateGen(genome &gen);
   int countZeroActions(genome &gen, float delta);
   float calZeroActionPercent(genome &gen, float delta);
