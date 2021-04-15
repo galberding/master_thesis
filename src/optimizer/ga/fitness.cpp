@@ -169,11 +169,11 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   if (crossToCov < 0 )
     crossToCov = 0;
 
-  float actualTime = gen.pathLengh / eConf.Rob_speed;
-  // float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
+  // float actualTime = gen.pathLengh / eConf.Rob_speed;
+  float actualTime = (gen.traveledDist)* pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
 
-  float optimalTime =  actualTime * crossToCov;
-  // float optimalTime = (gen.traveledDist - (gen.cross + gen.covered)) * pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
+  // float optimalTime =  actualTime * crossToCov;
+  float optimalTime = (gen.traveledDist - (gen.cross + gen.covered)) * pow(eConf.mapResolution, 2) / (eConf.Rob_speed * eConf.Rob_width);
 
   // debug("CrossRatio ",crossToCov, " pathlen: ", gen.pathLengh, " actual: ", actualTime, " Optimal: ", optimalTime, " Rot: ",  gen.rotations / eConf.Rob_angleSpeed);
 

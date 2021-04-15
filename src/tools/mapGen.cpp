@@ -9,18 +9,42 @@ void add_walls(GridMap& map, int width, int height, float thickness){
   map.add("obstacle", 1);
   bool check;
   // debug("W: ", floor(width - 2*thickness), " H: ", floor(height - 2*thickness));
-  SubmapGeometry sMap(map,
-		      Position(0,0),
-		      Length(height - 3, width - 3),
-		      check);
-  if(not check){
-    warn("Cannot build walls");
-    return;
+
+  Polygon poly;
+  Position start((static_cast<float>(height) - 2*thickness) / 2, 0);
+  Position end(-(static_cast<float>(height) - 2*thickness) / 2, 0);
+  float thick = (static_cast<float>(width)-2*thickness) / 2;
+  debug("Start: ", start[0], " ", start[1], " end: ", end[0], " ", end[1], " thick ", thick);
+  poly.addVertex(start);
+  poly.addVertex(end);
+  poly.thickenLine(thick);
+
+  // // Get layers of grid map (for efficiency)
+  // grid_map::Matrix& data = (*cmap)[opName];
+  // grid_map::Matrix& obj = (*cmap)["obstacle"];
+  // grid_map::Matrix& covered = (*cmap)["covered"];
+
+  // Iterate over all pixel, covered by the polygon
+  for (grid_map::PolygonIterator it(map, poly);
+       !it.isPastEnd(); ++it) {
+     map.at("obstacle", *it) = 0;
   }
-  for (grid_map::SubmapIterator iterator(sMap);
-       !iterator.isPastEnd(); ++iterator) {
-    map.at("obstacle", *iterator) = 0;
-  }
+    // const Index idx(*it);
+
+
+
+  // SubmapGeometry sMap(map,
+  // 		      Position(0,0),
+  // 		      Length(height - 3, width - 3),
+  // 		      check);
+  // if(not check){
+  //   warn("Cannot build walls");
+  //   return;
+  // }
+  // for (grid_map::SubmapIterator iterator(sMap);
+  //      !iterator.isPastEnd(); ++iterator) {
+  //   map.at("obstacle", *iterator) = 0;
+  // }
 }
 
 bool getStartPosition(GridMap& map, Position& start, float robRad){
@@ -43,7 +67,7 @@ bool getStartPosition(GridMap& map, Position& start, float robRad){
     }
   }
   warn("No startpoint found!");
-  exit(-1);
+  // exit(-1);
   return false;
 }
 
@@ -52,7 +76,7 @@ shared_ptr<GridMap> mapgen::generateMapType(int width, int height, float res, fl
   map.setGeometry(Length(height, width), res);
   map.add("covered", 0);
   bool startSet = false;
-  float wallsize = 3;
+  float wallsize = 1;
   switch(type){
   case 0:{ // empty
     // TODO: Why this case??

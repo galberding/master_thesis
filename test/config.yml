@@ -49,13 +49,13 @@ popMin: 100
 # 3: RRWS
 scenario: 3
 keep: 1 #
-select: 50 #
+select: 20 #
 tournamentSize: 3 #
 selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.85
-crossLength: 0.8
+crossLength: 0.5
 # 0 - local
 # 1 - global
 # 2 - both
@@ -74,13 +74,13 @@ mutaReplaceGen: 0.001
 
 
 # Adaptive parameter:
-adaptParameter: true
+adaptParameter: false
 crossUpper: 1
 crossLower: 0.7
 cLenUpper: 0.5 #
 cLenLower: 0.2 #
 mutUpper: 0.5
 
-adaptSP: true
-adaptSPlower: 3
-adaptSPupper: 15
+adaptSP: false
+adaptSPlower: 1.1
+adaptSPupper: 2
