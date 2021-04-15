@@ -14,7 +14,7 @@ void add_walls(GridMap& map, int width, int height, float thickness){
   Position start((static_cast<float>(height) - 2*thickness) / 2, 0);
   Position end(-(static_cast<float>(height) - 2*thickness) / 2, 0);
   float thick = (static_cast<float>(width)-2*thickness) / 2;
-  debug("Start: ", start[0], " ", start[1], " end: ", end[0], " ", end[1], " thick ", thick);
+  // debug("Start: ", start[0], " ", start[1], " end: ", end[0], " ", end[1], " thick ", thick);
   poly.addVertex(start);
   poly.addVertex(end);
   poly.thickenLine(thick);

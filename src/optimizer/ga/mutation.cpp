@@ -89,7 +89,7 @@ bool mut::MutationStrategy::randomScaleDistance(genome& gen, executionConfig& eC
 
   if(!applyAction(eConf.mutaRandScaleDistProba, eConf)) return false;
   uniform_int_distribution<int> actionSelector(2,gen.actions.size()-1);
-  uniform_real_distribution<float> changeDistro(0.5,2);
+  uniform_real_distribution<float> changeDistro(0.5,1.5);
   // Select action and add the offset
   auto action = next(gen.actions.begin(), actionSelector(eConf.generator));
   float offset = changeDistro(eConf.generator);

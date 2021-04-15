@@ -20,7 +20,7 @@ clearZeros: 1
 mapType: 1
 mapWidth: 11
 mapHeight: 11
-mapResolution: 0.05
+mapResolution: 0.2
 
 # Robot:
 Rob_width: 0.3 # [m]
@@ -47,15 +47,15 @@ popMin: 100
 # 1: Tournament selection
 # 2: Roulettwheel selection
 # 3: RRWS
-scenario: 3
-keep: 1 #
-select: 20 #
-tournamentSize: 3 #
+scenario: 0
+keep: 0 #
+select: 30 #
+tournamentSize: 7 #
 selPressure: 2 #
 
 # Crossover
 crossoverProba: 0.85
-crossLength: 0.5
+crossLength: 0.2
 # 0 - local
 # 1 - global
 # 2 - both

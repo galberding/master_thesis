@@ -127,6 +127,7 @@ void fit::FitnessStrategy::operator()(FamilyPool& fPool, path::Robot &rob, execu
     if(family.size() > 2){
       for (int i = 2; i < family.size(); i++) {
         assertm(family[i].actions.size() > 0, "Not enough actions");
+	// removeZeroPAs(family[i], eConf.mapResolution);
         bool eva = rob.evaluateActions(family[i].actions);
 	assert(eva);
         // assertm(family[i].actions.size() > 0, "Not enough actions");

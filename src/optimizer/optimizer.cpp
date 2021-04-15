@@ -313,6 +313,7 @@ void op::Optimizer::optimizePath(bool display){
       (*crossing)(fPool, pool, eConf);
       // debug("After Cross: ", pool.size());
       // Mutate remaining individuals in pool
+      clearZeroPAs(pool, eConf);
       if (pool.size() > 2){
 	for (auto it = pool.begin(); it != next(pool.begin(), pool.size() - 1); ++it) {
 	  // Replace worst gen with random
@@ -440,6 +441,8 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
       it->mutated = mutated;
       if(mutated)
 	eConf.mutaCount++;
+      // clearZero
+      // removeZeroPAs(*it, eConf.mapResolution/2);
       fs->estimateGen(*it, *rob, eConf);
     }
 
