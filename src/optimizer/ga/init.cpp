@@ -36,15 +36,74 @@ void init::InitStrategy::replaceZeroGensWithRandom(Genpool& pool){
 
 }
 
+void init::InitStrategy::spiral(genome &gen, executionConfig &eConf){
+  gen.actions.clear();
+  int wallsize = 3;
+  gen.actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
+  int dir = 0;
+  float x_travel = 8.4;
+  float y_travel = 8.4;
+  // right
+  PA_config config1{{PAP::Angle, 270}, {PAP::Distance, x_travel}};
+  gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config1)));
+  // Down
+  PA_config config2{{PAP::Angle, 180}, {PAP::Distance, y_travel}};
+  gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config2)));
+  // left
+  PA_config config3{{PAP::Angle, 90}, {PAP::Distance, y_travel}};
+  gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config3)));
+  dir = 3;
+  // y_travel -= 0.6;
+
+  for(int i = 0; i<29; i++){
+    switch (dir) {
+    case 0: { // Right -> down
+      x_travel -= 0.6;
+      PA_config config{{PAP::Angle, 270}, {PAP::Distance, x_travel}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 1;
+      break;
+    }
+    case 1: { // Down -> left
+      y_travel -= 0.6;
+      PA_config config{{PAP::Angle, 180}, {PAP::Distance, y_travel}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 2;
+      break;
+    }
+    case 2: { // Left -> Up
+      x_travel -= 0.6;
+      PA_config config{{PAP::Angle, 90}, {PAP::Distance, x_travel}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 3;
+      break;
+    }
+    case 3: { // Up -> right
+      y_travel -= 0.6;
+      PA_config config{{PAP::Angle, 0}, {PAP::Distance, y_travel}};
+      gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+      dir = 0;
+      break;
+    }
+    default:
+      debug("Nothing");
+      break;
+    }
+  }
+  // PA_config config{{PAP::Angle, 180}, {PAP::Distance, 0.6}};
+  // gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
+  gen.actions.push_back(make_shared<EndAction>(EndAction(eConf.ends)));
+}
+
 void init::InitStrategy::boustrophedon(genome &gen, executionConfig &eConf){
   gen.actions.clear();
   int wallsize = 3;
   gen.actions.push_back(make_shared<StartAction>(StartAction(eConf.start)));
   int dir = 270;
-  for(int i = 0; i<25; i++){
+  for(int i = 0; i<29; i++){
     switch (dir) {
     case 270: { // Right
-      PA_config config{{PAP::Angle, 270}, {PAP::Distance, 6.5}};
+      PA_config config{{PAP::Angle, 270}, {PAP::Distance, 8.4}};
       gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
       dir = 180;
       break;
@@ -56,7 +115,7 @@ void init::InitStrategy::boustrophedon(genome &gen, executionConfig &eConf){
       break;
     }
     case 90: { // Left
-      PA_config config{{PAP::Angle, 90}, {PAP::Distance, 6.5}};
+      PA_config config{{PAP::Angle, 90}, {PAP::Distance, 8.4}};
       gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
       dir = 0;
       break;
@@ -72,5 +131,7 @@ void init::InitStrategy::boustrophedon(genome &gen, executionConfig &eConf){
       break;
     }
   }
+  // PA_config config{{PAP::Angle, 180}, {PAP::Distance, 0.6}};
+  // gen.actions.push_back(make_shared<AheadAction>(AheadAction(PAT::CAhead, config)));
   gen.actions.push_back(make_shared<EndAction>(EndAction(eConf.ends)));
 }

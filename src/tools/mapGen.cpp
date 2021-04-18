@@ -52,7 +52,7 @@ bool getStartPosition(GridMap& map, Position& start, float robRad){
     if(map.at("obstacle", *it) == 0){
       if(map.getPosition(*it, start)){
 	bool isfree = true;
-	for (CircleIterator cit(map, start, 2*robRad); !cit.isPastEnd(); ++cit){
+	for (CircleIterator cit(map, start, robRad); !cit.isPastEnd(); ++cit){
 	  if(map.at("obstacle", *cit) > 0){
 	    isfree = false;
 	    break;

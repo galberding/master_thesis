@@ -5,6 +5,7 @@
 #include <opencv2/opencv.hpp>
 // #include "../src/optimizer/grid_search.h"
 #include "../src/optimizer/optimizer.h"
+#include <sstream>
 #include <yaml-cpp/yaml.h>
 
 
@@ -121,6 +122,18 @@ TEST_F(RobTest, initReset){
 // //   cv::waitKey();
 // }
 
+void printPath(genome gen){
+  ostringstream os;
+  os << "\\def\\vvs{";
+  Position first = gen.actions.front()->wps.front();
+  auto it_next = next(gen.actions.begin(), 1);
+  for (auto it = gen.actions.begin(); it != gen.actions.end() ; ++it) {
+    os << (*it)->wps.front()[0] << "/" << (*it)->wps.front()[1] << "/" << (*it)->wps.back()[0] << "/" << (*it)->wps.back()[1] << "," << endl;
+  }
+  os << "}";
+  cout << os.str() << endl;
+}
+
 TEST(Initialization, boustrophedon) {
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
   // ostringstream msg;
@@ -136,14 +149,57 @@ TEST(Initialization, boustrophedon) {
   PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
   validateGen(gen);
   rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
   debug("Total: ", rob.getFreeArea());
-  debug("PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 0;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 1;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 2;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
   cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   img += mapgen::gmapToImg(eConf.gmap, "obstacle");
   cv::imshow("Test", img);
   cv::waitKey();
+
+  printPath(gen);
 }
+
+TEST(Initialization, spiral) {
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // ostringstream msg;
+
+  // Genpool pool;
+  InitStrategy init;
+  // eConf.initIndividuals = 1;
+  // eConf.initActions = 1;
+  // init(pool, eConf);
+  genome gen;
+  FitnessPoly fit;
+  init.spiral(gen, eConf);
+  PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
+  validateGen(gen);
+  rob.evaluateActions(gen.actions);
+  debug("Total: ", rob.getFreeArea());
+  eConf.funSelect = 0;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 1;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 2;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
+  img += mapgen::gmapToImg(eConf.gmap, "obstacle");
+  cv::imshow("Test", img);
+  cv::waitKey();
+
+  printPath(gen);
+}
+
 
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
