@@ -36,6 +36,8 @@ namespace mapgen {
    */
   cv::Mat gmapToImg(const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh=5);
   void saveMap(const string name, const shared_ptr<GridMap> gmap, const string layer, uint8_t upperThresh);
+  void add_obstacle(shared_ptr<GridMap> map);
+
 }
 
 #endif /* MAPGEN_H */

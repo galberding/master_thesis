@@ -29,22 +29,35 @@ void add_walls(GridMap& map, int width, int height, float thickness){
        !it.isPastEnd(); ++it) {
      map.at("obstacle", *it) = 0;
   }
-    // const Index idx(*it);
+
+}
 
 
+void mapgen::add_obstacle(shared_ptr<GridMap> map){
+  // map.add("obstacle", 1);
+  bool check;
+  // debug("W: ", floor(width - 2*thickness), " H: ", floor(height - 2*thickness));
 
-  // SubmapGeometry sMap(map,
-  // 		      Position(0,0),
-  // 		      Length(height - 3, width - 3),
-  // 		      check);
-  // if(not check){
-  //   warn("Cannot build walls");
-  //   return;
-  // }
-  // for (grid_map::SubmapIterator iterator(sMap);
-  //      !iterator.isPastEnd(); ++iterator) {
-  //   map.at("obstacle", *iterator) = 0;
-  // }
+  Polygon poly;
+  Position start(0.5, 0);
+  Position end(-0.5 , 0);
+  float thick = 0.5;
+  // debug("Start: ", start[0], " ", start[1], " end: ", end[0], " ", end[1], " thick ", thick);
+  poly.addVertex(start);
+  poly.addVertex(end);
+  poly.thickenLine(thick);
+
+  // // Get layers of grid map (for efficiency)
+  // grid_map::Matrix& data = (*cmap)[opName];
+  // grid_map::Matrix& obj = (*cmap)["obstacle"];
+  // grid_map::Matrix& covered = (*cmap)["covered"];
+
+  // Iterate over all pixel, covered by the polygon
+  for (grid_map::PolygonIterator it(*map, poly);
+       !it.isPastEnd(); ++it) {
+     map->at("obstacle", *it) = 1;
+  }
+
 }
 
 bool getStartPosition(GridMap& map, Position& start, float robRad){

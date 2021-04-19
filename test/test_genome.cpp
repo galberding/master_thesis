@@ -156,9 +156,18 @@ TEST(Initialization, boustrophedon) {
   eConf.funSelect = 1;
   fit.calculation(gen, rob.getFreeArea(), eConf);
   debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
-  eConf.funSelect = 2;
+
+  debug("With obstacle");
+  mapgen::add_obstacle(eConf.gmap);
+  rob.evaluateActions(gen.actions);
+  debug("Total: ", rob.getFreeArea());
+  eConf.funSelect = 0;
   fit.calculation(gen, rob.getFreeArea(), eConf);
   debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 1;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+
   cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   img += mapgen::gmapToImg(eConf.gmap, "obstacle");
   cv::imshow("Test", img);
@@ -192,6 +201,18 @@ TEST(Initialization, spiral) {
   eConf.funSelect = 2;
   fit.calculation(gen, rob.getFreeArea(), eConf);
   debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+
+  debug("With obstacle");
+  mapgen::add_obstacle(eConf.gmap);
+  rob.evaluateActions(gen.actions);
+  debug("Total: ", rob.getFreeArea());
+  eConf.funSelect = 0;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  eConf.funSelect = 1;
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+
   cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   img += mapgen::gmapToImg(eConf.gmap, "obstacle");
   cv::imshow("Test", img);
