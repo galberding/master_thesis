@@ -132,7 +132,8 @@ bool conf::executionConfig::loadConfFromYaml(const string path){
     mapHeight = yConf["mapHeight"].as<float>();
   if(yConf["mapResolution"])
     mapResolution = yConf["mapResolution"].as<float>();
-
+  Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
+  debug("AngleSpeed: ", Rob_angleSpeed);
   assert(popMin <= initIndividuals);
 
   return true;

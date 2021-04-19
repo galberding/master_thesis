@@ -36,6 +36,8 @@ namespace conf {
       ends = {start};
       Rob_angleSpeed = 2* M_PI * Rob_RPM * 1.0 / 60.0;
       // TODO :Possible that values will be lost
+
+      debug("Second angle speed: ", Rob_angleSpeed);
       rob_conf = {
 	{RobotProperty::Width, Rob_width},
 	{RobotProperty::Height, Rob_width},

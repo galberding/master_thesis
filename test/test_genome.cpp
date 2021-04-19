@@ -149,24 +149,87 @@ TEST(Initialization, boustrophedon) {
   PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
   validateGen(gen);
   rob.evaluateActions(gen.actions);
-  debug("Total: ", rob.getFreeArea());
-  eConf.funSelect = 0;
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
-  eConf.funSelect = 1;
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  // debug("Total: ", rob.getFreeArea());
+  // eConf.funSelect = 0;
+  // fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  // eConf.funSelect = 1;
+  // fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
 
-  debug("With obstacle");
-  mapgen::add_obstacle(eConf.gmap);
-  rob.evaluateActions(gen.actions);
-  debug("Total: ", rob.getFreeArea());
+  // debug("With obstacle");
+  // mapgen::add_obstacle(eConf.gmap);
+  // rob.evaluateActions(gen.actions);
+  // debug("Total: ", rob.getFreeArea());
+  // eConf.funSelect = 0;
+  // fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  // eConf.funSelect = 1;
+  // fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+
+
+  float a_speed = eConf.Rob_angleSpeed;
+
   eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
   fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  debug("Total: ", rob.getFreeArea());
+  debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
   eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
   fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+
+  // debug("With obstacle");
+  mapgen::add_obstacle(eConf.gmap);
+
+    eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+  eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+
+
+
 
   cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   img += mapgen::gmapToImg(eConf.gmap, "obstacle");
@@ -190,28 +253,65 @@ TEST(Initialization, spiral) {
   init.spiral(gen, eConf);
   PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
   validateGen(gen);
-  rob.evaluateActions(gen.actions);
-  debug("Total: ", rob.getFreeArea());
-  eConf.funSelect = 0;
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
-  eConf.funSelect = 1;
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
-  eConf.funSelect = 2;
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  float a_speed = eConf.Rob_angleSpeed;
 
-  debug("With obstacle");
-  mapgen::add_obstacle(eConf.gmap);
-  rob.evaluateActions(gen.actions);
-  debug("Total: ", rob.getFreeArea());
   eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
   fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  debug("Total: ", rob.getFreeArea());
+  debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
   eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
   fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Fit: ", eConf.funSelect," PathLen: ", gen.pathLengh, " cross ", gen.cross, " fit: ", gen.fitness, " time: ", gen.finalTime, " cov: ", gen.finalCoverage, " obj: ", gen.p_obj);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+
+  // debug("With obstacle");
+  mapgen::add_obstacle(eConf.gmap);
+
+    eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 0;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+  eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = 0;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  // debug("Total: ", rob.getFreeArea());
+  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = a_speed;
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+
+
 
   cv::Mat img = mapgen::gmapToImg(eConf.gmap, "map");
   img += mapgen::gmapToImg(eConf.gmap, "obstacle");

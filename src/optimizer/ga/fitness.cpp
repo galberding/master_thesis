@@ -183,7 +183,7 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   if(optimalTime < 0)
     optimalTime = 0;
   float finalTime = 0;
-  if (eConf.penalizeRotation)
+  if (eConf.penalizeRotation and eConf.Rob_angleSpeed > 0)
     finalTime = optimalTime / (actualTime + gen.rotations / eConf.Rob_angleSpeed);
   else
     finalTime = optimalTime / actualTime;
@@ -203,7 +203,8 @@ float fit::FitnessStrategy::calculation(genome& gen, int freeSpace, executionCon
   gen.finalTime = finalTime;
   float x = finalTime;
   float y = finalCoverage;
-  gen.finalRotationTime =  gen.rotations;
+  if (eConf.penalizeRotation and eConf.Rob_angleSpeed > 0)
+    gen.finalRotationTime =  gen.rotations / eConf.Rob_angleSpeed;
 
   fitnessFun(gen, x, y, eConf);
   // Panelty for zero actions
