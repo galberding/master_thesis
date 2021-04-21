@@ -134,6 +134,16 @@ void printPath(genome gen){
   cout << os.str() << endl;
 }
 
+
+void printTable(genome &gen, executionConfig &eConf, PolyRobot &rob, FitnessPoly & fit){
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  rob.evaluateActions(gen.actions);
+  fit.calculation(gen, rob.getFreeArea(), eConf);
+  cout << gen.p_obj << " & " << eConf.funSelect << " & " << eConf.Rob_angleSpeed << " & " << gen.fitness << " & " << gen.finalCoverage << " & " << gen.finalTime << " \\\\" << endl;
+}
+
+
 TEST(Initialization, boustrophedon) {
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
   // ostringstream msg;
@@ -171,63 +181,44 @@ TEST(Initialization, boustrophedon) {
 
   float a_speed = eConf.Rob_angleSpeed;
 
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Total: ", rob.getFreeArea());
-  debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
 
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
-  eConf.funSelect = 0;
-  eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
 
+  eConf.funSelect = 1;
+  eConf.Rob_angleSpeed = a_speed;
+  printTable(gen, eConf, rob, fit);
 
   // debug("With obstacle");
   mapgen::add_obstacle(eConf.gmap);
 
-    eConf.funSelect = 0;
+
+  eConf.funSelect = 0;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
 
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
-  eConf.funSelect = 0;
+  printTable(gen, eConf, rob, fit);
+
+  eConf.funSelect = 1;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
-
-
+  printTable(gen, eConf, rob, fit);
 
 
 
@@ -238,6 +229,7 @@ TEST(Initialization, boustrophedon) {
 
   printPath(gen);
 }
+
 
 TEST(Initialization, spiral) {
   executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
@@ -255,61 +247,44 @@ TEST(Initialization, spiral) {
   validateGen(gen);
   float a_speed = eConf.Rob_angleSpeed;
 
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug("Total: ", rob.getFreeArea());
-  debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
 
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
-
+  printTable(gen, eConf, rob, fit);
 
   // debug("With obstacle");
   mapgen::add_obstacle(eConf.gmap);
 
-    eConf.funSelect = 0;
+
+  eConf.funSelect = 0;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 0;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
 
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = 0;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  // debug("Total: ", rob.getFreeArea());
-  // debug("angle," "fun" ,"Fit, "," cov, "," time, ", " obj, ");
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
+
   eConf.funSelect = 1;
   eConf.Rob_angleSpeed = a_speed;
-  rob.evaluateActions(gen.actions);
-  fit.calculation(gen, rob.getFreeArea(), eConf);
-  debug(argsToCsv(eConf.Rob_angleSpeed, eConf.funSelect, gen.fitness, gen.finalCoverage, gen.finalTime, gen.p_obj));
+  printTable(gen, eConf, rob, fit);
 
 
 
