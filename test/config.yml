@@ -1,6 +1,6 @@
 logDir: ConvexRegion2
 logName: run.log
-maxIterations: 2000
+maxIterations: 200
 
 visualize: true
 printInfo: true
@@ -47,10 +47,10 @@ popMin: 100
 # 1: Tournament selection
 # 2: Roulettwheel selection
 # 3: RRWS
-scenario: 0
-keep: 0 #
-select: 0 #
-tournamentSize: 2 #
+scenario: 1
+keep: 1 #
+select: 10 #
+tournamentSize: 3 #
 selPressure: 2 #
 
 # Crossover
@@ -70,17 +70,17 @@ mutaRandAngleProba: 0.01  #
 mutaPosDistProba: 0.0
 mutaNegDistProba: 0.0
 mutaRandScaleDistProba: 0.01  #
-mutaReplaceGen: 0.1
+mutaReplaceGen: 0.01
 
 
 # Adaptive parameter:
 adaptParameter: false
 crossUpper: 1
-crossLower: 0.7
-cLenUpper: 0.5 #
+crossLower: 0.5
+cLenUpper: 0.2 #
 cLenLower: 0.2 #
-mutUpper: 0.5
+mutUpper: 0.1
 
 adaptSP: true
-adaptSPlower: 2
-adaptSPupper: 7
+adaptSPlower: 3
+adaptSPupper: 20
