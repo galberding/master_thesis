@@ -395,7 +395,7 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     eConf.currentIter = 0;
     rob->getFreeArea(true);
     // Magic with the logger to keep old performance data
-    eConf.logDir += "/retrain_run.log";
+    eConf.logDir += "/retrain_run";
     // eConf.tSnap = "retrain_pool.actions";
     // eConf.tPerformanceSnap = "retrain_pool.performance";
   }

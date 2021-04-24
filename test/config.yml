@@ -31,7 +31,7 @@ Rob_RPM: 60   # rounds per minute
 
 # Fitness
 penalizeZeroActions: false
-penalizeRotation: false
+penalizeRotation: true
 funSelect: 0
 fitSselect: 1
 
