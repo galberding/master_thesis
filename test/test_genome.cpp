@@ -297,6 +297,23 @@ TEST(Initialization, spiral) {
 }
 
 
+TEST(TimeComponents, Evaluation){
+  executionConfig eConf("../../../src/ros_optimizer/test/config.yml");
+  // ostringstream msg;
+
+  // Genpool pool;
+  InitStrategy init;
+  // eConf.initIndividuals = 1;
+  // eConf.initActions = 1;
+  // init(pool, eConf);
+  genome gen;
+  FitnessPoly fit;
+  init.boustrophedon(gen, eConf);
+  PolyRobot rob(eConf.rob_conf, eConf.gmap, eConf.obstacleName);
+  validateGen(gen);
+  rob.evaluateActions(gen.actions);
+}
+
 int main(int argc, char **argv) {
   testing::InitGoogleTest(&argc, argv);
   // ros::init(argc, argv, "tester");

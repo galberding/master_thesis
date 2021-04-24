@@ -281,8 +281,8 @@ void op::Optimizer::optimizePath(bool display){
     eConf.currentIter = 0;
     // Magic with the logger to keep old performance data
     eConf.logDir += "/retrain_run";
-    eConf.tSnap = "retrain_pool.actions";
-    eConf.tPerformanceSnap = "retrain_pool.performance";
+    // eConf.tSnap = "retrain_pool.actions";
+    // eConf.tPerformanceSnap = "retrain_pool.performance";
     rob->getFreeArea(true);
   }
 
@@ -306,7 +306,7 @@ void op::Optimizer::optimizePath(bool display){
 
     // Selection
 
-      saveBest(pool, eConf);
+    saveBest(pool, eConf);
       select->uniformSelectionWithoutReplacement(pool, fPool, eConf);
 
       // Crossover
@@ -396,8 +396,8 @@ void op::Optimizer::optimizePath_Turn_RWS(bool display){
     rob->getFreeArea(true);
     // Magic with the logger to keep old performance data
     eConf.logDir += "/retrain_run.log";
-    eConf.tSnap = "retrain_pool.actions";
-    eConf.tPerformanceSnap = "retrain_pool.performance";
+    // eConf.tSnap = "retrain_pool.actions";
+    // eConf.tPerformanceSnap = "retrain_pool.performance";
   }
 
   // Main loop
