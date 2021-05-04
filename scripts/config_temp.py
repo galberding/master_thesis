@@ -20,7 +20,7 @@ config = {
 
     # Clear Zero action every X iteration,
     "clearZeros": 0,
-    "penalizeZeroActions": True,
+    "penalizeZeroActions": False,
 
     # Fitness:
     "penalizeRotation": False,

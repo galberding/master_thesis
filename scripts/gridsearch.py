@@ -94,13 +94,13 @@ def trainScenario(scenario, mapType, maxIter, gw, dynamic=False, dynSel=False, r
     select_ = [0]
     keep_ = [0]
     cProba_ = [0.8]
-    cLen_ = [0.6]
+    cLen_ = [0.2,0.4,0.6,0.8]
     # cLen_ = [0.2, 0.3]
     cSel_ = [0, 1, 2] #2
     # muta_ = [0.0]
-    muta_ = [0.01]
+    muta_ = [0.0, 0.01, 0.1]
     # muta_gen_ = [0.0]
-    muta_gen_ = [0.01]
+    muta_gen_ = [0.0, 0.01, 0.1]
 
     if scenario > 0:
         individuals_ = [100]
@@ -115,7 +115,7 @@ def trainScenario(scenario, mapType, maxIter, gw, dynamic=False, dynSel=False, r
             conf["adaptSPupper"] = 10
 
     elif scenario == 3:  # RRWS
-        tSize_ = [1.3, 1.7]
+        tSize_ = [1.4, 2]
         if dynSel:
             conf["adaptSPlower"] = 1.1
             conf["adaptSPupper"] = 2
@@ -387,11 +387,11 @@ if __name__ == "__main__":
     selectionPressure_dir = os.path.join(result_dir, "selectionPressure")
     crossover_dir = os.path.join(result_dir, "crossover")
     mutation_dir = os.path.join(result_dir, "mutation")
-    
-    imgSaveDir = "/homes/galberding/Projects/thesis/images/eva/funcs/"
-    retrainGw =
 
-    createDirs(gw, imgSaveDir)
+    imgSaveDir = "/homes/galberding/Projects/thesis/images/eva/funcs/"
+    retrainGw = ""
+
+    createDirs(gw, imgSaveDir, gw_retrain, result_dir, selectionPressure_dir, selection_dir, crossover_dir, mutation_dir)
 
     import sys
     from eval_gsearch import loadAndEvalConfigs, fuse_configs_to_df
@@ -418,7 +418,7 @@ if __name__ == "__main__":
             confs_all = cman.exploreWorkspace(gw)
             confs_par = cman.loadPareto(gw)
             if len(sys.argv) == 3:
-                elif "selection"== sys.argv[2]: # without rotationmapType
+                if "selection"== sys.argv[2]: # without rotationmapType
                     cc = cman.configFilter(confs_all)
                     cman.plotSelection(cc, pref="all_", savepath=selection_dir)
                 elif "crossover"== sys.argv[2]: # without rotationmapType
@@ -604,6 +604,7 @@ if __name__ == "__main__":
 
         elif sys.argv[1] == "t":
             if len(sys.argv) == 3:
+                train(int(sys.argv[2]), gw, exe, test=False, rotPanel=False)
                 train(int(sys.argv[2]), gw, exe, test=False, rotPanel=True)
                 # train(int(sys.argv[2]), gw, exe, test=False, rotPanel=True)
 

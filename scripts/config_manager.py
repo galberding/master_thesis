@@ -53,7 +53,7 @@ def prepScenario(conf, mapType, maxIter, scenario):
     conf["visualize"] = False
     conf["mapType"] = mapType
     # conf["clearZeros"] = 0
-    conf["penalizeZeroActions"] = True
+    # conf["penalizeZeroActions"] = True
     # conf["penalizeRotation"] = True
     conf["maxIterations"] = maxIter
 
@@ -578,12 +578,12 @@ def plotBestSelectionRun(confs, pref="", retrain=False, savepath = "/homes/galbe
                 (cov, time, best), runs_ = getBest(runs)
                 name = r'$M_{{type}}={}, f_{{{}}}$, '.format(mt, fun+1)
                 generalRunPlot(best, "Test")
- 
+
 
 
 
 def plotSelection(confs, pref="", savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/selection/test"):
-    
+
     rows = 2
     cols = 4
     sclab = ["Elite", "Turn", "PRWS", "RRWS"]
