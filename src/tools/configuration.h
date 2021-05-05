@@ -125,7 +125,7 @@ namespace conf {
     string obstacleName = "map";
     float Rob_width = 0.3; // [m]
     float Rob_speed = 0.2; // [m/s]
-    float Rob_RPM = 12; // Rotations per minute
+    float Rob_RPM = 60; // Rotations per minute
     float Rob_angleSpeed = 0; // 2*Pi * RPM * 1/60s [rad/s]
     rob_config rob_conf;
 
@@ -134,7 +134,7 @@ namespace conf {
     int mapType = 1;
     int mapWidth = 11;
     int mapHeight = 11;
-    float mapResolution = 0.01;
+    float mapResolution = 0.2;
 
 
     shared_ptr<GridMap> gmap;
