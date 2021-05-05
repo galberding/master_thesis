@@ -3,9 +3,6 @@ This project utilizes a custom implementation of Genetic Algorithms (GA) with a 
 generates coverage paths on a 2D grid map.
 
 ## General Structure
-The `tools` are used to implement different path manipulations `path_tools` and provide the foundation for the genome representation `genome_tools`.
-Furthermore, the map creation and manipulation process in described in `mapGen`.
-In order to serialize or load a GA population `pa_serializer` creates a custom encoding 
 ```
 src/
 ├── main.cpp
@@ -38,13 +35,22 @@ src/
     └── path_tools.h
 ```
 
+### Path Generation Toolbox
+The `tools` are used to implement different path manipulations `path_tools` and provide the foundation for the genome representation `genome_tools`.
+Furthermore, the map creation and manipulation process in described in `mapGen`.
+In order to serialize or load a GA population `pa_serializer` is utilized.
+Some debugging functionality with levels `DEBUG`, `INFO` and `WARN` is provided as well as a logger that write the internal state of the `optimizer` to a CSV file.
+The behavior of the entire system is controlled by the `configuation`. The user can provide a configuration file at program start that determines the parameter setting
+of the GA as well as several options that influence the map generation and logging directories.
+A complete list of those parameters as well as their respective default value is described [here](#execution-configuration).
 
-```
-test/
-├── config.yml
-├── test_eigen.cpp
-├── test_genome.cpp
-├── test_new_optimizer.cpp
-└── test_tools.cpp
-```
-0 directories, 10 files
+
+### Genetic Algorithm Operators
+The `optimizer` provides the general architectures (two in total). Choosing a `selection` strategy will automatically determine which architecture is used.
+Furthermore, logging is performed at the end of each iteration step (fitness, diversity, coverage, time, chromosome length, etc.).
+The genome modification strategies are grouped in `init`, `crossover` and `mutation`.
+Finally the `fitness` contains several strategies for calculating the fitness of a genome.
+
+## Setup
+
+## Execution Configuration
