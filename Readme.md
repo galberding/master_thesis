@@ -54,3 +54,15 @@ Finally the `fitness` contains several strategies for calculating the fitness of
 ## Setup
 
 ## Execution Configuration
+
+| Parameter     | Default | Options     | Comment                                            |
+|:--------------|:--------|:------------|:---------------------------------------------------|
+| logDir        | -       | dir         | Name of the logging directory                      |
+| logName       | run.log | name        | Prefix for csv file -> run.log.csv                 |
+| maxIterations | 2000    | >= 0        | Maximum amount of iterations                       |
+| visualize     | true    | true, false | Show live preview of path optimization (best path) |
+| printInfo     | true    | true, false | Print basic status infos (*)                       |
+|               |         |             |                                                    |
+
+
+(*) Status infos contain: Iteration, best time, best cov, best rotation time, best chromosome size, Avg time, Avg cov, Avg chromosome length, P

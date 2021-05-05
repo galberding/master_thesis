@@ -52,7 +52,7 @@ namespace conf {
     // Logger
     string logDir = "";
     // string logFitness = "";
-    string logName = "";
+    string logName = "run.log";
     int genSeed = 42;
     int retrain = 0;
 
@@ -141,7 +141,7 @@ namespace conf {
 
     // GA
     int currentIter = 0;
-    int maxIterations = 1000;
+    int maxIterations = 2000;
     int initIndividuals = 1000;
     int initActions = 50;
     Position start;
