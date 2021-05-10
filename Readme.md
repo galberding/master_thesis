@@ -86,7 +86,7 @@ Finally the `fitness` contains several strategies for calculating the fitness of
 | clearZeros          | 0       | >= 0        | At which iteration to remove Zero actions            |
 | penalizeZeroActions | false   | true, false | Reduce fitness when zero actions appear              |
 | penalizeRotation    | true    | true, false | Whether `Rob\_RPM` should be included in the fitness |
-| funSelect           | 0       | 0,1,2,3,4   | Fitness function selection (See: [fitness calculation](src/ros_optimizer/src/optimizer/ga/fitness.cpp#L344))                    |
+| funSelect           | 0       | 0,1,2,3,4   | Fitness function selection (See: [fitness calculation](https://github.com/galberding/ros_optimizer/blob/master/src/optimizer/ga/fitness.cpp#L344))                    |
 |                     |         |             |                                                      |
 
 ### Retrain Procedure
