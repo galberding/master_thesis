@@ -62,7 +62,7 @@ namespace conf {
     int clearZeros = 0;
     bool penalizeZeroActions = true;
     int fitSselect = 0;
-    int funSelect = 3;
+    int funSelect = 0;
 
     // Snapshots
     bool restore = false;
