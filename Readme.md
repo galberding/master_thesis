@@ -3,13 +3,13 @@ This project utilizes a custom implementation of Genetic Algorithms (GA) with a 
 generates coverage paths on a 2D grid map.
 
 ## Examples
-![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png)
+<!-- ![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png) -->
 
 <p float="left">
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="300" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1_retrain.png" width="300" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2.png" width="300" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2_retrain.png" width="300" />
 </p>
 
 ## General Structure
