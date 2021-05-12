@@ -383,6 +383,8 @@ if __name__ == "__main__":
     gw = os.path.join(global_workspace, "currentWorkspace")
     gw_retrain = os.path.join(global_workspace, "retrain")
     result_dir = os.path.join(global_workspace, "res")
+    result_best_path_dir = os.path.join(result_dir, "bestPath")
+    result_best_path_retrain_dir = os.path.join(result_dir, "bestPathRetrain")
     selection_dir = os.path.join(result_dir, "selection")
     selectionPressure_dir = os.path.join(result_dir, "selectionPressure")
     crossover_dir = os.path.join(result_dir, "crossover")
@@ -391,7 +393,7 @@ if __name__ == "__main__":
     imgSaveDir = "/homes/galberding/Projects/thesis/images/eva/funcs/"
     retrainGw = ""
 
-    createDirs(gw, imgSaveDir, gw_retrain, result_dir, selectionPressure_dir, selection_dir, crossover_dir, mutation_dir)
+    createDirs(gw, imgSaveDir, gw_retrain, result_dir, selectionPressure_dir, selection_dir, crossover_dir, mutation_dir, result_best_path_dir, result_best_path_retrain_dir)
 
     import sys
     from eval_gsearch import loadAndEvalConfigs, fuse_configs_to_df
@@ -439,7 +441,7 @@ if __name__ == "__main__":
         elif sys.argv[1] == "retrain":
             confs_all = cman.exploreWorkspace(gw)
             confs_par = cman.loadPareto(gw)
-            newGw = "/homes/galberding/retrainGridsearch"
+            # gw_retrain = "/homes/galberding/retrainGridsearch"
             cacheFile = "retrain.json"
             if sys.argv[-1] == "prep":
                 bestRuns = []
@@ -448,21 +450,22 @@ if __name__ == "__main__":
                         for fun in [0, 1]:
                             for sc in [0,1,2,3]:
                                 cc = cman.configFilter(confs_all , mapType=mt, penalizeRotation=penalize, funSelect=fun, scenario=sc)
+
                                 # confs = configFilter(confs,scenario=scen, funSelect=fun,  mapType=mType)
                                 runs = cman.configsToRuns(cc)
                                 (cov, time, best), runs_ = cman.getBest(runs)
                                 bestRuns.append(best)
-                # bestRuns = cman.configsToRuns(cman.loadCacheFile(newGw, cacheFile))
+                # bestRuns = cman.configsToRuns(cman.loadCacheFile(gw_retrain, cacheFile))
                 # cman.resetGW()
-                prepRetrainConfigs(bestRuns, newGw, exe=exe, cacheName=cacheFile)
+                prepRetrainConfigs(bestRuns, gw_retrain, exe=exe, cacheName=cacheFile)
             elif sys.argv[-1] == "run":
                 # load cache file
-                confs_ret = cman.loadCacheFile(newGw, cacheFile)
+                confs_ret = cman.loadCacheFile(gw_retrain, cacheFile)
                 print(len(confs_ret))
                 executeConfigs(confs_ret)
                 # runs = egss.getParetos(runs)
             elif sys.argv[-1] == "plotBest":
-                confs_ret = cman.loadCacheFile(newGw, cacheFile)
+                confs_ret = cman.loadCacheFile(gw_retrain, cacheFile)
                 runs = cman.configsToRuns(confs_ret)
                 cman.generalRunPlot(runs[0], "first")
         elif sys.argv[1] == "duration":
@@ -503,15 +506,21 @@ if __name__ == "__main__":
             print(tableMin)
 
         elif sys.argv[1] == "bestTable":
-            newGw = "/homes/galberding/retrainGridsearch"
+            newGw = gw_retrain
             cacheFile = "retrain.json"
             confs_ret = cman.loadCacheFile(newGw, cacheFile)
-            savePath = "/homes/galberding/Projects/thesis/images/eva/gsearch/best/"
+            # savePath = "/homes/galberding/Projects/thesis/images/eva/gsearch/best/"
+            savePath = result_best_path_dir
             print(len(confs_ret))
             # Reset basic configuration
             cman.resetGW(confs_ret, gw)
             # iterate over each run
             table = {}
+
+            plotDir = os.path.join(savePath,"runPlots")
+            if not os.path.exists(plotDir):
+                os.makedirs(plotDir)
+
 
             labs = ["Elite", "Turn", "PRWS", "RRWS"]
             for mt in [1,2]:
@@ -541,7 +550,7 @@ if __name__ == "__main__":
                     table[mt][runiter] += " & " + str(run.config["mutaReplaceGen"])
                     table[mt][runiter] += " & " + str(run.bestCov)
                     table[mt][runiter] += " & " + str(run.bestTime)
-                    cman.generalRunPlot(run, os.path.join(savePath,"runPlots","mt:{}_{}.png".format(mt, chr(ord("a") + runiter))))
+                    cman.generalRunPlot(run, os.path.join(plotDir,"mt:{}_{}.png".format(mt, chr(ord("a") + runiter))))
                     runiter += 1
                     # buildTable
 
@@ -553,15 +562,19 @@ if __name__ == "__main__":
                 print(v)
 
         elif sys.argv[1] == "bestTableRetrain":
-            newGw = "/homes/galberding/retrainGridsearch"
+            newGw = gw_retrain
             cacheFile = "retrain.json"
             confs_ret = cman.loadCacheFile(newGw, cacheFile)
-            savePathRetrainContent = "/homes/galberding/Projects/thesis/images/eva/gsearch/best/retrain"
+            savePathRetrainContent = result_best_path_retrain_dir
+
             print(len(confs_ret))
             # Reset basic configuration
             # cman.resetGW(confs_ret, gw)
             # iterate over each run
             table = {}
+            plotDir = os.path.join(savePathRetrainContent,"runPlots")
+            if not os.path.exists(plotDir):
+                os.makedirs(plotDir)
 
             labs = ["Elite", "Turn", "PRWS", "RRWS"]
             for mt in [1,2]:
@@ -591,7 +604,10 @@ if __name__ == "__main__":
                     table[mt][runiter] += " & " + str(run.config["mutaReplaceGen"])
                     table[mt][runiter] += " & " + str(run.bestCov)
                     table[mt][runiter] += " & " + str(run.bestTime)
-                    cman.generalRunPlot(run, os.path.join(savePathRetrainContent,"runPlots","mt:{}_{}.png".format(mt, chr(ord("a") + runiter))))
+
+
+
+                    cman.generalRunPlot(run, os.path.join(plotDir,"mt:{}_{}.png".format(mt, chr(ord("a") + runiter))))
                     runiter += 1
                     # buildTable
 
@@ -610,3 +626,5 @@ if __name__ == "__main__":
 
             else:
                 print("No scenario provided!")
+        else:
+            print("No Valid option")

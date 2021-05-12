@@ -440,6 +440,10 @@ def generalRunPlot(run, name, retrain=False):
     rows = 5
     cols = 1
 
+    # Ensure that direcroty exists
+    # if not os.path.exists(name):
+    #     os.makedirs(name)
+
     sclab = ["Elite", "Turn", "PRWS", "RRWS"]
     fun = run.config["funSelect"]
     mt = run.config["mapType"]
@@ -496,11 +500,11 @@ def generalRunPlot(run, name, retrain=False):
     axis[row].plot(rlog.Iteration, rlog.AcLenMax)
     axis[row].set_title(r'Population Chromosome Length, $G_{len}$')
 
-    row += 1
-    axis[row].plot(rlog.Iteration, rlog.AcLenAvg)
-    axis[row].plot(rlog.Iteration, rlog.AcLenMin)
-    axis[row].plot(rlog.Iteration, rlog.AcLenMax)
-    axis[row].set_title(r'Population Chromosome Length, $G_{len}$')
+    # row += 1
+    # axis[row].plot(rlog.Iteration, rlog.AcLenAvg)
+    # axis[row].plot(rlog.Iteration, rlog.AcLenMin)
+    # axis[row].plot(rlog.Iteration, rlog.AcLenMax)
+    # axis[row].set_title(r'Population Chromosome Length, $G_{len}$')
 
 
 
