@@ -5,6 +5,13 @@ generates coverage paths on a 2D grid map.
 ## Examples
 ![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png)
 
+<p float="left">
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="100" />
+</p>
+
 ## General Structure
 ```
 src/
