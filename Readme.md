@@ -2,6 +2,9 @@
 This project utilizes a custom implementation of Genetic Algorithms (GA) with a variable length genome representation that
 generates coverage paths on a 2D grid map.
 
+## Examples
+![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png)
+
 ## General Structure
 ```
 src/
