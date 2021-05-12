@@ -586,7 +586,7 @@ def plotBestSelectionRun(confs, pref="", retrain=False, savepath = "/homes/galbe
 
 
 
-def plotSelection(confs, pref="", savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/selection/test"):
+def plotSelection(confs, pref="", savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/selection/test", retrain=False):
 
     rows = 2
     cols = 4
@@ -599,7 +599,7 @@ def plotSelection(confs, pref="", savepath = "/homes/galberding/Projects/thesis/
                 for fun in [0, 1]:
                     cc = configFilter(confs , mapType=mt, scenario=sc, penalizeRotation=penalize, funSelect=fun)
                     # confs = configFilter(confs,scenario=scen, funSelect=fun,  mapType=mType)
-                    runs = configsToRuns(cc)
+                    runs = configsToRuns(cc, retrain=retrain)
                     name = r'${}, f_{{{}}}$, '.format(sclab[sc], fun+1)
                     scatter(axis[fun, sc], runs, name=name)
                     runs = egss.getParetos(runs)
@@ -622,8 +622,8 @@ def plotSelection(confs, pref="", savepath = "/homes/galberding/Projects/thesis/
             fig.savefig(store_scatter)
             fig_div.savefig(store_div)
 
-def plotSelectionPressure(confs, pref=""):
-    savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/SelectionPressure"
+def plotSelectionPressure(confs, pref="", savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/SelectionPressure"):
+
     rows = 2
     cols = 4
     sclab = ["Elite", "Turn", "PRWS", "RRWS"]
@@ -668,8 +668,7 @@ def plotSelectionPressure(confs, pref=""):
 
 
 
-def plotCrossover(confs, pref=""):
-    savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/crossover/"
+def plotCrossover(confs, pref="", savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/crossover/"):
     rows = 3
     cols = 4
     for penalize in [False, True]:
@@ -705,8 +704,8 @@ def plotCrossover(confs, pref=""):
 
 
 
-def plot_mutation(confs, pref=""):
-    savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/mutation/"
+def plot_mutation(confs, pref="",savepath = "/homes/galberding/Projects/thesis/images/eva/gsearch/mutation/"):
+
     rows = 3
     cols = 3
     for penalize in [False, True]:

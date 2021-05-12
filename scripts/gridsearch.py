@@ -425,13 +425,13 @@ if __name__ == "__main__":
                     cman.plotSelection(cc, pref="all_", savepath=selection_dir)
                 elif "crossover"== sys.argv[2]: # without rotationmapType
                     cc = cman.configFilter(confs_all)
-                    cman.plotCrossover(cc, pref="all_")
+                    cman.plotCrossover(cc, pref="all_", savepath=crossover_dir)
                 elif "mutation"== sys.argv[2]: # without rotationmapType
                     cc = cman.configFilter(confs_all)
-                    cman.plot_mutation(cc, pref="all_")
+                    cman.plot_mutation(cc, pref="all_", savepath=mutation_dir)
                 elif "selPressure"== sys.argv[2]: # without rotationmapType
                     cc = cman.configFilter(confs_all)
-                    cman.plotSelectionPressure(cc, pref="all_")
+                    cman.plotSelectionPressure(cc, pref="all_", savepath=selectionPressure_dir)
                 # elif "bestRun"== sys.argv[2]: # without rotationmapType
                 #     cc = cman.configFilter(confs_par)
                 #     cman.plotBestSelectionRun(cc, pref="all_")
@@ -468,6 +468,27 @@ if __name__ == "__main__":
                 confs_ret = cman.loadCacheFile(gw_retrain, cacheFile)
                 runs = cman.configsToRuns(confs_ret)
                 cman.generalRunPlot(runs[0], "first")
+
+            elif len(sys.argv) == 3:
+                confs_ret = cman.loadCacheFile(gw_retrain, cacheFile)
+                pref = "ret_"
+                if "selection"== sys.argv[2]: # without rotationmapType
+                    cc = cman.configFilter(confs_ret)
+                    cman.plotSelection(cc, pref=pref, savepath=selection_dir, retrain=True)
+                elif "crossover"== sys.argv[2]: # without rotationmapType
+                    cc = cman.configFilter(confs_ret)
+                    cman.plotCrossover(cc, pref=pref, savepath=crossover_dir)
+                elif "mutation"== sys.argv[2]: # without rotationmapType
+                    cc = cman.configFilter(confs_ret)
+                    cman.plot_mutation(cc, pref=pref, savepath=mutation_dir)
+                elif "selPressure"== sys.argv[2]: # without rotationmapType
+                    cc = cman.configFilter(confs_ret)
+                    cman.plotSelectionPressure(cc, pref=pref, savepath=selectionPressure_dir)
+                # elif "bestRun"== sys.argv[2]: # without rotationmapType
+                #     cc = cman.configFilter(confs_par)
+                #     cman.plotBestSelectionRun(cc, pref="all_")
+                else:
+                    print("Nothing to do")
         elif sys.argv[1] == "duration":
             # Print table of durations for each run in seconds
             confs_all = cman.exploreWorkspace(gw)
