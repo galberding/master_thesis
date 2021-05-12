@@ -81,10 +81,32 @@ Finally the `fitness` contains several strategies for calculating the fitness of
 
 * Genetic Algorithm Configuration
 
-| Parameter         | Default          | Options            | Comment                                            |
-|:------------------|:-----------------|:-------------------|:---------------------------------------------------|
-| clearZeros        | 0                | >= 0               | At which iteration to remove Zero actions          |
-|                   |                  |                    |                                                    |
+| Parameter              | Default | Options          | Comment                                                                                                                                            |
+|:-----------------------|:--------|:-----------------|:---------------------------------------------------------------------------------------------------------------------------------------------------|
+| clearZeros             | 0       | n >= 0           | At which iteration to remove Zero actions                                                                                                          |
+| penalizeZeroActions    | false   | true, false      | Reduce fitness when zero actions appear                                                                                                            |
+| penalizeRotation       | true    | true, false      | Whether `Rob\_RPM` should be included in the fitness                                                                                               |
+| funSelect              | 0       | 0,1,2,3,4        | Fitness function selection (See: [Fitness Calculation](https://github.com/galberding/ros_optimizer/blob/master/src/optimizer/ga/fitness.cpp#L344)) |
+| fitSselect             | 1       | 0,1              | See [Coverage Calculation](#coverage-calculation)                                                                                                  |
+| initActions            | 50      | n >= 10          | Corresponds to the initial chromosome length                                                                                                       |
+| initIndividuals        | 1000    | n >= 1           | Individuals in the initial population                                                                                                              |
+| popMin                 | 20      | n >= 1           | Guarantees a minimal amount of individuals inside a population                                                                                     |
+| scenario               | 0       | 0,1,2,3          | 0 -> Elite, 1 -> TS, 2 -> PRWS, 3 -> RRWS                                                                                                          |
+| keep                   | 0       | n >= 0           | Selection parameter, keep n best individuals                                                                                                       |
+| select                 | 10      | n >= 1           | Select individuals for recombination                                                                                                               |
+| tournamentSize         | 2       | n >= 1 <= popMin | Parameter for Tournamen Selection (TS)                                                                                                             |
+| selPressure            | 1.5     | 1<= n <= 2       | Parameter for Ranked Roulette Wheel Selection (RRWS)                                                                                               |
+| crossoverProba         | 0.8     | 0 <= n <= 1      | Crossover probability                                                                                                                              |
+| crossLength            | 0.4     | 0.1 <= n <= 0.8  | Information sharing probability during crossover                                                                                                   |
+| crossChildSelector     | 2       | 0,1,2            | 0 -> Change locality, 1 -> preserve, 2 -> combined                                                                                                 |
+| crossStrategy          | 0       | 0,1              | See [Crossover Strategy](#crossover-strategy)                                                                                                      |
+| mutaOrtoAngleProba     | 0       | 0 <= n <= 1      | Mutation Probability: Orthogonal angle offset                                                                                                      |
+| mutaRandAngleProba     | 0       | 0 <= n <= 1      | Mutation Probability: Random angle offset                                                                                                          |
+| mutaPosDistProba       | 0       | 0 <= n <= 1      | Mutation Probability: Positive distance offset                                                                                                     |
+| mutaNegDistProba       | 0       | 0 <= n <= 1      | Mutation Probability: Negative distance offset                                                                                                     |
+| mutaRandScaleDistProba | 0       | 0 <= n <= 1      | Mutation Probability: Random distance scale                                                                                                        |
+| mutaReplaceGen         | 0       | 0 <= n <= 1      | Mutation Probability: Genome reinitialization                                                                                                        |
+
 
 ### Retrain Procedure
 The retrain procedure is preformed after `maxIterations` is reached.
@@ -100,5 +122,15 @@ fitness, coverage and time values (`tPerformanceSnap`). It es recommended to lea
 The name is generated accordingly: `<currentIteration>_<suffix>` in order to differentiate the snapshots from each generation.
 
 If one wants to `restore` a population the following path needs to be passed to `snapshot`:`<logDir>/<iteration>_<tSnap>` where `<*>` means to replace the corresponding content.
+
+### Coverage Calculation
+The parameter `fitSselect` states what strategy or backend is utilized to calculate the coverage, redundant path segments and how obstacles should be treated.
+Setting `fitSselect` to zero causes the backend to work on pixel level. That is, `Rob\_width = MapResolution`. Additionally paths that are generated are guaranteed collision free because those paths have zero fitness.
+This is not the case for `fitSselect = 1`, the most recent backend utilizing rectangles to select pixels on the path.
+Here objects can intersect with the path. Instead of setting fitness to zero a penalty is applied.
+
+### Crossover Strategy
+TODO
+
 
 (*) Status info contains: `Iteration, best time, best cov, best rotation time, best chromosome size, Avg time, Avg cov, Avg chromosome length, crossover proba, mutation proba, Avg diversity, Std diversity`

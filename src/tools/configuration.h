@@ -61,8 +61,8 @@ namespace conf {
     int scenario = 0;
     int clearZeros = 0;
     bool penalizeZeroActions = true;
-    int fitSselect = 0;
-    int funSelect = 3;
+    int fitSselect = 1;
+    int funSelect = 0;
 
     // Snapshots
     bool restore = false;
@@ -171,11 +171,11 @@ namespace conf {
     int crossFailed = 0;
 
     // Mutation functions, configurations
-    float mutaOrtoAngleProba = 0.1;
-    float mutaRandAngleProba = 0.1;
-    float mutaPosDistProba = 0.1;
-    float mutaNegDistProba = 0.01;
-    float mutaRandScaleDistProba = 0.01;
+    float mutaOrtoAngleProba = 0.0;
+    float mutaRandAngleProba = 0.0;
+    float mutaPosDistProba = 0.0;
+    float mutaNegDistProba = 0.0;
+    float mutaRandScaleDistProba = 0.0;
     float mutaPosDistMax = 50;
     float mutaReplaceGen = 0.001;
     int mutaCount = 0;
