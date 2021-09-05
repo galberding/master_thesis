@@ -109,7 +109,6 @@ Finally the `fitness` contains several strategies for calculating the fitness of
 | crossoverProba         | 0.8     | 0 <= n <= 1      | Crossover probability                                                                                                                              |
 | crossLength            | 0.4     | 0.1 <= n <= 0.8  | Information sharing probability during crossover                                                                                                   |
 | crossChildSelector     | 2       | 0,1,2            | 0 -> Change locality, 1 -> preserve, 2 -> combined                                                                                                 |
-| crossStrategy          | 0       | 0,1              | See [Crossover Strategy](#crossover-strategy)                                                                                                      |
 | mutaOrtoAngleProba     | 0       | 0 <= n <= 1      | Mutation Probability: Orthogonal angle offset                                                                                                      |
 | mutaRandAngleProba     | 0       | 0 <= n <= 1      | Mutation Probability: Random angle offset                                                                                                          |
 | mutaPosDistProba       | 0       | 0 <= n <= 1      | Mutation Probability: Positive distance offset                                                                                                     |
@@ -138,9 +137,6 @@ The parameter `fitSselect` states what strategy or backend is utilized to calcul
 Setting `fitSselect` to zero causes the backend to work on pixel level. That is, `Rob\_width = MapResolution`. Additionally paths that are generated are guaranteed collision free because those paths have zero fitness.
 This is not the case for `fitSselect = 1`, the most recent backend utilizing rectangles to select pixels on the path.
 Here objects can intersect with the path. Instead of setting fitness to zero a penalty is applied.
-
-### Crossover Strategy
-TODO
 
 
 (*) Status info contains: `Iteration, best time, best cov, best rotation time, best chromosome size, Avg time, Avg cov, Avg chromosome length, crossover proba, mutation proba, Avg diversity, Std diversity`
