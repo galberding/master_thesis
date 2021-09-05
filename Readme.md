@@ -2,6 +2,8 @@
 This project utilizes a custom implementation of Genetic Algorithms (GA) with a variable length genome representation that
 generates coverage paths on a 2D grid map.
 
+The complete thesis can be found [here](https://github.com/galberding/master_thesis/blob/master/ks_thesis.pdf).
+
 ## Examples
 <!-- ![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png) -->
 
