@@ -5,13 +5,13 @@ generates coverage paths on a 2D grid map.
 The complete thesis can be found [here](https://github.com/galberding/master_thesis/blob/master/ks_thesis.pdf).
 
 ## Examples
-<!-- ![Type:1](https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png) -->
-
+The left column shows the initially generated paths (blue).
+The right shows the adapted paths after a partial region is marked (red) as already visited.
 <p float="left">
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="300" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1_retrain.png" width="300" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2.png" width="300" />
-  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2_retrain.png" width="300" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1.png" width="350" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype1_retrain.png" width="350" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2.png" width="350" />
+  <img src="https://github.com/galberding/ros_optimizer/blob/master/assets/mtype2_retrain.png" width="350" />
 </p>
 
 ## General Structure
